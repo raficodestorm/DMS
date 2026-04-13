@@ -1,0 +1,101 @@
+
+        /* =------------style for dashboard box----------------------- */
+.dashboard-row {
+            display: flex;
+            flex-wrap: nowrap;
+            /* gap: 12px; */
+            padding: 15px 0;
+            overflow-x: auto;
+        }
+
+        .stat-card {
+            background-color: var(--section-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 15px;
+            flex: 1;
+            height: 80px;
+            color: var(--text-main);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .value-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .value-box h3 {
+            margin: 0;
+            font-size: 25px;
+            color: var(--text-main);
+        }
+
+        .value-box .amount {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .trend-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .bg-success-soft {
+            color: var(--success);
+        }
+
+        .bg-danger-soft {
+           
+            color: var(--danger);
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .card-label {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin: 0;
+            font-weight: normal;
+        }
+        @media (max-width: 991px) {
+
+            .dashboard-row {
+                flex-wrap: wrap;
+            }
+
+            .stat-card {
+                flex: 1 1 calc(50% - 12px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-card {
+                flex: 1 1 100%;
+            }
+        }
+
+       

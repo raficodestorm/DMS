@@ -1,0 +1,58 @@
+/* =================== google-font-Roboto & Ek-mesirri =================== */
+@import url('https://fonts.googleapis.com/css2?family=El+Messiri:wght@400..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+/* font-family: "Roboto", sans-serif; */
+/* font-family: "El Messiri", sans-serif; */
+
+
+/* ==============================
+   LIGHT MODE (Default)
+================================ */
+:root {
+  --primary: #3131ff;
+  --primary-light: #3d60fc;
+  --primary-soft: #e6e6ff;
+
+  --secondary: #1f2937;
+  --accent: #ae04f1;
+
+  --background: #f1f2f4; 
+--section-bg: #fafcfd;
+  /* --section-bg: #ffffff; */
+
+  --text-main: #080d14;
+  --text-muted: #64748b;
+
+  --border-color: #d4dae3;
+  --glass: #080d1418;
+
+  --success: #16a34a3f;
+  --warning: #f59f0b4a;
+  --danger: #ef44443d;
+}
+
+
+/* ==============================
+   DARK MODE
+================================ */
+[data-theme="dark"] {
+
+  --primary: #3b69ff;
+  --primary-light: #5e9eff;
+  --primary-soft: #141a3a;
+
+  --secondary: #111827;
+  --accent: #00d2a0;
+
+  --background: #0c0d0f;
+  --section-bg: #161617;
+
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+
+  --border-color: #1f2530;
+  --glass: #f8fafd15;
+
+  --success: #22c55e3c;
+  --warning: #fbbe243e;
+  --danger: #f871713b;
+}

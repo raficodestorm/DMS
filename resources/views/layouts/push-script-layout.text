@@ -1,0 +1,14 @@
+@push('scrip')
+<script type="module">
+    $(document).ready(function() {
+
+        // সব ইভেন্ট লিসেনার (Change, Click, Input)
+        $('select[name="supplier_id"]').on('change', function() { ... });  // like this
+       
+    });
+
+    // সব গ্লোবাল ফাংশন (যা বাটনের onclick থেকে কল হয়)
+    window.addRow = function() { ... };
+    window.calculateTotal = function() { ... };
+</script>
+@endpush
