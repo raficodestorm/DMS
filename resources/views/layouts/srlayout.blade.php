@@ -152,6 +152,51 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  @if(session('success'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="success-wrapper">
+            <div class="success-circle">
+                <div class="checkmark"></div>
+            </div>
+            <h2 class="success-title">Success</h2>
+            <p class="success-text">{{ session('success') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2200,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.3)',
+    customClass: {
+        popup: 'success-popup'
+    }
+});
+  </script>
+  @endif
+
+  @if(session('error'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="error-wrapper">
+            <div class="error-circle">
+                <div class="cross-mark">✕</div>
+            </div>
+            <h2 class="error-title">Error</h2>
+            <p class="error-text">{{ session('error') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2600,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.35)',
+    customClass: {
+        popup: 'error-popup'
+    }
+});
+  </script>
+  @endif
   <script>
     const body = document.getElementById('body');
 const toggleBtn = document.getElementById('toggleBtn');

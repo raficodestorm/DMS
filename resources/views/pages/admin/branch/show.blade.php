@@ -24,7 +24,8 @@
 
             <div class="info-group">
                 <span class="i-label">Created at</span>
-                <span class="i-value">{{ $branch->created_at->format('d M Y, h:i A') }}</span>
+                <span class="i-value">{{ $branch->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A')
+                    }}</span>
             </div>
 
         </div>

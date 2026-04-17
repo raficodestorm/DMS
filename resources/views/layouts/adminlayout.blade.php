@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>R.Electric</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <script>
+    window.userId = {{ auth()->id() ?? 'null' }};
+  </script>
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
@@ -122,11 +125,30 @@
         </a>
       </li>
 
+
+      <!-- Stock -->
       <li class="nav-item">
-        <a href="{{ route('admin.stock.in.requests.index') }}"
-          class="nav-link {{ isActive('admin.stock.in.requests.index') }}">
-          <i class="fas fa-users-cog"></i> Stock-in Request
-        </a>
+        <div class="nav-link has-dropdown {{ isActive('admin.stock.*') }}">
+          <i class="fas fa-user-tie"></i>
+          <span>Stock</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.stock.*') }}">
+          <li>
+            <a href="{{ route('admin.stocks.all') }}" class="sub-link {{ isActive('admin.stocks.all') }}">
+              <i class="fas fa-user-plus me-1"></i>Stock
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.stock.in.requests.index') }}"
+              class="sub-link {{ isActive('admin.stock.in.requests.index') }}">
+              <i class="fas fa-user-plus me-1"></i> Stock-in Request
+            </a>
+          </li>
+
+        </ul>
       </li>
 
       <!-- category -->
@@ -236,9 +258,9 @@
 
     <div class="nav-right">
 
+      {{-- Notifications --}}
       <div class="notification-wrapper">
-
-        <div class="notification-icon" onclick="toggleNotifDropdown()">
+        <div class="notification-icon" id="notifBtn" onclick="toggleNotifDropdown(event)">
           <i class="fas fa-bell"></i>
 
           @if(auth()->user()->unreadNotifications->count() > 0)
@@ -249,36 +271,43 @@
         </div>
 
         <div class="notification-dropdown" id="notifDropdown">
-
           <div class="notif-header">Notifications</div>
-
-          @forelse(auth()->user()->unreadNotifications as $note)
-          <a href="{{ $note->data['url'] }}" class="notif-item unread" onclick="markAsRead(event, '{{ $note->id }}')">
-
-            <div class="notif-title">
-              {{ $note->data['title'] }}
+          <div class="notif-body">
+            @forelse(auth()->user()->unreadNotifications as $note)
+            <a href="{{ route('notifications.markAndRedirect', $note->id) }}" class="notif-item unread">
+              <div class="notif-title">
+                {{ $note->data['title'] }}
+              </div>
+              <div class="notif-msg">
+                @if(is_array($note->data['message']))
+                {{ $note->data['message']['text'] }}
+                <span class="text-primary fw-bold">
+                  {{ $note->data['message']['from'] }}
+                </span>
+                @else
+                {{ $note->data['message'] }}
+                @endif
+              </div>
+              <div class="notif-time">
+                <i class="fa-regular fa-clock"></i> {{ $note->created_at->diffForHumans() }}
+              </div>
+            </a>
+            @empty
+            <div class="no-notif">
+              <i class="fa-solid fa-bell-slash"></i>
+              <p>No new notifications</p>
             </div>
-
-            <div class="notif-msg">
-              {{ $note->data['message'] }}
-            </div>
-
-            <div class="notif-time">
-              {{ $note->created_at->diffForHumans() }}
-            </div>
-          </a>
-          @empty
-          <div class="no-notif">No new notifications</div>
-          @endforelse
-
+            @endforelse
+          </div>
         </div>
-
       </div>
 
+      {{-- Mood changing --}}
       <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fa-solid fa-moon"></i>
       </button>
 
+      {{-- Profile pic --}}
       <div class="profile-wrapper" id="profileBtn">
 
         <div class="profile-info" style="display:flex;align-items:center;cursor:pointer;gap:5px;">
@@ -328,6 +357,52 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  @if(session('success'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="success-wrapper">
+            <div class="success-circle">
+                <div class="checkmark"></div>
+            </div>
+            <h2 class="success-title">Success</h2>
+            <p class="success-text">{{ session('success') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2200,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.3)',
+    customClass: {
+        popup: 'success-popup'
+    }
+});
+  </script>
+  @endif
+
+  @if(session('error'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="error-wrapper">
+            <div class="error-circle">
+                <div class="cross-mark">✕</div>
+            </div>
+            <h2 class="error-title">Error</h2>
+            <p class="error-text">{{ session('error') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2600,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.35)',
+    customClass: {
+        popup: 'error-popup'
+    }
+});
+  </script>
+  @endif
+
   <script>
     const body = document.getElementById('body');
 const toggleBtn = document.getElementById('toggleBtn');
@@ -393,20 +468,114 @@ function toggleTheme() {
   }
 }
 
+  </script>
 
-function toggleNotifDropdown() {
-    let dropdown = document.getElementById('notifDropdown');
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+  <script>
+    // Notification dropdown
+    function toggleNotifDropdown(event) {
+
+    if(event) event.stopPropagation();
+    
+    const dropdown = document.getElementById('notifDropdown');
+    dropdown.classList.toggle('show');
 }
 
-function markAsRead(event, id) {
-    fetch('/notifications/read/' + id, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+document.addEventListener('click', function (e) {
+    const dropdown = document.getElementById('notifDropdown');
+    const button = document.getElementById('notifBtn');
+
+    if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+    // RealTime Notification system
+    function timeSince(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        let interval = seconds / 31536000;
+
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return "Just now";
+    }
+
+    // ২. প্রতি ১ মিনিটে সব নোটিফিকেশন টাইম আপডেট করার ফাংশন
+    function updateNotifTimes() {
+        document.querySelectorAll('.notif-time').forEach(el => {
+            const timestamp = el.getAttribute('data-timestamp');
+            if (timestamp) {
+                el.innerText = timeSince(new Date(timestamp));
+            }
+        });
+    }
+
+    // প্রতি ৬০ সেকেন্ডে রান করবে
+    setInterval(updateNotifTimes, 60000);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.userId && window.Echo) {
+            window.Echo.private(`App.Models.User.${window.userId}`)
+                .notification((notification) => {
+                    
+                    let displayMessage = '';
+                    let senderInfo = '';
+                    if (typeof notification.message === 'object' && notification.message !== null) {
+                        displayMessage = notification.message.text || '';
+                        senderInfo = notification.message.from ? `from <span class="text-primary fw-bold">${notification.message.from}</span>` : '';
+                    } else {
+                        displayMessage = notification.message || '';
+                    }
+
+                    const dropdown = document.getElementById('notifDropdown');
+                    if (dropdown) {
+                        const noNotif = dropdown.querySelector('.no-notif');
+                        if (noNotif) noNotif.remove();
+
+                        // এখানে বর্তমান সময় স্টোর করা হচ্ছে data-timestamp এ
+                        const now = new Date().toISOString();
+
+                        const newNotifHtml = `
+                            <a href="/notifications/${notification.id}/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">
+                                <div class="notif-title">${notification.title}</div>
+                                <div class="notif-msg">${displayMessage} ${senderInfo}</div>
+                                <div class="notif-time" data-timestamp="${now}">Just now</div>
+                            </a>
+                        `;
+
+                        const header = dropdown.querySelector('.notif-header');
+                        header.insertAdjacentHTML('afterend', newNotifHtml);
+                    }
+
+                    let countBadge = document.querySelector('.notif-count');
+                    let iconWrapper = document.querySelector('.notification-icon');
+
+                    if (countBadge) {
+                        countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
+                    } else if (iconWrapper) {
+                        let newBadge = document.createElement('span');
+                        newBadge.className = 'notif-count';
+                        newBadge.innerText = '1';
+                        iconWrapper.appendChild(newBadge);
+                    }
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: notification.title,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
         }
     });
-}
   </script>
   @stack('scripts')
 </body>

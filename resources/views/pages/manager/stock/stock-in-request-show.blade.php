@@ -1,4 +1,4 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 <style>
@@ -13,7 +13,7 @@
 
   .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-bottom: 25px;
   }
@@ -117,15 +117,11 @@
 
   <div class="info-grid">
     <div class="info-item">
-      <label>Requested By</label>
-      <p>{{ $request->requestedBy->branch->name }}</p>
-    </div>
-    <div class="info-item">
-      <label>Supplier</label>
+      <label>Supplier Name</label>
       <p>{{ $request->supplier->company_name }}</p>
     </div>
     <div class="info-item">
-      <label>Date & Time</label>
+      <label>Created Date</label>
       <p>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
     </div>
   </div>
@@ -200,30 +196,25 @@
 
   @if($request->status == 'pending')
   <div class="action-bar">
-    <form action="{{ route('admin.stock.in.approve', $request->id) }}" method="POST"
-      onsubmit="return confirm('Approve and update stock?')">
-      @csrf
-      <button type="submit" class="btn-smart btn-edit">
-        <i class="fas fa-check-circle"></i> Approve
-      </button>
-    </form>
+    <a href="{{ route('manager.stock.in.request.edit', $request->id) }}" class="btn-smart btn-edit">
+      <i class="fas fa-edit"></i> Edit Request
+    </a>
 
-    <form action="{{ route('admin.stock.in.reject', $request->id) }}" method="POST"
-      onsubmit="return confirm('Reject this request?')">
+    <form action="{{ route('manager.stock.in.request.destroy', $request->id) }}" method="POST"
+      onsubmit="return confirm('Are you sure you want to delete this request?')">
       @csrf
+      @method('DELETE')
       <button type="submit" class="btn-smart btn-delete">
-        <i class="fas fa-times-circle"></i> Reject
+        <i class="fas fa-trash"></i> Delete Request
       </button>
     </form>
-
-
   </div>
   @endif
 
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
-  <a href="{{ route('admin.stock.in.requests.index') }}" style="color: var(--text-muted); text-decoration: none;">
+  <a href="{{ route('manager.stock.in.requests.index') }}" style="color: var(--text-muted); text-decoration: none;">
     <i class="fas fa-arrow-left"></i> Back to List
   </a>
 </div>

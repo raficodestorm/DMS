@@ -28,6 +28,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active')->index();
 
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('timezone')->default('Asia/Dhaka');
             $table->rememberToken();
             $table->timestamps();
         });

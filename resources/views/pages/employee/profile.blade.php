@@ -353,6 +353,10 @@
           <span class="i-label">Contact</span>
           <span class="i-value">{{ $employee->phone }}</span>
         </div>
+        <div class="info-group">
+          <span class="i-label">Joining Date</span>
+          <span class="i-value">{{ $employee->created_at->timezone(auth()->user()->timezone)->format('d M Y') }}</span>
+        </div>
 
       </div>
       <div class="employee-statement">

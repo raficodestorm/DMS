@@ -96,16 +96,23 @@
 
         <ul class="sub-menu" style="{{ isOpen('manager.stock.*') }}">
           <li>
-            <a href="{{ route('manager.stock.create') }}" class="sub-link {{ isActive('manager.stock.create') }}">
+            <a href="{{ route('manager.stock.index') }}" class="sub-link {{ isActive('manager.stock.index') }}">
+              <i class="fas fa-user-plus me-1"></i> My Stock
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.stock.in.create') }}" class="sub-link {{ isActive('manager.stock.in.create') }}">
               <i class="fas fa-user-plus me-1"></i> Stock-in
             </a>
           </li>
 
-          {{-- <li>
-            <a href="{{ route('manager.stock.index') }}" class="sub-link {{ isActive('manager.stock.index') }}">
-              <i class="fas fa-users-cog me-1"></i> Manage Employees
+          <li>
+            <a href="{{ route('manager.stock.in.requests.index') }}"
+              class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
+              <i class="fas fa-user-plus me-1"></i> Stock-in Requests
             </a>
-          </li> --}}
+          </li>
         </ul>
       </li>
 
@@ -183,6 +190,52 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  @if(session('success'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="success-wrapper">
+            <div class="success-circle">
+                <div class="checkmark"></div>
+            </div>
+            <h2 class="success-title">Success</h2>
+            <p class="success-text">{{ session('success') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2200,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.3)',
+    customClass: {
+        popup: 'success-popup'
+    }
+});
+  </script>
+  @endif
+
+  @if(session('error'))
+  <script>
+    Swal.fire({
+    html: `
+        <div class="error-wrapper">
+            <div class="error-circle">
+                <div class="cross-mark">✕</div>
+            </div>
+            <h2 class="error-title">Error</h2>
+            <p class="error-text">{{ session('error') }}</p>
+        </div>
+    `,
+    showConfirmButton: false,
+    timer: 2600,
+    background: 'transparent',
+    backdrop: 'rgba(0,0,0,0.35)',
+    customClass: {
+        popup: 'error-popup'
+    }
+});
+  </script>
+  @endif
 
   <script>
     (function(window, document) {

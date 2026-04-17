@@ -5,17 +5,29 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home-page');
 
 
-Route::post('/notifications/read/{id}', function ($id) {
-    $notification = auth()->user()->notifications()->findOrFail($id);
-    $notification->markAsRead();
-    return response()->json(['success' => true]);
-});
+// Route::post('/notifications/read/{id}', function ($id) {
+//     $notification = auth()->user()->notifications()->findOrFail($id);
+//     $notification->markAsRead();
+//     return response()->json(['success' => true]);
+// });
+Route::get('/notifications/{id}/mark-as-read', function ($id) {
+    $notification = auth()->user()->notifications()->where('id', $id)->first();
+
+    if ($notification) {
+        $url = $notification->data['url']; // রিডাইরেক্ট ইউআরএল সেভ করে রাখা
+        $notification->delete(); // ডাটাবেজ থেকে মুছে ফেলা
+        return redirect($url); // নির্দিষ্ট পেজে পাঠিয়ে দেওয়া
+    }
+
+    return back();
+})->name('notifications.markAndRedirect');
 
 
 Route::get('/our/employee/{id}', [EmployeeController::class, 'see'])->name('relectric.employee');
@@ -61,3 +73,4 @@ require __DIR__ . '/manager.php';
 require __DIR__ . '/admin.php';
 require __DIR__ . '/manager.php';
 require __DIR__ . '/sr.php';
+require __DIR__ . '/channels.php';

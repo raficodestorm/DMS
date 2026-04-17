@@ -64,30 +64,7 @@
 
 </div>
 @endsection
-@if(session('success'))
-@push('scripts')
-<script>
-  Swal.fire({
-    html: `
-        <div class="success-wrapper">
-            <div class="success-circle">
-                <div class="checkmark"></div>
-            </div>
-            <h2 class="success-title">Success</h2>
-            <p class="success-text">{{ session('success') }}</p>
-        </div>
-    `,
-    showConfirmButton: false,
-    timer: 2200,
-    background: 'transparent',
-    backdrop: 'rgba(0,0,0,0.3)',
-    customClass: {
-        popup: 'success-popup'
-    }
-});
-</script>
-@endpush
-@endif
+
 
 
 {{-- @section('scripts')

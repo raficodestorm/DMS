@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class AdminUserSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -25,7 +25,9 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@system.com',
                 'password' => Hash::make('11111111'),
                 'role' => 'admin',
+                'branch_id' => 1,
                 'status' => 'active',
+                'timezone' => 'Asia/Dhaka',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -35,7 +37,9 @@ class AdminUserSeeder extends Seeder
                 'email' => 'sarafi3258@gmail.com',
                 'password' => Hash::make('11111111'),
                 'role' => 'manager',
+                'branch_id' => 2,
                 'status' => 'active',
+                'timezone' => 'Asia/Dhaka',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

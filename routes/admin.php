@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,4 +47,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   // এপ্রুভ এবং রিজেক্ট অ্যাকশন
   Route::post('/stock-in-requests/{id}/approve', [StockRequestController::class, 'approve'])->name('stock.in.approve');
   Route::post('/stock-in-requests/{id}/reject', [StockRequestController::class, 'reject'])->name('stock.in.reject');
+
+  // সব ব্রাঞ্চের সামারি ভিউ
+  Route::get('/all-stocks', [StockController::class, 'allStocksSummary'])->name('stocks.all');
+
+  // নির্দিষ্ট ব্রাঞ্চ বা টোটাল কোম্পানির ডিটেইল ভিউ
+  Route::get('/stock/branch/{branch_id?}', [StockController::class, 'specificStock'])->name('stocks.specific');
 });

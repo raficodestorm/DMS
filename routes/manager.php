@@ -3,7 +3,9 @@
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\Manager\UserManagementController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
+use App\Models\StockInRequest;
 use Illuminate\Support\Facades\Route;
 
 
@@ -22,8 +24,21 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
 
 
-  Route::get('/stock-in-create', [StockRequestController::class, 'createStockRequest'])->name('stock.create');
+  Route::get('/stock-in-create', [StockRequestController::class, 'createStockRequest'])->name('stock.in.create');
   Route::get('/stock/get-products/{supplier_id}', [StockRequestController::class, 'getProductsBySupplier'])->name('getProducts');
   Route::post('/stock/store', [StockRequestController::class, 'store'])->name('stock.store');
+  Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForManager'])->name('stock.in.requests.index');
+
+  Route::get('/stock-in-request/{id}', [StockRequestController::class, 'showForManager'])->name('stock.in.request.show');
+
+  Route::delete('/stock-in-request/{id}', [StockRequestController::class, 'stockInDestroy'])->name('stock.in.request.destroy');
+
+  Route::get('/stock-in-request/{id}/edit', [StockRequestController::class, 'stockInEdit'])->name('stock.in.request.edit');
+
+  Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInUpdate'])->name('stock.in.update');
+
+  Route::get('/stock', [StockController::class, 'managerIndex'])->name('stock.index');
+
+
   Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
 });

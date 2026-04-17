@@ -1,11 +1,11 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 <div class="manage-card">
 
   <div class="card-header">
     <h2>Stock-In Requests</h2>
-    <p>Manage your all Stock-In Requests</p>
+    <p>Your all Stock-In Requests</p>
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -16,7 +16,6 @@
       <thead>
         <tr>
           <th>S.No</th>
-          <th>Requested By</th>
           <th>Supplier</th>
           <th>Amount</th>
           <th>Status</th>
@@ -28,7 +27,6 @@
         @forelse($requests as $request)
         <tr>
           <td scope="row">{{ $loop->iteration }}</td>
-          <td class="name">{{ $request->requestedBy->branch->name }}</td>
           <td>{{ $request->supplier->company_name }}</td>
           <td>{{ number_format($request->net_total, 2) }} TK</td>
           <td>
@@ -43,7 +41,7 @@
           <td>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
 
           <td class="action-icons">
-            <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
+            <a href="{{ route('manager.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
               <i class="fa-solid fa-eye"></i>
             </a>
           </td>
@@ -63,9 +61,6 @@
       <div class="card-body">
         <div><span>S.No</span>
           <p>{{ $loop->iteration }}</p>
-        </div>
-        <div><span>Requested By</span>
-          <p>{{ $request->requestedBy->branch->name }}</p>
         </div>
         <div><span>Supplier</span>
           <p>{{ $request->supplier->company_name }}</p>
@@ -90,7 +85,7 @@
       </div>
 
       <div class="card-actions">
-        <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
+        <a href="{{ route('manager.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
           <i class="fa-solid fa-eye"></i>
         </a>
 
