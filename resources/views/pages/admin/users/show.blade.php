@@ -51,7 +51,7 @@
     <div class="statement">
       <p class="statement-text">
         "This pass certifies that <strong>{{ $user->name }}</strong> is a verified user of
-        <strong>R.Electric</strong>.
+        <strong>{{ config('app.name') }}</strong>.
         Dedicated to high-performance engineering and operational excellence,
         this user plays a vital role in our mission to lead the industry."
       </p>

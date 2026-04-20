@@ -124,7 +124,15 @@
 
           <div class="info-label">Account Status</div>
           <div class="info-value">
-            <span style="color: var(--success);"><i class="mdi mdi-check-decagram"></i> Verified</span>
+            @if(Auth::user()->status == "active")
+            <span style="color: var(--success);">
+              <i class="mdi mdi-check-decagram"></i> Verified
+            </span>
+            @else
+            <span style="color: var(--danger);">
+              <i class="mdi mdi-close-octagon"></i> Inactive
+            </span>
+            @endif
           </div>
         </div>
       </div>

@@ -16,4 +16,23 @@ class Order extends Model
         'net_total',
         'note',
     ];
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function sr()
+    {
+        return $this->belongsTo(User::class, 'sr_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
 }

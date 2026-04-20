@@ -3,7 +3,7 @@
 
     <a class="brand" href="index.php">
       {{-- <img src="https://raficon.safiulrafi.top/images/logo.webp" class="img-logo" id="img-logo" alt="RafiCon"> --}}
-      <h3 class="top-logo">R.Electric</h3>
+      <h3 class="top-logo">{{ config('app.name') }}</h3>
     </a>
 
 

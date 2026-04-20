@@ -3,12 +3,13 @@
         <div class="row g-5">
             <div class="col-lg-4 col-md-6">
                 <a class="nav-brand-custom" href="#">
-                    <span class="top-logo">R.Electrics</span>
+                    <span class="top-logo">{{ config('app.name') }}</span>
                 </a>
                 <p class="mt-3"
                     style="font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--text-muted); line-height: 1.8;">
                     "Touch and Shock" <br>
-                    R. Electric: Delivering electrical excellence nationwide. We combine nationwide accessibility with a
+                    Delivering electrical excellence nationwide. We combine nationwide
+                    accessibility with a
                     commitment to service that powers your happiness
                 </p>
                 <div class="mt-4">
@@ -68,7 +69,8 @@
 
         <div class="footer-bottom d-md-flex justify-content-between align-items-center">
             <p class="mb-0">&copy;
-                <?= date('Y') ?> <span style="color: var(--accent); font-weight: 600;">R.Electric</span>. All rights
+                <?= date('Y') ?> <span style="color: var(--accent); font-weight: 600;">{{ config('app.name') }}</span>.
+                All rights
                 reserved.
             </p>
             <p class="mb-0">Built with ❤️ by <a class="rafi-link" href="https://safiulrafi.top"> S A Rafi</a></p>

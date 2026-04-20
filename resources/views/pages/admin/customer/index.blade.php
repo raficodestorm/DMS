@@ -10,9 +10,7 @@
     <div style="margin: 15px 0;">
         <input type="text" id="search" class="input-form" placeholder="Search by Shop-name or ID...">
     </div>
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    @include('components.alert')
     <div class="table-wrapper">
         <table>
             <thead>

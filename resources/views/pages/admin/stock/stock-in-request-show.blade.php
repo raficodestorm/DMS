@@ -110,15 +110,13 @@
       </span>
     </div>
 
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    @include('components.alert')
   </div>
 
   <div class="info-grid">
     <div class="info-item">
       <label>Requested By</label>
-      <p>{{ $request->requestedBy->branch->name }}</p>
+      <p>{{ $request->requestedBy->branch->name }} branch</p>
     </div>
     <div class="info-item">
       <label>Supplier</label>

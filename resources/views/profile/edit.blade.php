@@ -178,12 +178,7 @@
     <div class="edit-card">
         <h2 class="form-title">Edit Profile</h2>
 
-        @if (session('status') === 'profile-updated')
-        <div class="alert alert-success border-0 shadow-sm mb-4"
-            style="background: var(--primary-soft); color: var(--primary); border-radius: 12px;">
-            <i class="mdi mdi-check-decagram mr-2"></i> Profile updated successfully!
-        </div>
-        @endif
+        @include('components.alert')
 
         <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
             @csrf

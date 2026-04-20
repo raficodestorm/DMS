@@ -37,7 +37,7 @@
     <div class="statement">
       <p class="statement-text">
         "This pass certifies that <strong>{{ $user->name }}</strong> is a verified customer of
-        <strong>R.Electric</strong>.
+        <strong>{{ config('app.name') }}</strong>.
       </p>
     </div>
   </div>

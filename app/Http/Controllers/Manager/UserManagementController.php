@@ -57,9 +57,7 @@ class UserManagementController extends Controller
 
   public function create()
   {
-    // form to create manager or counter_manager
-
-    $employees = Employee::select('id', 'name')->latest()->get();
+    $employees = Employee::select('id', 'name')->where('branch_id', auth()->user()->branch_id)->latest()->get();
     return view('pages.manager.users.create', compact('employees'));
   }
 

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R.Electric</title>
+  <title>{{ config('app.name') }}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <script>
     window.userId = {{ auth()->id() ?? 'null' }};
@@ -12,6 +12,7 @@
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/buttons.css') }}">
   <link rel="stylesheet" href="{{ asset('css/sidenavbar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/crud.css') }}">
   <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
@@ -24,7 +25,7 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">R.Electric</div>
+    <div class="sidebar-brand">{{ config('app.name') }}</div>
 
     <ul class="nav-menu">
 
@@ -145,6 +146,26 @@
             <a href="{{ route('admin.stock.in.requests.index') }}"
               class="sub-link {{ isActive('admin.stock.in.requests.index') }}">
               <i class="fas fa-user-plus me-1"></i> Stock-in Request
+            </a>
+          </li>
+
+        </ul>
+      </li>
+
+      <!-- orders -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.orders.*') }}">
+          <i class="fa-solid fa-box"></i>
+          <span>Order</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.order.*') }}">
+
+          <li>
+            <a href="{{ route('admin.order.pending.index') }}"
+              class="sub-link {{ isActive('admin.order.pending.index') }}">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> All orders
             </a>
           </li>
 
@@ -282,7 +303,7 @@
                 @if(is_array($note->data['message']))
                 {{ $note->data['message']['text'] }}
                 <span class="text-primary fw-bold">
-                  {{ $note->data['message']['from'] }}
+                  {{ $note->data['message']['from'] }} branch
                 </span>
                 @else
                 {{ $note->data['message'] }}

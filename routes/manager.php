@@ -39,6 +39,18 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
   Route::get('/stock', [StockController::class, 'managerIndex'])->name('stock.index');
 
+  Route::get('/get-product-data/{id}', [OrderController::class, 'getProductData']);
+  Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
+  Route::get('/orders/show/{order}', [OrderController::class, 'showForManager'])->name('order.show');
+  Route::get('/orders/edit/{order}', [OrderController::class, 'edit'])->name('order.edit');
+  Route::put('/orders/update/{order}', [OrderController::class, 'update'])->name('order.update');
+  Route::patch('/orders/sendToAdmin/{order}', [OrderController::class, 'sendToAdmin'])->name('order.sendToAdmin');
 
-  Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
+  Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
+  Route::delete('/orders/destroy/{order}', [OrderController::class, 'destroy'])->name('order.destroy');
+
+  Route::get('/order/invoice/{order}', [OrderController::class, 'confirmAndInvoice'])->name('order.confirm');
+
+  // এটি শুধুমাত্র ইনভয়েস দেখার জন্য
+  Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
 });

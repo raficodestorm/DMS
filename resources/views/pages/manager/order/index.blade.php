@@ -1,11 +1,11 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 <div class="manage-card">
 
   <div class="card-header">
-    <h2>Pending Orders</h2>
-    <p>Manage all pending orders</p>
+    <h2>Branch Orders</h2>
+    <p>Manage all orders from your branch SRs</p>
     @include('components.alert')
   </div>
 
@@ -51,7 +51,7 @@
           <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
 
           <td class="action-icons">
-            <a href="{{ route('admin.order.show', $order->id) }}" class="icon-btn view-icon">
+            <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
               <i class="fa-solid fa-eye"></i>
             </a>
           </td>
@@ -118,7 +118,7 @@
       </div>
 
       <div class="card-actions">
-        <a href="{{ route('admin.order.show', $order->id) }}" class="icon-btn view-icon">
+        <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
           <i class="fa-solid fa-eye"></i>
         </a>
       </div>

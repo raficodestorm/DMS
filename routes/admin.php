@@ -53,4 +53,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
   // নির্দিষ্ট ব্রাঞ্চ বা টোটাল কোম্পানির ডিটেইল ভিউ
   Route::get('/stock/branch/{branch_id?}', [StockController::class, 'specificStock'])->name('stocks.specific');
+
+  Route::get('/orders', [OrderController::class, 'indexForPendingAdmin'])->name('order.pending.index');
+  // Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
+  Route::get('/orders/{order}/show', [OrderController::class, 'showForAdmin'])->name('order.show');
+  Route::patch('/orders/approve/{order}', [OrderController::class, 'approve'])->name('order.approve');
+  Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
 });

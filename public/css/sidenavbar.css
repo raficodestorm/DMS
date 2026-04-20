@@ -7,20 +7,7 @@ body {
             transition: all 0.3s ease;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
-        }
-
+    
         /* --- SIDEBAR STYLES --- */
         .sidebar {
             width: 220px;
@@ -378,7 +365,7 @@ transform:scale(1.1);
     position: absolute;
     top: 100%;
     right: 0;
-    width: 320px;
+    width: 340px;
     background: var(--section-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;

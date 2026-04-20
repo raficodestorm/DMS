@@ -10,7 +10,7 @@
 :root {
   --primary: #3131ff;
   --primary-light: #3d60fc;
-  --primary-soft: #e6e6ff;
+  --primary-soft: #e4ecf9;
 
   --secondary: #1f2937;
   --accent: #ae04f1;
@@ -38,10 +38,10 @@
 
   --primary: #3b69ff;
   --primary-light: #5e9eff;
-  --primary-soft: #141a3a;
+  --primary-soft: #16192b;
 
   --secondary: #111827;
-  --accent: #00d2a0;
+  --accent: #ae04f1;
 
   --background: #0c0d0f;
   --section-bg: #161617;

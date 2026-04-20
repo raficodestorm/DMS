@@ -14,5 +14,11 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
   Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
 
-  Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+  // Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
+  Route::get('/orders/create', [OrderController::class, 'create'])->name('order.create');
+  Route::post('/orders/store', [OrderController::class, 'store'])->name('order.store');
+  // Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('order.show');
+  // Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('order.edit');
+  // Route::post('/orders/{order}/update', [OrderController::class, 'update'])->name('order.update');
+  Route::get('/get-product-data/{id}', [OrderController::class, 'getProductData']);
 });

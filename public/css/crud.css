@@ -27,7 +27,6 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 900px;
     }
 
     th,
@@ -49,6 +48,26 @@
     tr:hover {
       background: var(--glass);
     }
+/* ===============================
+COMMON BADGE STYLE
+=================================*/
+.status-active-badge,
+.status-inactive-badge,
+.status-pending-badge,
+.status-approved-badge,
+.status-rejected-badge,
+.status-complete-badge,
+.status-delivered-badge,
+.status-undefined-badge,
+.status-pmanager-badge{
+    padding: 4px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    letter-spacing: .3px;
+}
+
 
     .status-active-badge{
       background-color: #47df0031;
@@ -62,74 +81,45 @@
       padding: 4px 16px;
       border-radius: 50px;
     }
-    .status-pending-badge{
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 4px 16px;
-      border-radius: 50px;
-    }
-    .status-approved-badge{
-      background-color: #d4edda;
-      color: #155724;
-      padding: 4px 16px;
-      border-radius: 50px;
-    }
-    .status-rejected-badge{
-      background-color: #f8d7da;
-      color: #721c24;
-      padding: 4px 16px;
-      border-radius: 50px;
-    }
+.status-pending-badge{
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved-badge{
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected-badge{
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.status-pmanager-badge{
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+.status-complete-badge{
+    background-color: #ede9fe;
+    color: #6d28d9;
+}
+
+.status-delivered-badge{
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.status-undefined-badge{
+    background-color: #e5e7eb;
+    color: #374151;
+}
 
     .action-icons {
       display: flex;
       gap: 10px;
     }
 
-    .icon-btn {
-      width: 35px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 15px;
-      transition: 0.3s ease;
-    }
-
-    .view-icon {
-      background: rgba(89, 159, 197, 0.15);
-      color: var(--primary);
-    }
-
-    .view-icon:hover {
-      background: var(--primary);
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    .edit-icon {
-      background: rgba(197, 89, 186, 0.15);
-      color: var(--accent);
-    }
-
-    .edit-icon:hover {
-      background: var(--accent);
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    .delete-icon {
-      background: rgba(255, 82, 82, 0.15);
-      color: #ff5252;
-    }
-
-    .delete-icon:hover {
-      background: #ff5252;
-      color: #fff;
-      transform: translateY(-2px);
-    }
+    
 
 
     /* Responsive */
@@ -178,8 +168,10 @@
   }
 
   .card-body span {
+    display: inline-block;
     font-size: 12px;
     color: var(--text-muted);
+    margin-right: 10px;
   }
 
   .card-body p {
@@ -187,6 +179,8 @@
     color: var(--text-main);
     margin: 0;
     font-weight: 500;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .card-actions {
@@ -349,33 +343,7 @@
     margin-top: 0.3rem;
   }
 
-  .btn-submit {
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    color: white;
-    font-weight: 600;
-    border: none;
-    border-radius: 10px;
-    padding: 0.9rem;
-    width: 100%;
-    margin-top: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(49, 49, 255, 0.3);
-  }
-
-  .btn-submit:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(90deg, var(--accent), var(--primary-light));
-}
-
-.btn-submit:active {
-    transform: translateY(1px);
-    background: #39aff8;
-    border: 1px solid #e81efa;
-}
-
+  
 .product-table-header {
     display: grid;
     grid-template-columns: 2.5fr 1fr 1fr 1.2fr 50px;
@@ -477,10 +445,7 @@
       font-size: 0.8rem;
     }
 
-    .btn-submit {
-      padding: 0.7rem;
-      font-size: 0.9rem;
-    }
+    
 
     .product-table-header {
       display: none;

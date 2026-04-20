@@ -4,11 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R.Electric</title>
+  <title>{{ config('app.name') }}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/buttons.css') }}">
   <link rel="stylesheet" href="{{ asset('css/sidenavbar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/crud.css') }}">
   <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
@@ -21,7 +22,7 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">R.Electric</div>
+    <div class="sidebar-brand">{{ config('app.name') }}</div>
 
     <ul class="nav-menu">
 
@@ -65,16 +66,40 @@
 
         <ul class="sub-menu" style="{{ isOpen('customers.*') }}">
           <li>
-            <a href="{{ route('customers.create') }}" class="sub-link {{ isActive('sr.customers.create') }}">
+            <a href="{{ route('customers.create') }}" class="sub-link {{ isActive('customers.create') }}">
               <i class="fas fa-user-plus me-1"></i> Add Customer
             </a>
           </li>
 
           <li>
-            <a href="{{ route('customers.index') }}" class="sub-link {{ isActive('sr.customers.index') }}">
+            <a href="{{ route('customers.index') }}" class="sub-link {{ isActive('customers.index') }}">
               <i class="fas fa-users-cog me-1"></i> Manage Customers
             </a>
           </li>
+        </ul>
+      </li>
+
+
+      <!-- Customers -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('sr.order.*') }}">
+          <i class="fas fa-user-tie"></i>
+          <span>Order</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('sr.order.*') }}">
+          <li>
+            <a href="{{ route('sr.order.create') }}" class="sub-link {{ isActive('sr.order.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Create Order
+            </a>
+          </li>
+
+          {{-- <li>
+            <a href="{{ route('sr.order.index') }}" class="sub-link {{ isActive('sr.order.index') }}">
+              <i class="fas fa-users-cog me-1"></i> All Orders
+            </a>
+          </li> --}}
         </ul>
       </li>
 

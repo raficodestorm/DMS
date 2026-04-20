@@ -6,9 +6,7 @@
   <div class="card-header">
     <h2>Stock-In Requests</h2>
     <p>Manage your all Stock-In Requests</p>
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    @include('components.alert')
   </div>
 
   <div class="table-wrapper">

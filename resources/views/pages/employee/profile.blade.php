@@ -362,7 +362,7 @@
       <div class="employee-statement">
         <p class="statement-text">
           "This pass certifies that <strong>{{ $employee->name }}</strong> is a verified professional of
-          <strong>R.Electric</strong>.
+          <strong>{{ config('app.name') }}</strong>.
           Dedicated to high-performance engineering and operational excellence,
           this team member plays a vital role in our mission to lead the industry."
         </p>

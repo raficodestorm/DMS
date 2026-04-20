@@ -44,7 +44,7 @@
         <div class="statement">
             <p class="statement-text">
                 "<strong>{{ $customer->shop_name }}</strong> is a verified customer of
-                <strong>R.Electric</strong>."
+                <strong>{{ config('app.name') }}</strong>."
             </p>
         </div>
     </div>

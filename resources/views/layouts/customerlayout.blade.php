@@ -4,11 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R.Electric</title>
+  <title>{{ config('app.name') }}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/buttons.css') }}">
   <link rel="stylesheet" href="{{ asset('css/sidenavbar.css') }}">
   <link rel="stylesheet" href="{{ asset('css/crud.css') }}">
   <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
@@ -21,7 +22,7 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">R.Electric</div>
+    <div class="sidebar-brand">{{ config('app.name') }}</div>
 
     <ul class="nav-menu">
 

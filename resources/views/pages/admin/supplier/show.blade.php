@@ -40,7 +40,7 @@
         <div class="statement">
             <p class="statement-text">
                 "<strong>{{ $supplier->company_name }}</strong> is a verified supplier of
-                <strong>R.Electric</strong>.
+                <strong>{{ config('app.name') }}</strong>.
             </p>
         </div>
     </div>

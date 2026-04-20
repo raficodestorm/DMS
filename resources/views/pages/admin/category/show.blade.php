@@ -28,7 +28,7 @@
         <div class="statement">
             <p class="statement-text">
                 "<strong>{{ $category->name }}</strong> is a verified category of
-                <strong>R.Electric</strong>.
+                <strong>{{ config('app.name') }}</strong>.
                 This category plays a vital role in our mission to lead the industry."
             </p>
         </div>

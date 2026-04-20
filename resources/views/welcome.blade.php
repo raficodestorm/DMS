@@ -461,10 +461,10 @@ TRUST
 
         <div class="about-card">
 
-          <h3 class="about-title">About R.Electric</h3>
+          <h3 class="about-title">About {{ config('app.name') }}</h3>
 
           <p class="about-text">
-            R.Electric is a trusted electrical product supplier providing both
+            {{ config('app.name') }} is a trusted electrical product supplier providing both
             <strong>wholesale and retail sales</strong>. We supply high-quality electrical
             items including lighting, switches, wiring accessories, and professional
             tools for homes, shops, and industrial use.
@@ -473,7 +473,7 @@ TRUST
           <p class="about-text">
             Our goal is to deliver reliable products at the best price while ensuring
             excellent customer service. With years of experience in the electrical
-            market, R.Electric has built strong trust among electricians, contractors,
+            market, {{ config('app.name') }} has built strong trust among electricians, contractors,
             and homeowners.
           </p>
 
@@ -495,7 +495,7 @@ TRUST
             </div>
             <div>
               <i class="fas fa-user about-icon"></i>
-              Owner: MD Sarwar Dossa
+              Owner: MD Sarwar Hossain
             </div>
 
           </div>

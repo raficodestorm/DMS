@@ -5,15 +5,7 @@
 <div class="container justify-center">
     <div class="form-card">
         <h2>Add New Customer</h2>
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
+        @include('components.alert')
 
         <form class="adduser-form" method="POST" action="{{ route('customers.store') }}" enctype="multipart/form-data">
             @csrf

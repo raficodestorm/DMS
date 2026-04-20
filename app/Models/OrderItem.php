@@ -15,4 +15,8 @@ class OrderItem extends Model
         'discount_amount',
         'net_total',
     ];
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

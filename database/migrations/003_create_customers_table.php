@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('manager');
             $table->string('phone');
             $table->longText('address');
-            $table->foreignId('branch_id')->nullable()->constrained('branches');
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->decimal('due', 10, 2)->default(0);
             $table->timestamps();
         });
     }

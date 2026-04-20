@@ -7,12 +7,10 @@
         <h2>All Customers</h2>
         <p>Manage all registered Customers</p>
     </div>
+    @include('components.alert')
     <div style="margin: 15px 0;">
         <input type="text" id="search" class="input-form" placeholder="Search by Name or ID...">
     </div>
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
     <div class="table-wrapper">
         <table>
             <thead>

@@ -69,7 +69,7 @@
 </style>
 
 <div class="show-card">
-
+  @include('components.alert')
   <div class="content-area">
     <h1 class="show-name">{{ $employee->name }}</h1>
 
@@ -88,7 +88,7 @@
     <div class="statement">
       <p class="statement-text">
         "This pass certifies that <strong>{{ $employee->name }}</strong> is a verified professional of
-        <strong>R.Electric</strong>."
+        <strong>{{ config('app.name') }}</strong>."
       </p>
     </div>
   </div>

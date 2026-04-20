@@ -4,9 +4,7 @@
 <div class="manage-card">
 
   <div class="card-header">
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    @include('components.alert')
     <h2>All SR-Users</h2>
     <p>Manage all registered srs</p>
   </div>

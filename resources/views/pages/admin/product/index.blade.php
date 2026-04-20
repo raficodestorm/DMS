@@ -6,9 +6,7 @@
     <div class="card-header">
         <h2>All Products</h2>
         <p>Manage all registered products</p>
-        @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+        @include('components.alert')
     </div>
 
     <div class="table-wrapper">

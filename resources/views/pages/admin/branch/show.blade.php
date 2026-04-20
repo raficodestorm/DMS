@@ -32,7 +32,7 @@
         <div class="statement">
             <p class="statement-text">
                 "<strong>{{ $branch->name }}</strong> is a verified branch of
-                <strong>R.Electric</strong>.
+                <strong>{{ config('app.name') }}</strong>.
                 This branch plays a vital role in our mission to lead the industry."
             </p>
         </div>

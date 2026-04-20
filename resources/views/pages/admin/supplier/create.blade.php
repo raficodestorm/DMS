@@ -5,7 +5,7 @@
 <div class="container justify-center">
     <div class="form-card">
         <h2>Add Supplier</h2>
-
+        @include('components.alert')
         <form class="adduser-form" method="POST" action="{{ route('admin.suppliers.store') }}">
             @csrf
 

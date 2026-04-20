@@ -6,15 +6,7 @@
     <div class="form-card">
         <h2>Edit Employee</h2>
         <h4>ID : BRE100{{ $employee->id }}</h4>
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
+        @include('components.alert')
 
         <form class="adduser-form" method="POST" action="{{ route('admin.employees.update', $employee->id) }}"
             enctype="multipart/form-data">
