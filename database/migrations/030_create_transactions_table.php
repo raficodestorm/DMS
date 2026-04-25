@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->foreignId('order_id')->nullable()->constrained('orders')->cascadeOnDelete();
+            $table->foreignId('sr_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->enum('type', ['pay', 'buy']);
             $table->decimal('amount', 10, 2);
             $table->decimal('due', 10, 2);
+            $table->enum('status', ['pending', 'complete']);
             $table->text('note')->nullable();
             $table->timestamps();
         });

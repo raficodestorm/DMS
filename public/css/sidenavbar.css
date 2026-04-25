@@ -10,7 +10,9 @@ body {
     
         /* --- SIDEBAR STYLES --- */
         .sidebar {
-            width: 220px;
+            min-width: 220px;
+            max-width: 240px;
+            width: fit-content;
             background-color: var(--section-bg);
             height: 100vh;
             position: fixed;
@@ -140,7 +142,7 @@ body {
         }
 
         .nav-item.open .sub-menu {
-            max-height: 200px;
+            max-height: 300px;
         }
 
         .nav-item.open .arrow {

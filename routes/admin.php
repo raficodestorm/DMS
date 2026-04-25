@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\OfferController;
+use App\Http\Controllers\Admin\OrderAdminController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -37,6 +40,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::resource('categories', CategoryController::class);
   Route::resource('costs', CostController::class);
   Route::resource('products', ProductController::class);
+  Route::resource('offers', OfferController::class);
   Route::resource('suppliers', SupplierController::class);
 
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForAdmin'])->name('stock.in.requests.index');
@@ -54,9 +58,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   // নির্দিষ্ট ব্রাঞ্চ বা টোটাল কোম্পানির ডিটেইল ভিউ
   Route::get('/stock/branch/{branch_id?}', [StockController::class, 'specificStock'])->name('stocks.specific');
 
-  Route::get('/orders', [OrderController::class, 'indexForPendingAdmin'])->name('order.pending.index');
+  Route::get('/orders', [OrderAdminController::class, 'indexForAllAdmin'])->name('order.index');
+  Route::get('/orders/pending', [OrderAdminController::class, 'indexForPendingAdmin'])->name('order.pending.index');
+  Route::get('/orders/allsrs', [OrderAdminController::class, 'allSrOrders'])->name('order.all.srs');
+  Route::get('/orders/allbranches', [OrderAdminController::class, 'allBranchOrders'])->name('order.all.branches');
+  Route::get('/orders/allcustomer', [OrderAdminController::class, 'allCustomerOrders'])->name('order.all.customers');
+  Route::get('orders/specific/{id}', [OrderAdminController::class, 'specificSrOrders'])->name('order.specific.sr');
+  Route::get('orders/specific/customer/{id}', [OrderAdminController::class, 'specificCustomerOrders'])->name('order.specific.customer');
+  Route::get('orders/specific/branch/{id}', [OrderAdminController::class, 'specificBranchOrders'])->name('order.specific.branch');
   // Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
   Route::get('/orders/{order}/show', [OrderController::class, 'showForAdmin'])->name('order.show');
   Route::patch('/orders/approve/{order}', [OrderController::class, 'approve'])->name('order.approve');
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
+
+  Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
+
+
+  Route::get('/payments', [PaymentController::class, 'indexForAdmin'])->name('payments.index');
+  Route::post('/payments/{payment}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
+
+  // Admin chaitile shob role-er payment delete o korte parbe
+  Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+  Route::get('/payments/show/{payment}', [PaymentController::class, 'showForAdmin'])->name('payments.show');
 });

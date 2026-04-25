@@ -1,4 +1,4 @@
-@extends('layouts.managerlayout')
+@extends(getLayout())
 
 @section('content')
 
@@ -72,11 +72,15 @@
 
   .invoice-table th,
   .invoice-table td {
-    border: 1px solid var(--border-color);
+    border: 1px solid #08111b;
     padding: 8px;
     font-size: 13px;
     word-break: break-word;
     white-space: normal;
+  }
+
+  .invoice-table td {
+    color: #08111b;
   }
 
   .invoice-table thead th {
@@ -166,7 +170,7 @@
     <div class="invoice-box" id="printArea">
 
       <div class="header">
-        <h1>R Electric</h1>
+        <h1>{{ config('app.name') }}</h1>
         <p>Double Mooring, Chattogram, Bangladesh</p>
 
       </div>
@@ -185,7 +189,7 @@
         <div class="fixed-col-6">
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
-            Order ID: ORS{{ $order->id }}<br>
+            Order ID: BRS{{ $order->id }}<br>
             Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
             Reference (SR): {{ $order->sr->fullname ?? 'N/A' }}
           </div>
@@ -195,12 +199,22 @@
       <div class="table-responsive mb-4 mt-3">
         <table class="invoice-table">
           <colgroup>
+            @if($hasDiscount)
             <col style="width: 8%;">
-            <col style="width: 18%;">
+            <col style="width: 17%;">
             <col style="width: 31%;">
+            <col style="width: 12%;">
+            <col style="width: 9%;">
+            <col style="width: 10%;">
+            <col style="width: 13%;">
+            @else
+            <col style="width: 8%;">
+            <col style="width: 19%;">
+            <col style="width: 32%;">
             <col style="width: 15%;">
             <col style="width: 10%;">
-            <col style="width: 18%;">
+            <col style="width: 16%;">
+            @endif
           </colgroup>
           <thead>
             <tr>
@@ -225,8 +239,8 @@
               <td>{{ number_format($item->price,2) }} ৳</td>
               <td>{{ $item->quantity }}</td>
               @if($hasDiscount)
-              <td>
-                {{ $item->discount > 0 ? number_format($item->discount,2).' ৳' : '-' }}
+              <td style="color: #dc2626;">
+                {{ $item->discount_amount > 0 ? number_format($item->discount_amount,2).' ৳' : '-' }}
               </td>
               @endif
               <td style="text-align: right;">{{ number_format($item->net_total,2) }} ৳</td>
@@ -257,11 +271,11 @@
             <div class="summary-table">
               <div class="summary-row">
                 <span>Total Amount:</span>
-                <span>{{ number_format($order->net_total + $order->total_discount,2) }} ৳</span>
+                <span>{{ number_format($order->net_total + $order->discount_amount,2) }} ৳</span>
               </div>
               <div class="summary-row" style="color: #dc2626;">
                 <span>Discount:</span>
-                <span>- {{ number_format($order->total_discount,2) }} ৳</span>
+                <span>- {{ number_format($order->discount_amount,2) }} ৳</span>
               </div>
               <div class="summary-row total-payable">
                 <span>Net Payable:</span>
@@ -280,7 +294,8 @@
 
 
       <div class="footer-note">
-        Software Developed by S A Rafi | Software Solutions | Contact: 01877100096
+        www.relectric.com </br>
+        Software Developed & Maintained by S A Rafi | Contact: 01877100096
       </div>
 
     </div>
@@ -329,7 +344,7 @@
 
     const opt = {
         margin: [2, 1, 2, 3],
-        filename: 'Invoice_ORS{{ $order->id }}.pdf',
+        filename: 'Invoice_BRS{{ $order->id }}.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 

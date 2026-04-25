@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Manager\EmployeeController;
+use App\Http\Controllers\Manager\OrderManagerController;
 use App\Http\Controllers\Manager\UserManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
@@ -40,17 +42,29 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/stock', [StockController::class, 'managerIndex'])->name('stock.index');
 
   Route::get('/get-product-data/{id}', [OrderController::class, 'getProductData']);
-  Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
-  Route::get('/orders/show/{order}', [OrderController::class, 'showForManager'])->name('order.show');
+  Route::get('/orders', [OrderManagerController::class, 'index'])->name('order.index');
+  Route::get('/orders/show/{order}', [OrderManagerController::class, 'showForManager'])->name('order.show');
   Route::get('/orders/edit/{order}', [OrderController::class, 'edit'])->name('order.edit');
   Route::put('/orders/update/{order}', [OrderController::class, 'update'])->name('order.update');
-  Route::patch('/orders/sendToAdmin/{order}', [OrderController::class, 'sendToAdmin'])->name('order.sendToAdmin');
+  Route::patch('/orders/sendToAdmin/{order}', [OrderManagerController::class, 'sendToAdmin'])->name('order.sendToAdmin');
 
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
-  Route::delete('/orders/destroy/{order}', [OrderController::class, 'destroy'])->name('order.destroy');
+  Route::delete('/orders/destroy/{order}', [OrderManagerController::class, 'destroy'])->name('order.destroy');
 
-  Route::get('/order/invoice/{order}', [OrderController::class, 'confirmAndInvoice'])->name('order.confirm');
+  Route::get('/orders/allsrs', [OrderManagerController::class, 'allSrOrders'])->name('order.all.srs');
+  Route::get('/orders/allcustomer', [OrderManagerController::class, 'allCustomerOrders'])->name('order.all.customers');
+  Route::get('order/specific/{id}', [OrderManagerController::class, 'specificSrOrders'])->name('order.specific.sr');
+  Route::get('/specific/{id}', [OrderManagerController::class, 'specificCustomerOrders'])->name('order.specific.customer');
+  Route::get('/order/invoice/{order}', [OrderManagerController::class, 'confirmAndInvoice'])->name('order.confirm');
 
-  // এটি শুধুমাত্র ইনভয়েস দেখার জন্য
+
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
+
+
+  Route::get('/payments', [PaymentController::class, 'indexForManager'])->name('payments.index');
+  Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+  Route::post('/payments', [PaymentController::class, 'managerStore'])->name('payments.store');
+  Route::get('/payments/show/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+  Route::post('/payments/{payment}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
+  Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 });

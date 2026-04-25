@@ -21,4 +21,12 @@ class Branch extends Model
     {
         return $this->hasMany(Stock::class);
     }
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'branch_id');
+    }
+    public function users()
+    {
+        return $this->hasMany(User::class, 'branch_id');
+    }
 }

@@ -242,6 +242,10 @@
     <a href="{{ route('manager.order.confirm', $order->id) }}" class="btn-smart btn-green">
       <i class="fas fa-file-invoice"></i> Confirm Order & Generate Invoice
     </a>
+
+    <a href="{{ route('manager.order.edit', $order->id) }}" class="btn-smart btn-blue">
+      <i class="fas fa-edit"></i> Edit
+    </a>
     @endif
   </div>
 </div>

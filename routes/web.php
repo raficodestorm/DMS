@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +32,8 @@ Route::get('/notifications/{id}/mark-as-read', function ($id) {
 
 
 Route::get('/our/employee/{id}', [EmployeeController::class, 'see'])->name('relectric.employee');
+
+Route::get('/payments/proof/{payment}', [PaymentController::class, 'publicShow'])->name('payments.show.public');
 
 // dashboards (protected)
 Route::middleware(['auth'])->group(function () {
@@ -64,6 +67,8 @@ Route::middleware(['auth'])->group(function () {
     })->name('settings');
 
     Route::resource('customers', CustomerController::class);
+
+    Route::get('/payments/{payment}/slip', [PaymentController::class, 'viewSlip'])->name('payments.slip');
 });
 
 
@@ -73,4 +78,5 @@ require __DIR__ . '/manager.php';
 require __DIR__ . '/admin.php';
 require __DIR__ . '/manager.php';
 require __DIR__ . '/sr.php';
+require __DIR__ . '/customer.php';
 require __DIR__ . '/channels.php';

@@ -266,9 +266,11 @@
     <h3 style="color: var(--primary); font-weight: 800;">Net Total: {{ number_format($order->net_total, 2) }} ৳</h3>
   </div>
 
-  {{-- 🔘 Button Logic Based on Status --}}
+
   <div class="action-bar">
+
     @if($order->status == 'pending_manager')
+
     <form action="{{ route('admin.order.reject', $order->id) }}" method="POST">
       @csrf @method('PATCH')
       <button type="submit" class="btn-smart btn-reject" onclick="return confirm('Reject this order?')">
@@ -283,13 +285,18 @@
       </button>
     </form>
 
+    @elseif($order->status == 'complete' || $order->status == 'delivered')
+    <a href="{{ route('admin.order.view_invoice', $order->id) }}" class="btn-smart btn-green">
+      <i class="fas fa-file-invoice"></i>Invoice
+    </a>
+
     @endif
   </div>
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
-  <a href="{{ route('admin.order.pending.index') }}" style="color: var(--text-muted); text-decoration: none;">
-    <i class="fas fa-arrow-left"></i> Back to List
+  <a href="{{ route('dashboards') }}" style="color: var(--text-muted); text-decoration: none;">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
   </a>
 </div>
 @endsection

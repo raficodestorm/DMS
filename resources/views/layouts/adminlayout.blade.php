@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ config('app.name') }}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <script>
-    window.userId = {{ auth()->id() ?? 'null' }};
-  </script>
+
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
@@ -165,11 +163,43 @@
           <li>
             <a href="{{ route('admin.order.pending.index') }}"
               class="sub-link {{ isActive('admin.order.pending.index') }}">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> Pending orders
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.order.index') }}" class="sub-link {{ isActive('admin.order.index') }}">
               <i class="fa-solid fa-boxes-stacked me-1"></i> All orders
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('admin.order.all.customers') }}"
+              class="sub-link {{ isActive('admin.order.all.customers') }}">
+              <i class="fas fa-user-plus me-1"></i> Cust based orders
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.order.all.srs') }}" class="sub-link {{ isActive('admin.order.all.srs') }}">
+              <i class="fas fa-user-plus me-1"></i> Sr based orders
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.order.all.branches') }}"
+              class="sub-link {{ isActive('admin.order.all.branches') }}">
+              <i class="fas fa-user-plus me-1"></i> Branch based orders
+            </a>
+          </li>
+
         </ul>
+      </li>
+
+      <li class="nav-item">
+        <a href="{{ route('admin.payments.index') }}" class="nav-link {{ isActive('admin.payments.index') }}">
+          <i class="fas fa-users-cog"></i> Transactions
+        </a>
       </li>
 
       <!-- category -->
@@ -244,6 +274,34 @@
 
         </ul>
       </li>
+
+
+
+      <!-- Products -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
+          <i class="fa-solid fa-box"></i>
+          <span>Offer</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.offers.*') }}">
+          <li>
+            <a href="{{ route('admin.offers.create') }}" class="sub-link {{ isActive('admin.offers.create') }}">
+              <i class="fa-solid fa-plus me-1"></i> Create Offer
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.offers.index') }}" class="sub-link {{ isActive('admin.offers.index') }}">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> All Offers
+            </a>
+          </li>
+
+        </ul>
+      </li>
+
+
 
     </ul>
 
@@ -493,6 +551,7 @@ function toggleTheme() {
 
 
   <script>
+    window.userId = {{ auth()->id() ?? 'null' }};
     // Notification dropdown
     function toggleNotifDropdown(event) {
 

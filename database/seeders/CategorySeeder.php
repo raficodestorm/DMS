@@ -35,6 +35,22 @@ class CategorySeeder extends Seeder
                 'name' => 'Switch',
                 'description' => 'This is valid category of RElectric',
             ],
+            [
+                'name' => 'Board',
+                'description' => 'This is valid category of RElectric',
+            ],
+            [
+                'name' => 'Plug',
+                'description' => 'This is valid category of RElectric',
+            ],
+            [
+                'name' => 'Socket',
+                'description' => 'This is valid category of RElectric',
+            ],
+            [
+                'name' => 'Log',
+                'description' => 'This is valid category of RElectric',
+            ],
         ];
 
         foreach ($categories as $category) {

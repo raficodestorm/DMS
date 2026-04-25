@@ -128,11 +128,47 @@
         <ul class="sub-menu" style="{{ isOpen('manager.order.*') }}">
           <li>
             <a href="{{ route('manager.order.index') }}" class="sub-link {{ isActive('manager.order.index') }}">
-              <i class="fas fa-user-plus me-1"></i> My orders
+              <i class="fas fa-user-plus me-1"></i> My all orders
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.order.all.customers') }}"
+              class="sub-link {{ isActive('manager.order.all.customers') }}">
+              <i class="fas fa-user-plus me-1"></i> Cust based orders
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.order.all.srs') }}" class="sub-link {{ isActive('manager.order.all.srs') }}">
+              <i class="fas fa-user-plus me-1"></i> Sr based orders
             </a>
           </li>
         </ul>
 
+      </li>
+
+      <!-- payments -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('manager.payments.*') }}">
+          <i class="fas fa-user-tie"></i>
+          <span>Payments</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('manager.payments.*') }}">
+          <li>
+            <a href="{{ route('manager.payments.create') }}" class="sub-link {{ isActive('manager.payments.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Make Payment
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.payments.index') }}" class="sub-link {{ isActive('manager.payments.index') }}">
+              <i class="fas fa-users-cog me-1"></i> All payments
+            </a>
+          </li>
+        </ul>
       </li>
 
     </ul>
@@ -373,7 +409,10 @@
 })(window, document);
   </script>
 
+
+
   <script>
+    window.userId = {{ auth()->id() ?? 'null' }};
     // Notification dropdown
     function toggleNotifDropdown(event) {
 
@@ -408,7 +447,6 @@ document.addEventListener('click', function (e) {
         return "Just now";
     }
 
-    // ২. প্রতি ১ মিনিটে সব নোটিফিকেশন টাইম আপডেট করার ফাংশন
     function updateNotifTimes() {
         document.querySelectorAll('.notif-time').forEach(el => {
             const timestamp = el.getAttribute('data-timestamp');
@@ -418,7 +456,6 @@ document.addEventListener('click', function (e) {
         });
     }
 
-    // প্রতি ৬০ সেকেন্ডে রান করবে
     setInterval(updateNotifTimes, 60000);
 
     document.addEventListener('DOMContentLoaded', function () {

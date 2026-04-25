@@ -26,7 +26,7 @@ class UserManagementController extends Controller
     $customers = User::with('branch')
       ->where('role', 'customer')
       ->where('branch_id', $branchId)
-      ->latest() // cleaner than orderBy
+      ->latest()
       ->paginate(20);
 
     return view('pages.sr.users.index-customer', [

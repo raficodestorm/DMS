@@ -95,11 +95,44 @@
             </a>
           </li>
 
-          {{-- <li>
+          <li>
             <a href="{{ route('sr.order.index') }}" class="sub-link {{ isActive('sr.order.index') }}">
               <i class="fas fa-users-cog me-1"></i> All Orders
             </a>
-          </li> --}}
+          </li>
+
+          <li>
+            <a href="{{ route('sr.order.all') }}" class="sub-link {{ isActive('sr.order.all') }}">
+              <i class="fas fa-users-cog me-1"></i> Customers Orders
+            </a>
+          </li>
+        </ul>
+      </li>
+
+
+
+      <!-- Payment -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('sr.payments.*') }}">
+          <i class="fas fa-user-tie"></i>
+          <span>payments</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('sr.payments.*') }}">
+          <li>
+            <a href="{{ route('sr.payments.create') }}" class="sub-link {{ isActive('sr.payments.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Create payment
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('sr.payments.index') }}" class="sub-link {{ isActive('sr.payments.index') }}">
+              <i class="fas fa-users-cog me-1"></i> All paymentss
+            </a>
+          </li>
+
+
         </ul>
       </li>
 
