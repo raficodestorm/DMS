@@ -3,15 +3,16 @@
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DeductionController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\OrderAdminController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::resource('costs', CostController::class);
   Route::resource('products', ProductController::class);
   Route::resource('offers', OfferController::class);
+  Route::resource('deductions', DeductionController::class);
   Route::resource('suppliers', SupplierController::class);
 
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForAdmin'])->name('stock.in.requests.index');

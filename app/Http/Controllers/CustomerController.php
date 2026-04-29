@@ -33,18 +33,18 @@ class CustomerController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'table' => view('pages.customer.table', compact('customers'))->render(),
-                'mobile' => view('pages.customer.mtable', compact('customers'))->render(),
+                'table' => view('pages.common.customer.table', compact('customers'))->render(),
+                'mobile' => view('pages.common.customer.mtable', compact('customers'))->render(),
             ]);
         }
 
-        return view('pages.customer.index', compact('customers'));
+        return view('pages.common.customer.index', compact('customers'));
     }
 
     public function create()
     {
         $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.customer.create', compact('branches'));
+        return view('pages.common.customer.create', compact('branches'));
     }
 
     public function store(Request $request)
@@ -65,13 +65,13 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        return view('pages.customer.show', compact('customer'));
+        return view('pages.common.customer.show', compact('customer'));
     }
 
     public function edit(Customer $customer)
     {
         $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.customer.edit', compact('customer', 'branches'));
+        return view('pages.common.customer.edit', compact('customer', 'branches'));
     }
 
     public function update(Request $request, Customer $customer)

@@ -102,6 +102,7 @@ class OrderSrController extends Controller
   public function create()
   {
     $branchId = auth()->user()->branch_id;
+    $deductionSettings = \DB::table('deductions')->where('type', 'main')->first();
     $customers = Customer::orderBy('shop_name', 'asc')->where('branch_id', $branchId)->get();
 
     $products = Stock::with('product')
@@ -118,7 +119,7 @@ class OrderSrController extends Controller
         ];
       });
 
-    return view('pages.sr.order.create', compact('customers', 'products'));
+    return view('pages.sr.order.create', compact('customers', 'products', 'deductionSettings'));
   }
 
   // discount check
@@ -159,25 +160,39 @@ class OrderSrController extends Controller
           ->where('role', 'manager')
           ->first();
 
+        // Get deduction percentage for audit
+        $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
+        $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
+        $customRate = $request->applied_custom_deduction ?? 0;
+        $totalDeductionPercent = $globalRate + $customRate;
+
         $order = Order::create([
           'customer_id'     => $request->customer_id,
           'sr_id'           => $user->id,
-          'manager_id'      => $manager ? $manager->id : null,
+          'manager_id'      => $manager->id,
           'status'          => 'pending_sr',
-          'discount_amount' => $request->total_discount ?? 0,
+          'special_discount' => $request->special_discount ?? 0,
+          'discount_amount' => $request->total_discount,
           'net_total'       => $request->net_total,
+          'applied_deduction_percent' => $totalDeductionPercent,
           'note'            => $request->note
         ]);
 
         foreach ($request->products as $item) {
+
+          $basePrice = $item['price'];
+          $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
+          $sellingRate = $basePrice - $deductionAmount;
+
           OrderItem::create([
-            'order_id'        => $order->id,
-            'product_id'      => $item['product_id'],
-            'quantity'        => $item['qty'],
-            'price'           => $item['price'],
-            'total'           => $item['qty'] * $item['price'],
-            'discount_amount' => $item['discount'] ?? 0,
-            'net_total'       => ($item['price'] * $item['qty']) - (($item['discount'] ?? 0) * $item['qty'])
+            'order_id'              => $order->id,
+            'product_id'            => $item['product_id'],
+            'quantity'              => $item['qty'],
+            'price'                 => $basePrice,
+            'unit_deduction_amount' => $deductionAmount,
+            'selling_rate'          => $sellingRate,
+            'discount_amount'       => $item['discount'] ?? 0, // Offer discount
+            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
           ]);
         }
 

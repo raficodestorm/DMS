@@ -17,8 +17,10 @@ return new class extends Migration
             $table->foreignId('sr_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('manager_id')->constrained('users')->cascadeOnDelete();
             $table->enum('status', ['pending_sr', 'pending_manager', 'approved', 'rejected', 'complete', 'delivered']);
+            $table->decimal('special_discount', 10, 2)->default(0)->nullable();
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->decimal('net_total', 10, 2);
+            $table->decimal('applied_deduction_percent', 10, 2)->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
         });

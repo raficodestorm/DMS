@@ -11,9 +11,10 @@ class Order extends Model
         'sr_id',
         'manager_id',
         'status',
-        'total',
+        'special_discount',
         'discount_amount',
         'net_total',
+        'applied_deduction_percent',
         'note',
     ];
     public function customer()

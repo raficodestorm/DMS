@@ -24,12 +24,12 @@
                 </tr>
             </thead>
             <tbody class="desktop-table" id="customerTable">
-                @include('pages.customer.table')
+                @include('pages.common.customer.table')
             </tbody>
         </table>
     </div>
     <div class="manage-mobile-cards" id="customerMobile">
-        @include('pages.customer.mtable')
+        @include('pages.common.customer.mtable')
     </div>
 
 

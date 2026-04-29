@@ -277,7 +277,7 @@
 
 
 
-      <!-- Products -->
+      <!-- offer -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
           <i class="fa-solid fa-box"></i>
@@ -295,6 +295,31 @@
           <li>
             <a href="{{ route('admin.offers.index') }}" class="sub-link {{ isActive('admin.offers.index') }}">
               <i class="fa-solid fa-boxes-stacked me-1"></i> All Offers
+            </a>
+          </li>
+
+        </ul>
+      </li>
+
+
+      <!-- deductin -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
+          <i class="fa-solid fa-box"></i>
+          <span>Deduction</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.deductions.*') }}">
+          <li>
+            <a href="{{ route('admin.deductions.create') }}" class="sub-link {{ isActive('admin.deductions.create') }}">
+              <i class="fa-solid fa-plus me-1"></i> Create Deduction
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.deductions.index') }}" class="sub-link {{ isActive('admin.deductions.index') }}">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> All Deductions
             </a>
           </li>
 

@@ -167,7 +167,7 @@ class PaymentController extends Controller
       ->paginate(20);
 
     return view(
-      'pages.customerpanel.payment.index',
+      'pages.customer.payment.index',
       compact('payments')
     );
   }
@@ -421,13 +421,6 @@ class PaymentController extends Controller
     $payment->load(['customer', 'sr']);
 
     return view('pages.' . auth()->user()->role . '.payment.show', compact('payment'));
-  }
-
-  public function showForCust(Transaction $payment)
-  {
-    $payment->load(['customer', 'sr']);
-
-    return view('pages.customerpanel.payment.show', compact('payment'));
   }
 
   public function showForAdmin(Transaction $payment)

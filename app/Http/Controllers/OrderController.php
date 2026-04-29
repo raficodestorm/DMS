@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Deduction;
 use App\Models\Offer;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -75,7 +76,7 @@ class OrderController extends Controller
 
   public function edit($id)
   {
-    $order = Order::with(['items.product', 'customer'])->findOrFail($id);
+    $order = Order::with(['items.product.stock', 'customer'])->findOrFail($id);
 
     if ($order->sr->branch_id != auth()->user()->branch_id) {
       return redirect()->back()->with('error', 'Unauthorized access.');
@@ -83,6 +84,9 @@ class OrderController extends Controller
 
     $branchId = auth()->user()->branch_id;
     $customers = Customer::orderBy('shop_name', 'asc')->where('branch_id', $branchId)->get();
+
+    // আপনার দেওয়া পদ্ধতি (নিরাপদ ভার্সন)
+    $deductionSettings = Deduction::first();
 
     $products = Stock::with('product')
       ->where('branch_id', $branchId)
@@ -98,7 +102,7 @@ class OrderController extends Controller
         ];
       });
 
-    return view("pages." . auth()->user()->role . ".order.edit", compact('order', 'customers', 'products'));
+    return view("pages." . auth()->user()->role . ".order.edit", compact('order', 'customers', 'products', 'deductionSettings'));
   }
 
 
@@ -116,25 +120,37 @@ class OrderController extends Controller
     }
 
     try {
-      DB::transaction(function () use ($request, $order) {
 
+      DB::transaction(function () use ($request, $order) {
+        // Get deduction percentage for audit
+        $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
+        $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
+        $customRate = $request->applied_custom_deduction ?? 0;
+        $totalDeductionPercent = $globalRate + $customRate;
         $order->update([
-          'customer_id'    => $request->customer_id,
-          'total_discount' => $request->total_discount ?? 0,
-          'net_total'      => $request->net_total,
-          'status'      => 'pending_sr',
+          'status'          => 'pending_sr',
+          'special_discount' => $request->special_discount ?? 0,
+          'discount_amount' => $request->total_discount,
+          'net_total'       => $request->net_total,
+          'applied_deduction_percent' => $totalDeductionPercent,
         ]);
 
         $order->items()->delete();
         foreach ($request->products as $item) {
 
-          $order->items()->create([
-            'product_id'      => $item['product_id'],
-            'quantity'        => $item['qty'],
-            'price'           => $item['price'],
-            'total'           => $item['qty'] * $item['price'],
-            'discount_amount' => $item['discount'] ?? 0,
-            'net_total'       => ($item['price'] * $item['qty']) - (($item['discount'] ?? 0) * $item['qty'])
+          $basePrice = $item['price'];
+          $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
+          $sellingRate = $basePrice - $deductionAmount;
+
+          OrderItem::create([
+            'order_id'              => $order->id,
+            'product_id'            => $item['product_id'],
+            'quantity'              => $item['qty'],
+            'price'                 => $basePrice,
+            'unit_deduction_amount' => $deductionAmount,
+            'selling_rate'          => $sellingRate,
+            'discount_amount'       => $item['discount'] ?? 0, // Offer discount
+            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
           ]);
         }
       });
@@ -182,11 +198,22 @@ class OrderController extends Controller
       return $item->product->category->name ?? 'General';
     });
 
-    $hasDiscount = $items->sum('discount_amount') > 0;
+    $hasDiscount = $items->contains(function ($item) {
+      return (float) $item->discount_amount > 0;
+    });
+
+    // Current order transaction বের করো
+    $transaction = Transaction::where('order_id', $order->id)
+      ->where('type', 'buy')
+      ->latest()
+      ->first();
+
+    $currentDue = $transaction?->due ?? $order->customer->due;
+    $previousDue = max(0, $currentDue - $order->net_total);
 
     $customerData = [
       'details' => $order->customer,
-      'previous_due' => max(0, $order->customer->due - $order->net_total)
+      'previous_due' => $previousDue
     ];
 
     return view("pages.manager.order.invoice", compact(

@@ -131,6 +131,11 @@
       <label>Order Date</label>
       <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
     </div>
+
+    <div class="info-item">
+      <label>Deduction</label>
+      <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
+    </div>
   </div>
 
   <h4 style="color:var(--text-muted); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px;">
@@ -142,7 +147,8 @@
         <tr>
           <th>S.No</th>
           <th>Product Name</th>
-          <th>Rate</th>
+          <th>Base price</th>
+          <th>Final price</th>
           <th>Quantity</th>
           <th>Discount</th>
           <th>Subtotal</th>
@@ -154,8 +160,15 @@
           <td>{{ $loop->iteration }}</td>
           <td class="fw-bold">{{ $item->product->name }}</td>
           <td>{{ number_format($item->price, 2) }} ৳</td>
+          <td>{{ number_format($item->selling_rate, 2) }} ৳</td>
           <td>{{ $item->quantity }}</td>
-          <td class="text-danger">-{{ number_format($item->discount_amount, 2) }} ৳</td>
+          <td class="text-danger">
+            @if($item->discount_amount > 0 && $item->selling_rate > 0)
+            ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
+            @else
+            -
+            @endif
+          </td>
           <td class="fw-bold">{{ number_format($item->net_total, 2) }} ৳</td>
         </tr>
         @empty
@@ -174,14 +187,22 @@
         <div><span>Product</span>
           <p>{{ $item->product->name }}</p>
         </div>
-        <div><span>Rate</span>
+        <div><span>Base price</span>
           <p>{{ number_format($item->price, 2) }} ৳</p>
+        </div>
+        <div><span>Final price</span>
+          <p>{{ number_format($item->selling_rate, 2) }} ৳</p>
         </div>
         <div><span>Qty</span>
           <p>{{ $item->quantity }}</p>
         </div>
         <div><span>Discount</span>
-          <p>-{{ number_format($item->discount_amount, 2) }} ৳</p>
+          <p>@if($item->discount_amount > 0 && $item->selling_rate > 0)
+            ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
+            @else
+            -
+            @endif
+          </p>
         </div>
         <div><span>Subtotal</span>
           <p>{{ number_format($item->net_total, 2) }} ৳</p>
@@ -192,7 +213,8 @@
   </div>
 
   <div style="text-align: right; margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-    <p class="mb-1 text-muted">Total Discount: {{ number_format($order->discount_amount, 2) }} ৳</p>
+    <small class="mb-1 text-success">Special Discount: {{ number_format($order->special_discount, 2) }} ৳</small>
+    <p class="mb-1" style="color: red;">Total Discount: {{ number_format($order->discount_amount, 2) }} ৳</p>
     <h3 style="color: var(--primary); font-weight: 800;">Net Total: {{ number_format($order->net_total, 2) }} ৳</h3>
   </div>
 

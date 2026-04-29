@@ -236,11 +236,15 @@
               <td>{{ $sl++ }}</td>
               <td>{{ $item->product->category->name }}</td>
               <td>{{ $item->product->name }}</td>
-              <td>{{ number_format($item->price,2) }} ৳</td>
+              <td>{{ number_format($item->selling_rate,2) }} ৳</td>
               <td>{{ $item->quantity }}</td>
               @if($hasDiscount)
               <td style="color: #dc2626;">
-                {{ $item->discount_amount > 0 ? number_format($item->discount_amount,2).' ৳' : '-' }}
+                @if($item->discount_amount > 0 && $item->selling_rate > 0)
+                ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
+                @else
+                -
+                @endif
               </td>
               @endif
               <td style="text-align: right;">{{ number_format($item->net_total,2) }} ৳</td>
@@ -271,10 +275,16 @@
             <div class="summary-table">
               <div class="summary-row">
                 <span>Total Amount:</span>
-                <span>{{ number_format($order->net_total + $order->discount_amount,2) }} ৳</span>
+                <span>{{ number_format($order->net_total + $order->discount_amount, 2) }} ৳</span>
               </div>
+              @if($order->special_discount > 0)
+              <div class="summary-row" style="color: #dc2626; font-size: small;">
+                <span>Special Discount:</span>
+                <span>- {{ number_format($order->special_discount,2) }} ৳</span>
+              </div>
+              @endif
               <div class="summary-row" style="color: #dc2626;">
-                <span>Discount:</span>
+                <span>Total Discount:</span>
                 <span>- {{ number_format($order->discount_amount,2) }} ৳</span>
               </div>
               <div class="summary-row total-payable">

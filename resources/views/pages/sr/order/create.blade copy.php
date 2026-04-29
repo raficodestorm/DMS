@@ -196,37 +196,16 @@
 </style>
 <div class="container py-4">
   <div class="form-card">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="m-0"><i class="fas fa-shopping-bag text-primary"></i> Create Order</h2>
     </div>
-
     @include('components.alert')
 
     <form method="POST" action="{{ route('sr.order.store') }}" id="orderForm">
       @csrf
 
-      <div class="deduction-control-card p-3 mb-4 border rounded bg-light shadow-sm">
-        <div class="row align-items-center">
-          <div class="col-md-6 mb-2 mb-md-0">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="apply_global" id="applyGlobalDeduction"
-                data-percentage="{{ $deductionSettings->customer_deduction ?? 0 }}">
-              <label class="form-check-label fw-bold" for="applyGlobalDeduction">
-                Apply Standard Deduction ({{ $deductionSettings->customer_deduction ?? 0 }}%)
-              </label>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="input-group">
-              <span class="input-group-text bg-white">Custom Deduction %</span>
-              <input type="number" name="applied_custom_deduction" id="customDeductionRate" class="form-control"
-                placeholder="0.00" step="0.01" min="0" onkeyup="refreshAllCards()">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="customer-section mb-4">
+      <div class="customer-section">
         <label class="form-label fw-bold">Select Shop / Customer</label>
         <select name="customer_id" class="input-form @error('customer_id') is-invalid @enderror" required>
           <option value="">-- Choose Customer --</option>
@@ -246,7 +225,10 @@
         <select id="product-search" class="input-form text-center" onchange="addProductCard(this)">
           <option value="">+ Click to Add Product</option>
           @foreach($products as $p)
-          @php $p = (object)$p; @endphp
+
+          @php
+          $p = (object)$p;
+          @endphp
           <option value="{{ $p->id }}" data-name="{{ $p->name }}" data-stock="{{ $p->available_qty }}"
             data-image-name="{{ $p->image }}">
             {{ $p->name }} (Stock: {{ $p->available_qty }})
@@ -259,13 +241,6 @@
         <div class="row align-items-center summary-cont">
           <div class="col-6">
             <p class="mb-1 opacity-75">Total Items: <span id="itemCount">0</span></p>
-
-            <div class="input-group input-group-sm mt-2" style="max-width: 200px;">
-              <span class="input-group-text bg-warning text-dark border-warning">Special Disc</span>
-              <input type="number" name="special_discount" id="specialDiscountInput" class="form-control border-warning"
-                placeholder="0.00" step="0.01" min="0" oninput="calculateTotal()">
-            </div>
-
             <p class="mb-0 opacity-75">Total Discount: <span id="totalDiscount">0.00</span> TK</p>
           </div>
           <div class="col-6 text-end">
@@ -277,7 +252,6 @@
         </div>
         <input type="hidden" name="net_total" id="netTotalInput">
         <input type="hidden" name="total_discount" id="totalDiscountInput">
-        {{-- <input type="hidden" name="applied_custom_deduction" id="hiddenCustomDeduction"> --}}
       </div>
 
       <button type="submit" class="btn-submit w-100 mt-4 py-3 shadow-lg">
@@ -291,27 +265,6 @@
 @push('scripts')
 <script>
   let index = 0;
-  
-$(document).ready(function() {
-    
-    $('#applyGlobalDeduction').on('change', function() {
-        refreshAllCards();
-    });
-
-    
-    $('#customDeductionRate').on('input', function() {
-        $('#hiddenCustomDeduction').val($(this).val());
-        refreshAllCards();
-    });
-});
-
-function refreshAllCards() {
-    
-    $('.qty-input').each(function() {
-        calculateCard(this);
-    });
-}
-
 
 function addProductCard(el) {
     let productId = $(el).val();
@@ -334,28 +287,17 @@ function addProductCard(el) {
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff`;
 
     $.get(`/sr/get-product-data/${productId}`, function(data) {
+        let disc = data.discount_type === 'percentage' ? (data.price * data.discount / 100) : data.discount;
         
-        let basePrice = parseFloat(data.price);
-        let globalRate = $('#applyGlobalDeduction').is(':checked') ? parseFloat($('#applyGlobalDeduction').data('percentage')) : 0;
-        let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-        let totalDeductionPercent = Math.min(globalRate + customRate, 100);
-
-        let deductionAmountPerUnit = (basePrice * totalDeductionPercent / 100);
-        let sellingPricePerUnit = basePrice - deductionAmountPerUnit;
-        let disc = data.discount_type === 'percentage' ? (sellingPricePerUnit * data.discount / 100) : data.discount;
-        let showDisc = data.discount_type === 'percentage' ? data.discount+'%' : data.discount+'TK';
-
         let cardHtml = `
-        <div class="col-12 col-md-6 col-lg-4 mb-3 product-card-container">
-            <div class="product-card h-100" data-id="${productId}">
-                <div class="remove-card-btn" onclick="removeCard(this)"><i class="fas fa-times"></i></div>
+        <div class="col-12 col-md-6 col-lg-4 mb-3 product-card-container"> <div class="product-card h-100" data-id="${productId}"> <div class="remove-card-btn" onclick="removeCard(this)"><i class="fas fa-times"></i></div>
                 
-                <div class="row g-2 align-items-center">
-                    <div class="col-4">
+                <div class="row g-2 align-items-center"> <div class="col-4">
                         <div class="product-img-box mb-2">
                             <img src="${finalImgPath}" class="img-fluid rounded" alt="${name}" 
-                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff'">
+                                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff'">
                         </div>
+                        
                         <div class="qty-controls d-flex align-items-center justify-content-between">
                             <button type="button" class="qty-btn" onclick="updateQty(this, -1)"><i class="fas fa-minus"></i></button>
                             <input type="number" name="products[${index}][qty]" class="qty-input mx-1" value="1" min="1" max="${stock}" oninput="calculateCard(this)">
@@ -366,13 +308,12 @@ function addProductCard(el) {
                     <div class="col-8 d-flex flex-column justify-content-between" style="min-height: 110px;">
                         <div class="ps-2">
                             <h6 class="product-name mb-1 fw-bold text-dark text-wrap">${name}</h6>
-                            <div class="price-info small text-muted">Base Rate: <del class="base-price-display">${basePrice.toFixed(2)}</del> ৳</div>
-                            <div class="price-info small">Selling Rate: <b class="text-success selling-price-display">${sellingPricePerUnit.toFixed(2)} ৳</b></div>
-                            <div class="price-info small text-muted">Offer Disc: ${disc.toFixed(2)} ৳  <small style="color:red;">(${showDisc})</small></div>
+                            <div class="price-info small text-muted">Rate: <b class="text-dark">${data.price} ৳</b></div>
+                            <div class="price-info small text-muted">Disc: <b class="text-dark">${disc.toFixed(2)} ৳</b></div>
                         </div>
 
                         <div class="mt-2 ps-2">
-                            <div class="subtotal-badge w-100 py-1 text-center">
+                            <div class="subtotal-badge w-100 py-1">
                                 Total: <span class="card-subtotal">0.00</span> ৳
                             </div>
                         </div>
@@ -406,32 +347,13 @@ function updateQty(btn, change) {
 
 function calculateCard(el) {
     let card = $(el).closest('.product-card');
-    let basePrice = parseFloat(card.find('.card-price').val()) || 0;
+    let price = parseFloat(card.find('.card-price').val()) || 0;
     let qty = parseFloat(card.find('.qty-input').val()) || 0;
-    let offerDisc = parseFloat(card.find('.card-discount').val()) || 0;
+    let disc = parseFloat(card.find('.card-discount').val()) || 0;
 
-    // Deduction Logic
-    let globalRate = $('#applyGlobalDeduction').is(':checked') ? parseFloat($('#applyGlobalDeduction').data('percentage')) : 0;
-    let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-    let totalDeductionPercent = Math.min(globalRate + customRate, 100);
-
-    let deductionAmountPerUnit = (basePrice * totalDeductionPercent / 100);
-    let sellingPricePerUnit = basePrice - deductionAmountPerUnit;
-
-    // Final subtotal for this card
-    let subtotal = (sellingPricePerUnit - offerDisc) * qty;
-
-    // UI Updates
-    card.find('.selling-price-display').text(sellingPricePerUnit.toFixed(2) + ' ৳');
+    let subtotal = (price * qty) - (disc * qty);
     card.find('.card-subtotal').text(subtotal.toFixed(2));
     card.find('.card-subtotal-val').val(subtotal.toFixed(2));
-    
-    // Toggle strike-through
-    if (totalDeductionPercent > 0) {
-        card.find('.base-price-display').parent().show();
-    } else {
-        card.find('.base-price-display').parent().hide();
-    }
     
     calculateTotal();
 }
@@ -444,52 +366,23 @@ function removeCard(btn) {
 }
 
 function calculateTotal() {
-    let totalItemCount = 0;
-    let totalSubtotalFromCards = 0;
-    let totalOfferDiscount = 0; // Fixed discounts per item
-
-    // 1. Fetch Deduction Rates (Percentage Cuts)
-    let globalRate = $('#applyGlobalDeduction').is(':checked') ? parseFloat($('#applyGlobalDeduction').data('percentage')) : 0;
-    let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-    let totalDeductionPercent = Math.min(globalRate + customRate, 100);
-    // 2. Loop through each product card
+    let net = 0, totalDisc = 0, count = 0;
+    
     $('.product-card').each(function() {
-        let card = $(this);
-        let basePrice = parseFloat(card.find('.card-price').val()) || 0;
-        let qty = parseFloat(card.find('.qty-input').val()) || 0;
-        let offerDiscPerUnit = parseFloat(card.find('.card-discount').val()) || 0;
+        let sub = parseFloat($(this).find('.card-subtotal-val').val()) || 0;
+        let disc = parseFloat($(this).find('.card-discount').val()) || 0;
+        let qty = parseFloat($(this).find('.qty-input').val()) || 0;
 
-        // Calculate the adjusted Unit Selling Price (after percentage cut)
-        let deductionPerUnit = (basePrice * totalDeductionPercent / 100);
-        let adjustedSellingRate = basePrice - deductionPerUnit;
-
-        // Subtotal for this card = (Adjusted Rate - Offer) * Qty
-        let cardSubtotal = (adjustedSellingRate - offerDiscPerUnit) * qty;
-        
-        // Aggregate only Offer Discounts for the "Discount" label
-        totalOfferDiscount += (offerDiscPerUnit * qty);
-        totalSubtotalFromCards += cardSubtotal;
-        totalItemCount++;
+        net += sub;
+        totalDisc += (disc * qty);
+        count++;
     });
 
-    // 3. Get Special Discount (The final flat amount)
-    let specialDisc = parseFloat($('#specialDiscountInput').val()) || 0;
-
-    // 4. Calculate Final Totals
-    let finalNetTotal = totalSubtotalFromCards - specialDisc;
-    if (finalNetTotal < 0) finalNetTotal = 0;
-
-    // ONLY Offer Discounts + Special Discount
-    let totalPromotionalDiscount = totalOfferDiscount + specialDisc;
-
-    // 5. Update UI Displays
-    $('#itemCount').text(totalItemCount);
-    $('#totalDiscount').text(totalPromotionalDiscount.toFixed(2)); // Show only Offers + Special
-    $('#netTotalDisplay').text(finalNetTotal.toLocaleString('en-US', {minimumFractionDigits: 2}));
-
-    // 6. Update Hidden Inputs for Form Submission
-    $('#netTotalInput').val(finalNetTotal.toFixed(2));
-    $('#totalDiscountInput').val(totalPromotionalDiscount.toFixed(2));
+    $('#netTotalDisplay').text(net.toLocaleString('en-US', {minimumFractionDigits: 2}));
+    $('#netTotalInput').val(net.toFixed(2));
+    $('#totalDiscount').text(totalDisc.toFixed(2));
+    $('#totalDiscountInput').val(totalDisc.toFixed(2));
+    $('#itemCount').text(count);
 }
 </script>
 @endpush
