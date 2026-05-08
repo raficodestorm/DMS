@@ -15,9 +15,23 @@
 
   <td>
     @if($payment->type == 'pay')
-    <span style="color:var(--primary); font-weight:600;">Payment</span>
+
+    <span style="color:var(--primary); font-weight:600;">
+      Payment
+    </span>
+
+    @elseif($payment->type == 'return')
+
+    <span style="color:#dc2626; font-weight:600;">
+      Return
+    </span>
+
     @else
-    <span style="color:#7c3aed; font-weight:600;">Purchase</span>
+
+    <span style="color:#7c3aed; font-weight:600;">
+      Purchase
+    </span>
+
     @endif
   </td>
 

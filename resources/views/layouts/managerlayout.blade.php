@@ -171,6 +171,23 @@
         </ul>
       </li>
 
+      <!-- Product Return -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('manager.return.*') }}">
+          <i class="fas fa-undo"></i>
+          <span>Product Return</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('manager.return.*') }}">
+          <li>
+            <a href="{{ route('manager.return.index') }}" class="sub-link {{ isActive('manager.return.index') }}">
+              <i class="fas fa-list me-1"></i> Manage Returns
+            </a>
+          </li>
+        </ul>
+      </li>
+
     </ul>
   </aside>
 

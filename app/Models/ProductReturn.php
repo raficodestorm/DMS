@@ -12,6 +12,7 @@ class ProductReturn extends Model
         'customer_id',
         'sr_id',
         'order_id',
+        'branch_id',
         'total_amount',
         'reason',
         'status',
@@ -29,5 +30,15 @@ class ProductReturn extends Model
     public function sr()
     {
         return $this->belongsTo(User::class, 'sr_id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

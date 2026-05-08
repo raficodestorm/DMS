@@ -136,6 +136,29 @@
         </ul>
       </li>
 
+      <!-- Product Return -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('sr.return.*') }}">
+          <i class="fas fa-undo"></i>
+          <span>Product Return</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('sr.return.*') }}">
+          <li>
+            <a href="{{ route('sr.return.create') }}" class="sub-link {{ isActive('sr.return.create') }}">
+              <i class="fas fa-plus me-1"></i> New Return
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('sr.return.index') }}" class="sub-link {{ isActive('sr.return.index') }}">
+              <i class="fas fa-list me-1"></i> My Returns
+            </a>
+          </li>
+        </ul>
+      </li>
+
     </ul>
   </aside>
 

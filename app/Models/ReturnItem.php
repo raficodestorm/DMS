@@ -15,4 +15,14 @@ class ReturnItem extends Model
         'price',
         'subtotal',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function productReturn()
+    {
+        return $this->belongsTo(ProductReturn::class);
+    }
 }

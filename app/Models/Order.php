@@ -36,4 +36,12 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+    public function returns()
+    {
+        return $this->hasMany(ProductReturn::class);
+    }
 }

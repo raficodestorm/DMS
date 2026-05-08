@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::resource('offers', OfferController::class);
   Route::resource('deductions', DeductionController::class);
   Route::resource('suppliers', SupplierController::class);
+  Route::resource('bonuses', BonusController::class);
+
 
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForAdmin'])->name('stock.in.requests.index');
 
@@ -74,6 +77,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
 
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
+
+  Route::get('/return', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'index'])->name('return.index');
+  Route::get('/return/{id}/show', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'show'])->name('return.show');
+  // Use POST or PATCH for approval
+  Route::post('/return/{id}/approve', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'approve'])->name('return.approve');
+  Route::delete('/return/{id}', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'destroy'])->name('return.destroy');
 
 
   Route::get('/payments', [PaymentController::class, 'indexForAdmin'])->name('payments.index');

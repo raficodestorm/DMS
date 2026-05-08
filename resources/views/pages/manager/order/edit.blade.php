@@ -203,7 +203,7 @@
 
     @include('components.alert')
 
-    <form method="POST" action="{{ route('sr.order.update', $order->id) }}" id="orderForm">
+    <form method="POST" action="{{ route('manager.order.update', $order->id) }}" id="orderForm">
       @csrf
       @method('PUT')
       @php

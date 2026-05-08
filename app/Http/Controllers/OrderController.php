@@ -133,6 +133,7 @@ class OrderController extends Controller
           'discount_amount' => $request->total_discount,
           'net_total'       => $request->net_total,
           'applied_deduction_percent' => $totalDeductionPercent,
+          'note'            => $request->note,
         ]);
 
         $order->items()->delete();
@@ -202,18 +203,23 @@ class OrderController extends Controller
       return (float) $item->discount_amount > 0;
     });
 
-    // Current order transaction বের করো
-    $transaction = Transaction::where('order_id', $order->id)
+    $transactionOrder = Transaction::where('order_id', $order->id)
       ->where('type', 'buy')
-      ->latest()
+      ->latest('id')
       ->first();
 
-    $currentDue = $transaction?->due ?? $order->customer->due;
-    $previousDue = max(0, $currentDue - $order->net_total);
+    if ($transactionOrder) {
+      $currentDue = $transactionOrder->due;
+      $previousDue = max(0, $currentDue - $transactionOrder->amount);
+    } else {
+      $previousDue = $order->customer->due;
+      $currentDue = $previousDue + $order->net_total;
+    }
 
     $customerData = [
       'details' => $order->customer,
-      'previous_due' => $previousDue
+      'previous_due' => $previousDue,
+      'current_due' => $currentDue
     ];
 
     return view("pages.manager.order.invoice", compact(

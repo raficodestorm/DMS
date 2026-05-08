@@ -136,6 +136,15 @@
       <label>Deduction</label>
       <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
     </div>
+
+    @if($order->note)
+    <div class="info-item" style="grid-column: span 2;">
+      <label>Order Note</label>
+      <p style="font-weight: 400; font-style: italic; background: var(--primary-soft); padding: 10px; border-radius: 5px; border-left: 3px solid var(--primary);">
+        {{ $order->note }}
+      </p>
+    </div>
+    @endif
   </div>
 
   <h4 style="color:var(--text-muted); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px;">

@@ -52,6 +52,11 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::delete('/orders/destroy/{order}', [OrderManagerController::class, 'destroy'])->name('order.destroy');
 
   Route::get('/orders/allsrs', [OrderManagerController::class, 'allSrOrders'])->name('order.all.srs');
+
+  Route::get('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'index'])->name('return.index');
+  Route::get('/return/{id}/show', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'show'])->name('return.show');
+  Route::post('/return/{id}/forward', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'forwardToAdmin'])->name('return.forward');
+  Route::post('/return/{id}/reject', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'reject'])->name('return.reject');
   Route::get('/orders/allcustomer', [OrderManagerController::class, 'allCustomerOrders'])->name('order.all.customers');
   Route::get('order/specific/{id}', [OrderManagerController::class, 'specificSrOrders'])->name('order.specific.sr');
   Route::get('/specific/{id}', [OrderManagerController::class, 'specificCustomerOrders'])->name('order.specific.customer');

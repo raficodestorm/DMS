@@ -232,7 +232,8 @@ class OrderManagerController extends Controller
 
         return [
           'details' => $customer,
-          'previous_due' => $previous_due
+          'previous_due' => $previous_due,
+          'current_due' => $customer->due
         ];
       });
 
@@ -242,7 +243,9 @@ class OrderManagerController extends Controller
       $items = $order->items->sortBy(function ($item) {
         return $item->product->category->name ?? 'General';
       });
-      $hasDiscount = $items->sum('discount') > 0;
+      $hasDiscount = $items->contains(function ($item) {
+        return (float) $item->discount_amount > 0;
+      });
 
       return view('pages.manager.order.invoice', compact(
         'order',

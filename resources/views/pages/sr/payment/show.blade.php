@@ -4,34 +4,67 @@
 
 @php
 $isPayment = $payment->type == 'pay';
+$isPurchase = $payment->type == 'buy';
+$isReturn = $payment->type == 'return';
 
-if ($isPayment) {
+$dueBefore = 0;
+$dueAfter = 0;
 
-// PAYMENT
+switch ($payment->type) {
+
+case 'pay':
 if ($payment->status == 'complete') {
+// Payment already deducted
 $dueBefore = $payment->due + $payment->amount;
 $dueAfter = $payment->due;
+
 } else {
+// Pending payment
 $dueBefore = $payment->due;
 $dueAfter = max(0, $payment->due - $payment->amount);
 }
+break;
 
-} else {
-
-// PURCHASE / BUY
+case 'buy':
 if ($payment->status == 'complete') {
-$dueBefore = $payment->due - $payment->amount;
+// Purchase already added
+$dueBefore = max(0, $payment->due - $payment->amount);
 $dueAfter = $payment->due;
+
 } else {
+// Pending purchase
 $dueBefore = $payment->due;
 $dueAfter = $payment->due + $payment->amount;
 }
+break;
 
+case 'return':
+if ($payment->status == 'complete') {
+// Return reduces due
+$dueBefore = $payment->due + $payment->amount;
+$dueAfter = $payment->due;
+
+} else {
+// Pending return
+$dueBefore = $payment->due;
+$dueAfter = max(0, $payment->due - $payment->amount);
+}
+break;
+default:
+$dueBefore = $payment->due;
+$dueAfter = $payment->due;
+break;
 }
 @endphp
 
 <p class="show-head">
-  {{ $isPayment ? 'Payment Details' : 'Purchase Details' }}
+  @if($isPayment)
+  Payment Details
+  @elseif($isReturn)
+  Return Details
+  @else
+  Purchase Details
+  @endif
 </p>
 
 <div class="show-card">
@@ -62,7 +95,13 @@ $dueAfter = $payment->due + $payment->amount;
 
       <div class="info-group">
         <span class="i-label">
-          {{ $isPayment ? 'Collected By' : 'Processed By' }}
+          @if($isPayment)
+          Collected By
+          @elseif($isReturn)
+          Returned By
+          @else
+          Processed By
+          @endif
         </span>
         <span class="i-value">
           {{ $payment->sr->fullname ?? 'N/A' }}
@@ -71,7 +110,13 @@ $dueAfter = $payment->due + $payment->amount;
 
       <div class="info-group">
         <span class="i-label">
-          {{ $isPayment ? 'Payment Amount' : 'Purchase Amount' }}
+          @if($isPayment)
+          Payment Amount
+          @elseif($isReturn)
+          Return Amount
+          @else
+          Purchase Amount
+          @endif
         </span>
 
         <span class="i-value" style="font-size:1rem; color: var(--primary);">
@@ -104,7 +149,13 @@ $dueAfter = $payment->due + $payment->amount;
 
       <div class="info-group">
         <span class="i-label">
-          {{ $isPayment ? 'Payment Date' : 'Purchase Date' }}
+          @if($isPayment)
+          Payment Date
+          @elseif($isReturn)
+          Return Date
+          @else
+          Purchase Date
+          @endif
         </span>
 
         <span class="i-value">
@@ -118,7 +169,13 @@ $dueAfter = $payment->due + $payment->amount;
       <div class="info-group">
 
         <span class="i-label">
-          {{ $isPayment ? 'Due Before Payment' : 'Due Before Purchase' }}
+          @if($isPayment)
+          Due Before Payment
+          @elseif($isReturn)
+          Due Before Return
+          @else
+          Due Before Purchase
+          @endif
         </span>
 
         <span class="i-value" style="color: var(--text-main); font-weight:700;">
@@ -129,7 +186,13 @@ $dueAfter = $payment->due + $payment->amount;
       <div class="info-group">
 
         <span class="i-label">
-          {{ $isPayment ? 'Due After Payment' : 'Due After Purchase' }}
+          @if($isPayment)
+          Due After Payment
+          @elseif($isReturn)
+          Due After Return
+          @else
+          Due After Purchase
+          @endif
         </span>
 
         <span class="i-value" style="color: var(--danger-color); font-weight:700;">

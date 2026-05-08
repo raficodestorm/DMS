@@ -265,7 +265,7 @@
             </div>
             <div>
               Current Total Due:
-              <strong>{{ number_format($customerData['details']->due,2) }} ৳</strong>
+              <strong>{{ number_format($customerData['current_due'],2) }} ৳</strong>
             </div>
           </div>
         </div>

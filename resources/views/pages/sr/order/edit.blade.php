@@ -333,6 +333,11 @@
         </select>
       </div>
 
+      <div class="mb-4">
+        <label class="form-label fw-bold">Order Note (Optional)</label>
+        <textarea name="note" class="input-form" rows="2" placeholder="Write any special instructions here...">{{ old('note', $order->note) }}</textarea>
+      </div>
+
       <div class="p-summary-card">
         <div class="row align-items-center summary-cont">
           <div class="col-6">

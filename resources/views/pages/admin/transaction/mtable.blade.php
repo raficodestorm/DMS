@@ -26,6 +26,8 @@
       <p>
         @if($payment->type == 'pay')
         Payment
+        @elseif($payment->type == 'return')
+        Return
         @else
         Purchase
         @endif

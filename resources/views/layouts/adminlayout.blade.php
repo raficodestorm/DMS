@@ -202,6 +202,45 @@
         </a>
       </li>
 
+      <!-- Product Return -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.return.*') }}">
+          <i class="fas fa-undo"></i>
+          <span>Product Return</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.return.*') }}">
+          <li>
+            <a href="{{ route('admin.return.index') }}" class="sub-link {{ isActive('admin.return.index') }}">
+              <i class="fas fa-list me-1"></i> Return Dashboard
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Bonus Management -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.bonuses.*') }}">
+          <i class="fas fa-gift"></i>
+          <span>Bonus Management</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.bonuses.*') }}">
+          <li>
+            <a href="{{ route('admin.bonuses.create') }}" class="sub-link {{ isActive('admin.bonuses.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> Add Bonus
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.bonuses.index') }}" class="sub-link {{ isActive('admin.bonuses.index') }}">
+              <i class="fas fa-list me-1"></i> Bonus History
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <!-- category -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.categories.*') }}">

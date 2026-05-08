@@ -26,6 +26,13 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::get('/orders/show/{order}', [OrderSrController::class, 'showForSr'])->name('order.show');
   Route::patch('/orders/delivered/{order}', [OrderSrController::class, 'delivered'])->name('order.delivered');
 
+  Route::get('/return', [\App\Http\Controllers\Sr\ReturnSrController::class, 'index'])->name('return.index');
+  Route::get('/return/create', [\App\Http\Controllers\Sr\ReturnSrController::class, 'create'])->name('return.create');
+  Route::post('/return', [\App\Http\Controllers\Sr\ReturnSrController::class, 'store'])->name('return.store');
+  Route::get('/return/{id}/show', [\App\Http\Controllers\Sr\ReturnSrController::class, 'show'])->name('return.show');
+  Route::get('/return/{id}/edit', [\App\Http\Controllers\Sr\ReturnSrController::class, 'edit'])->name('return.edit');
+  Route::put('/return/{id}', [\App\Http\Controllers\Sr\ReturnSrController::class, 'update'])->name('return.update');
+
   Route::get('/', [OrderSrController::class, 'allOrders'])->name('order.all');
   Route::get('/customer/{id}', [OrderSrController::class, 'customerOrders'])->name('order.specific');
 
