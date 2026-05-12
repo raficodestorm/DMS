@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use App\Models\StockInRequest;
+use App\Http\Controllers\Manager\BranchCostController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -23,6 +24,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/manage-customers', [UserManagementController::class, 'customer'])->name('index.customers');
 
   Route::resource('employees', EmployeeController::class);
+  Route::resource('costs', BranchCostController::class);
 
 
 
@@ -72,4 +74,16 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/payments/show/{payment}', [PaymentController::class, 'show'])->name('payments.show');
   Route::post('/payments/{payment}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
   Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+
+  // Stock Transfer Routes
+  Route::get('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'index'])->name('stock-transfer.index');
+  Route::get('/stock-transfer/create', [\App\Http\Controllers\StockTransferController::class, 'create'])->name('stock-transfer.create');
+  Route::post('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'store'])->name('stock-transfer.store');
+  Route::get('/stock-transfer/{id}/edit', [\App\Http\Controllers\StockTransferController::class, 'edit'])->name('stock-transfer.edit');
+  Route::put('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'update'])->name('stock-transfer.update');
+  Route::get('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'show'])->name('stock-transfer.show');
+  Route::post('/stock-transfer/{id}/receive', [\App\Http\Controllers\StockTransferController::class, 'receive'])->name('stock-transfer.receive');
+  Route::delete('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'destroy'])->name('stock-transfer.destroy');
+
 });
+

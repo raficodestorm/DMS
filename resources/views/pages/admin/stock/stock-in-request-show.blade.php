@@ -139,6 +139,7 @@
           <th>Product</th>
           <th>Rate</th>
           <th>Quantity</th>
+          <th>Tree Deduction</th>
           <th>Subtotal</th>
         </tr>
       </thead>
@@ -149,6 +150,7 @@
           <td>{{ $item->product->name }}</td>
           <td>{{ number_format($item->cost_price, 2) }} TK</td>
           <td>{{ $item->quantity }}</td>
+          <td>{{ $item->tree_deduction}}%</td>
           <td>{{ number_format($item->cost_price * $item->quantity, 2) }} TK</td>
 
         </tr>

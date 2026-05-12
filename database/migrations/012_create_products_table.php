@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
             $table->decimal('price', 10, 2);
+            $table->decimal('purchase_price', 10, 2);
             $table->integer('stock_alert')->default(0);
             $table->text('description')->nullable();
             $table->boolean('status')->default(1);

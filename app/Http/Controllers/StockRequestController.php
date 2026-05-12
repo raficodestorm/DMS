@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Deduction;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockInItem;
 use App\Models\StockInRequest;
 use App\Models\Supplier;
+use App\Services\PurchasePriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,11 +36,12 @@ class StockRequestController extends Controller
   {
 
     $request->validate([
-      'supplier_id' => 'required|exists:suppliers,id',
-      'products' => 'required|array|min:1',
-      'products.*.product_id' => 'required|exists:products,id',
-      'products.*.qty' => 'required|integer|min:1',
-      'net_total' => 'required|numeric|min:0'
+      'supplier_id'                   => 'required|exists:suppliers,id',
+      'products'                      => 'required|array|min:1',
+      'products.*.product_id'         => 'required|exists:products,id',
+      'products.*.qty'                => 'required|integer|min:1',
+      'products.*.tree_deduction'     => 'nullable|numeric|min:0',
+      'net_total'                     => 'required|numeric|min:0',
     ]);
 
     try {
@@ -55,9 +58,10 @@ class StockRequestController extends Controller
 
           StockInItem::create([
             'stock_in_request_id' => $stockRequest->id,
-            'product_id' => $item['product_id'],
-            'quantity' => $item['qty'],
-            'cost_price' => $product->price
+            'product_id'          => $item['product_id'],
+            'quantity'            => $item['qty'],
+            'cost_price'          => $product->price,
+            'tree_deduction'      => $item['tree_deduction'] ?? 0,
           ]);
         }
 
@@ -153,11 +157,12 @@ class StockRequestController extends Controller
   public function stockInUpdate(Request $request, $id)
   {
     $request->validate([
-      'supplier_id' => 'required|exists:suppliers,id',
-      'products' => 'required|array|min:1',
-      'products.*.product_id' => 'required|exists:products,id',
-      'products.*.qty' => 'required|integer|min:1',
-      'net_total' => 'required|numeric|min:0'
+      'supplier_id'               => 'required|exists:suppliers,id',
+      'products'                  => 'required|array|min:1',
+      'products.*.product_id'     => 'required|exists:products,id',
+      'products.*.qty'            => 'required|integer|min:1',
+      'products.*.tree_deduction' => 'nullable|numeric|min:0',
+      'net_total'                 => 'required|numeric|min:0',
     ]);
 
     try {
@@ -183,11 +188,12 @@ class StockRequestController extends Controller
 
           $itemsToInsert[] = [
             'stock_in_request_id' => $stockRequest->id,
-            'product_id' => $item['product_id'],
-            'quantity' => $item['qty'],
-            'cost_price' => $product->price,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'product_id'          => $item['product_id'],
+            'quantity'            => $item['qty'],
+            'cost_price'          => $product->price,
+            'tree_deduction'      => $item['tree_deduction'] ?? 0,
+            'created_at'          => now(),
+            'updated_at'          => now(),
           ];
         }
 
@@ -205,37 +211,48 @@ class StockRequestController extends Controller
     try {
       DB::transaction(function () use ($id) {
 
-        $request = StockInRequest::with(['items', 'requestedBy'])->findOrFail($id);
+        // Eager-load product on items so the calculator can read product.price
+        $stockInRequest = StockInRequest::with(['items.product', 'requestedBy'])->findOrFail($id);
 
-        if ($request->status !== 'pending') {
-          throw new \Exception('This request has already been ' . $request->status);
+        if ($stockInRequest->status !== 'pending') {
+          throw new \Exception('This request has already been ' . $stockInRequest->status);
         }
 
-        $targetBranchId = $request->requestedBy->branch_id;
+        $targetBranchId = $stockInRequest->requestedBy->branch_id;
 
         if (!$targetBranchId) {
           throw new \Exception('The requesting user is not assigned to any branch.');
         }
 
-        foreach ($request->items as $item) {
-          $stock = \App\Models\Stock::firstOrCreate(
-            [
-              'product_id' => $item->product_id,
-              'branch_id'  => $targetBranchId
-            ],
-            ['quantity' => 0]
-          );
+        // Fetch the active deduction policy once — avoid repeated DB calls inside the loop
+        $deduction = Deduction::where('type', 'main')->first();
 
-          $stock->increment('quantity', $item->quantity);
+        if (!$deduction) {
+          throw new \Exception('No main deduction policy found. Please configure deductions first.');
         }
 
-        $request->update([
-          'status' => 'approved',
-          'approved_by' => Auth::id()
+        $calculator = new PurchasePriceCalculator();
+
+        foreach ($stockInRequest->items as $item) {
+          // 1. Update branch stock
+          $stock = Stock::firstOrCreate(
+            ['product_id' => $item->product_id, 'branch_id' => $targetBranchId],
+            ['quantity' => 0]
+          );
+          $stock->increment('quantity', $item->quantity);
+
+          // 2. Calculate and persist the new purchase_price on the product
+          $newPurchasePrice = $calculator->calculate($item, $deduction);
+          $item->product->update(['purchase_price' => $newPurchasePrice]);
+        }
+
+        $stockInRequest->update([
+          'status'      => 'approved',
+          'approved_by' => Auth::id(),
         ]);
       });
 
-      return redirect()->route('dashboards')->with('success', 'Approved and branch stock updated!');
+      return redirect()->route('dashboards')->with('success', 'Approved! Branch stock updated and purchase prices recalculated.');
     } catch (\Exception $e) {
       return back()->with('error', $e->getMessage());
     }

@@ -89,33 +89,41 @@
 
       <!-- Stock -->
       <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive('manager.stock.*') }}">
-          <i class="fas fa-user-tie"></i>
+        <div class="nav-link has-dropdown {{ isActive(['manager.stock.*', 'manager.stock-transfer.*']) }}">
+          <i class="fas fa-boxes-stacked"></i>
           <span>Stock</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('manager.stock.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['manager.stock.*', 'manager.stock-transfer.*']) }}">
           <li>
             <a href="{{ route('manager.stock.index') }}" class="sub-link {{ isActive('manager.stock.index') }}">
-              <i class="fas fa-user-plus me-1"></i> My Stock
+              <i class="fas fa-layer-group me-1"></i> My Stock
             </a>
           </li>
 
           <li>
             <a href="{{ route('manager.stock.in.create') }}" class="sub-link {{ isActive('manager.stock.in.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Stock-in
+              <i class="fas fa-cart-plus me-1"></i> Stock-in
             </a>
           </li>
 
           <li>
             <a href="{{ route('manager.stock.in.requests.index') }}"
               class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
-              <i class="fas fa-user-plus me-1"></i> Stock-in Requests
+              <i class="fas fa-clipboard-list me-1"></i> Stock-in Requests
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.stock-transfer.index') }}"
+              class="sub-link {{ isActive('manager.stock-transfer.*') }}">
+              <i class="fas fa-truck-moving me-1"></i> Stock Transfer
             </a>
           </li>
         </ul>
       </li>
+
 
       <!-- Stock -->
       <li class="nav-item">
@@ -183,6 +191,28 @@
           <li>
             <a href="{{ route('manager.return.index') }}" class="sub-link {{ isActive('manager.return.index') }}">
               <i class="fas fa-list me-1"></i> Manage Returns
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Expense Management -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('manager.costs.*') }}">
+          <i class="fas fa-wallet"></i>
+          <span>Expense Management</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('manager.costs.*') }}">
+          <li>
+            <a href="{{ route('manager.costs.create') }}" class="sub-link {{ isActive('manager.costs.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> Record Cost
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('manager.costs.index') }}" class="sub-link {{ isActive('manager.costs.index') }}">
+              <i class="fas fa-list me-1"></i> Expense History
             </a>
           </li>
         </ul>

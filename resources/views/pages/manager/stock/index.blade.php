@@ -6,9 +6,7 @@
   <div class="card-header">
     <h2>Current Stock</h2>
     <p>Monitor your branch inventory</p>
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    @include('components.alert')
   </div>
 
   <div class="table-wrapper">

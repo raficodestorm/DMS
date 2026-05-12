@@ -1,28 +1,28 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 <div class="manage-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-            <h2 class="mb-0">Company Global Costs</h2>
-            <p class="text-muted mb-0">Record and track all global company-wide expenses.</p>
+            <h2 class="mb-0">Branch Cost Management</h2>
+            <p class="text-muted mb-0">Record and track all branch-level expenses.</p>
         </div>
-        <a href="{{ route('admin.company_costs.create') }}" class="btn-smart btn-blue">
-            <i class="fas fa-plus me-1"></i> Record Global Cost
+        <a href="{{ route('manager.costs.create') }}" class="btn-smart btn-blue">
+            <i class="fas fa-plus me-1"></i> Record New Cost
         </a>
     </div>
 
     <!-- Summary & Filters -->
     <div class="row mt-4 g-3">
-        <div class="col-12 col-md-4">
-            <div class="p-3 border rounded bg-white shadow-sm h-100 d-flex flex-column justify-content-center">
-                <small class="text-muted d-block mb-1">Global Total (Selected Period)</small>
+        <div class="col-md-4">
+            <div class="p-3 border rounded bg-light shadow-sm">
+                <small class="text-muted d-block mb-1">Total Expenses (Selected Period)</small>
                 <h3 class="mb-0 text-danger fw-bold">{{ number_format($totalCost, 2) }} ৳</h3>
             </div>
         </div>
-        <div class="col-12 col-md-8">
-            <form action="{{ route('admin.company_costs.index') }}" method="GET" class="row g-2">
-                <div class="col-6 col-md-3">
+        <div class="col-md-8">
+            <form action="{{ route('manager.costs.index') }}" method="GET" class="row g-2 align-items-end">
+                <div class="col-md-3">
                     <label class="small text-muted">Month</label>
                     <select name="month" class="input-form py-1" onchange="this.form.submit()">
                         @for($m=1; $m<=12; $m++)
@@ -32,7 +32,7 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-md-3">
                     <label class="small text-muted">Year</label>
                     <select name="year" class="input-form py-1" onchange="this.form.submit()">
                         @for($y=date('Y'); $y>=2020; $y--)
@@ -40,7 +40,7 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-md-3">
                     <label class="small text-muted">Category</label>
                     <select name="category" class="input-form py-1" onchange="this.form.submit()">
                         <option value="">All Categories</option>
@@ -49,15 +49,14 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-3 d-flex align-items-end">
-                    <a href="{{ route('admin.company_costs.index') }}" class="btn-smart btn-blue w-100 text-center py-2">Reset</a>
+                <div class="col-md-3">
+                    <a href="{{ route('manager.costs.index') }}" class="btn-smart btn-blue w-100 text-center">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Desktop Table -->
-    <div class="table-wrapper mt-4 d-none d-md-block">
+    <div class="table-wrapper mt-4">
         <table>
             <thead>
                 <tr>
@@ -81,13 +80,13 @@
                     <td>{{ $cost->creator->username ?? 'N/A' }}</td>
                     <td class="text-end">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.company_costs.show', $cost->id) }}" class="btn-sm-smart btn-blue" title="View">
+                            <a href="{{ route('manager.costs.show', $cost->id) }}" class="btn-sm-smart btn-blue" title="View">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.company_costs.edit', $cost->id) }}" class="btn-sm-smart btn-green" title="Edit">
+                            <a href="{{ route('manager.costs.edit', $cost->id) }}" class="btn-sm-smart btn-green" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('admin.company_costs.destroy', $cost->id) }}" method="POST" onsubmit="return confirm('Delete this record?')">
+                            <form action="{{ route('manager.costs.destroy', $cost->id) }}" method="POST" onsubmit="return confirm('Delete this cost record?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn-sm-smart btn-red" title="Delete">
                                     <i class="fas fa-trash"></i>
@@ -98,39 +97,11 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center py-4">No expense records found.</td>
+                    <td colspan="6" class="text-center py-4">No expense records found for this period.</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
-    </div>
-
-    <!-- Mobile Cards -->
-    <div class="d-md-none mt-3">
-        @forelse($costs as $cost)
-        <div class="p-3 border rounded mb-3 bg-white shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-secondary small">{{ ucfirst($cost->category) }}</span>
-                <small class="text-muted">{{ $cost->cost_date->format('d M Y') }}</small>
-            </div>
-            <h6 class="fw-bold mb-2">{{ $cost->description }}</h6>
-            <div class="d-flex justify-content-between align-items-end">
-                <div>
-                    <small class="text-muted d-block">By: {{ $cost->creator->username ?? 'N/A' }}</small>
-                    <span class="fw-bold text-danger">{{ number_format($cost->amount, 2) }} ৳</span>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('admin.company_costs.edit', $cost->id) }}" class="btn-sm-smart btn-green py-1"><i class="fas fa-edit"></i></a>
-                    <form action="{{ route('admin.company_costs.destroy', $cost->id) }}" method="POST" onsubmit="return confirm('Delete?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn-sm-smart btn-red py-1"><i class="fas fa-trash"></i></button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        @empty
-        <div class="text-center py-4 text-muted">No records found.</div>
-        @endforelse
     </div>
 
     <div class="mt-4">

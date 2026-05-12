@@ -1,57 +1,58 @@
 @extends('layouts.adminlayout')
+
 @section('content')
-
-<div class="container-fluid main-area">
-    <div class="index-card shadow">
-        <div class="card-header p-2 mb-3 text-white fw-bold" style="background-color: #ff0000">Edit cost</div>
-        <div class="card-body">
-            @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
-            <form action="{{ route('admin.costs.update', $cost->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Amount</label>
-                    <input type="number" name="amount" value="{{$cost->amount}}" class="form-control"
-                        placeholder="Enter cost amount" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Purpose</label>
-                    <select name="purpose" id="purpose" class="form-control" required>
-                        <option value="snack">Snack</option>
-                        <option value="buy-materials">Buy Materials</option>
-                        <option value="salary">Salary</option>
-                        <option value="trip-payment">Trip payment</option>
-                        <option value="fine">Fine</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Staff Name & rank</label>
-                    <input type="text" name="staff_name" value="{{$cost->staff_name}}" class="form-control"
-                        placeholder="Enter staff name with rank">
-                </div>
-
-                <div class="mb-3">
-                    <<label class="form-label fw-semibold">Details</label>
-                        <input type="text" name="details" value="{{$cost->details}}" class="form-control">
-                </div>
-
-                <button type="submit" class="btn btn-success px-4">Update</button>
-                <a href="{{ route('admin.costs.index') }}" class="btn btn-secondary px-4">Back</a>
-            </form>
-        </div>
+<div class="manage-card">
+    <div class="card-header mb-4">
+        <h2 class="mb-0"><i class="fas fa-edit text-primary me-2"></i> Edit Global Cost Record</h2>
+        <p class="text-muted">Update the details for this global company expense.</p>
     </div>
-</div>
 
+    <form action="{{ route('admin.company_costs.update', $cost->id) }}" method="POST" class="row g-4">
+        @csrf
+        @method('PUT')
+
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Amount (৳) <span class="text-danger">*</span></label>
+            <input type="number" name="amount" step="0.01" class="input-form @error('amount') is-invalid @enderror" 
+                   value="{{ old('amount', $cost->amount) }}" required>
+            @error('amount') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Cost Date <span class="text-danger">*</span></label>
+            <input type="date" name="cost_date" class="input-form @error('cost_date') is-invalid @enderror" 
+                   value="{{ old('cost_date', $cost->cost_date->format('Y-m-d')) }}" required>
+            @error('cost_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+            <select name="category" class="input-form @error('category') is-invalid @enderror" required>
+                @foreach(['office', 'transport', 'staff', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
+                    <option value="{{ $cat }}" {{ old('category', $cost->category) == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
+                @endforeach
+            </select>
+            @error('category') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Short Description <span class="text-danger">*</span></label>
+            <input type="text" name="description" class="input-form @error('description') is-invalid @enderror" 
+                   value="{{ old('description', $cost->description) }}" required>
+            @error('description') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-12">
+            <label class="form-label fw-bold">Notes / Reference (Optional)</label>
+            <textarea name="notes" class="input-form @error('notes') is-invalid @enderror" 
+                      rows="3">{{ old('notes', $cost->notes) }}</textarea>
+            @error('notes') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-12 d-flex gap-2 justify-content-end mt-4">
+            <a href="{{ route('admin.company_costs.index') }}" class="btn-smart btn-red">Cancel</a>
+            <button type="submit" class="btn-smart btn-green">Update Global Record</button>
+        </div>
+    </form>
+</div>
 @endsection

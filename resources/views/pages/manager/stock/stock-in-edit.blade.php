@@ -5,15 +5,7 @@
   <div class="form-card">
     <h2><i class="fas fa-edit"></i> Edit Stock-in Request</h2>
 
-    @if ($errors->any())
-    <div class="alert alert-danger">
-      <ul class="mb-0">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-      </ul>
-    </div>
-    @endif
+    @include('components.alert')
 
     <form method="POST" action="{{ route('manager.stock.in.update', $request->id) }}" id="stockForm">
       @csrf
@@ -31,17 +23,18 @@
         </select>
       </div>
 
-      <div class="product-table-header">
+      <div class="product-table-header" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
         <span>Product</span>
         <span>Rate</span>
         <span>Qty</span>
+        <span>Tree Deduction</span>
         <span>Subtotal</span>
         <span></span>
       </div>
 
       <div id="product-wrapper">
         @foreach($request->items as $key => $item)
-        <div class="product-row animate__animated animate__fadeIn">
+        <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
           <div>
             <select name="products[{{ $key }}][product_id]" class="input-form" required onchange="updateRow(this)">
               <option value="{{ $item->product_id }}" data-price="{{ $item->cost_price }}" selected>
@@ -56,6 +49,10 @@
           <div>
             <input type="number" name="products[{{ $key }}][qty]" class="input-form qty" value="{{ $item->quantity }}"
               min="1" required oninput="updateRow(this)">
+          </div>
+          <div>
+            <input type="number" name="products[{{ $key }}][tree_deduction]" class="input-form tree-ded"
+              value="{{ number_format($item->tree_deduction ?? 0, 2, '.', '') }}" min="0" step="0.01">
           </div>
           <div>
             <input type="number" class="input-form subtotal"
@@ -132,7 +129,7 @@
         });
 
         let html = `
-        <div class="product-row animate__animated animate__fadeIn">
+        <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
             <div>
                 <select name="products[${index}][product_id]" class="input-form" required onchange="updateRow(this)">
                     ${options}
@@ -140,6 +137,7 @@
             </div>
             <div><input type="number" class="input-form rate" placeholder="0.00" readonly tabindex="-1"></div>
             <div><input type="number" name="products[${index}][qty]" class="input-form qty" placeholder="Qty" min="1" required oninput="updateRow(this)"></div>
+            <div><input type="number" name="products[${index}][tree_deduction]" class="input-form tree-ded" placeholder="0.00" min="0" step="0.01" value="0"></div>
             <div><input type="number" class="input-form subtotal" placeholder="0.00" readonly tabindex="-1"></div>
             <div><button type="button" class="icon-btn delete-icon" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></div>
         </div>`;

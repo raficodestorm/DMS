@@ -8,61 +8,133 @@
   </span>
 </div>
 
-<div class="dashboard-row row g-3">
+<style>
+  .dashboard-row {
+    overflow-x: hidden;
+  }
+  .stat-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background: var(--section-bg);
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 20px !important;
+  }
+  .stat-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+  }
+  .card-label {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px !important;
+  }
+  .amount {
+    letter-spacing: -0.5px;
+  }
+  .trend-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px !important;
+    transition: transform 0.3s ease;
+  }
+  .stat-card:hover .trend-icon {
+    transform: scale(1.1);
+  }
+</style>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-account-tie text-white"></i></h3>
-          <p class="amount text-info">10</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="header-left">
+    <h2 style="font-size: 22px; font-family: 'Cinzel', serif; font-weight: 700; color: var(--primary);">Branch Overview</h2>
+    <p class="text-muted mb-0" style="font-size: 14px;">Performance metrics for {{ auth()->user()->branch->name ?? 'Your Branch' }}</p>
+  </div>
+  <span class="badge p-2 px-3" style="letter-spacing: 1px; color: var(--text-muted); background: var(--section-bg); border-radius: 50px; border: 1px solid var(--border-color);">
+    <i class="far fa-calendar-alt me-1"></i> {{ now()->format('d M, Y') }}
+  </span>
+</div>
+
+<div class="dashboard-row row g-4">
+
+  <!-- Branch Stock Value -->
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card animate__animated animate__fadeInUp" style="border-top: 4px solid #4e73df !important;">
+      <div class="card-top mb-0">
+        <div class="value-box w-100 justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="trend-icon" style="background: rgba(78, 115, 223, 0.1); color: #4e73df; width: 48px; height: 48px; font-size: 22px;">
+              <i class="fas fa-warehouse"></i>
+            </div>
+            <div>
+              <h6 class="card-label mb-1">Branch Stock</h6>
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{ number_format($totalStockValue, 2) }}</p>
+            </div>
+          </div>
         </div>
-        <div class="trend-icon bg-info-soft"><span class="mdi mdi-account-check"></span></div>
       </div>
-      <h6 class="card-label">Total employee</h6>
     </div>
   </div>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-shape text-white"></i></h3>
-          <p class="amount text-warning">15</p>
+  <!-- Monthly Sales -->
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card animate__animated animate__fadeInUp" style="border-top: 4px solid #1cc88a !important; animation-delay: 0.1s;">
+      <div class="card-top mb-0">
+        <div class="value-box w-100 justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="trend-icon" style="background: rgba(28, 200, 138, 0.1); color: #1cc88a; width: 48px; height: 48px; font-size: 22px;">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div>
+              <h6 class="card-label mb-1">{{ $monthName }} Sales</h6>
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{ number_format($currentMonthSales, 2) }}</p>
+            </div>
+          </div>
         </div>
-        <div class="trend-icon bg-warning-soft"><span class="mdi mdi-label-outline"></span></div>
       </div>
-      <h6 class="card-label">Total customer</h6>
     </div>
   </div>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-newspaper-variant-outline text-white"></i></h3>
-          <p class="amount text-success">20</p>
+  <!-- Monthly Profit -->
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card animate__animated animate__fadeInUp" style="border-top: 4px solid #36b9cc !important; animation-delay: 0.2s;">
+      <div class="card-top mb-0">
+        <div class="value-box w-100 justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="trend-icon" style="background: rgba(54, 185, 204, 0.1); color: #36b9cc; width: 48px; height: 48px; font-size: 22px;">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div>
+              <h6 class="card-label mb-1">{{ $monthName }} Profit</h6>
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{ number_format($currentMonthProfit, 2) }}</p>
+            </div>
+          </div>
         </div>
-        <div class="trend-icon bg-success-soft"><span class="mdi mdi-database-check"></span></div>
       </div>
-      <h6 class="card-label">Total Posts</h6>
     </div>
   </div>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card today-highlight">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-calendar-star text-white"></i></h3>
-          <p class="amount text-white">25</p>
+  <!-- Monthly Cost -->
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card animate__animated animate__fadeInUp" style="border-top: 4px solid #f6c23e !important; animation-delay: 0.3s;">
+      <div class="card-top mb-0">
+        <div class="value-box w-100 justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="trend-icon" style="background: rgba(246, 194, 62, 0.1); color: #f6c23e; width: 48px; height: 48px; font-size: 22px;">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+              <h6 class="card-label mb-1">{{ $monthName }} Cost</h6>
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{ number_format($currentMonthCost, 2) }}</p>
+            </div>
+          </div>
         </div>
-        <div class="trend-icon pulse-animation"><span class="mdi mdi-fire"></span></div>
       </div>
-      <h6 class="card-label">Today's Posts</h6>
     </div>
   </div>
 
 </div>
+
 
 
 @endsection

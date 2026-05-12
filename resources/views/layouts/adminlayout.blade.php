@@ -127,28 +127,36 @@
 
       <!-- Stock -->
       <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive('admin.stock.*') }}">
-          <i class="fas fa-user-tie"></i>
+        <div class="nav-link has-dropdown {{ isActive(['admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*']) }}">
+          <i class="fas fa-boxes-stacked"></i>
           <span>Stock</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('admin.stock.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*']) }}">
           <li>
             <a href="{{ route('admin.stocks.all') }}" class="sub-link {{ isActive('admin.stocks.all') }}">
-              <i class="fas fa-user-plus me-1"></i>Stock
+              <i class="fas fa-layer-group me-1"></i>Stock Summary
             </a>
           </li>
 
           <li>
             <a href="{{ route('admin.stock.in.requests.index') }}"
               class="sub-link {{ isActive('admin.stock.in.requests.index') }}">
-              <i class="fas fa-user-plus me-1"></i> Stock-in Request
+              <i class="fas fa-clipboard-list me-1"></i> Stock-in Request
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.stock-transfer.index') }}"
+              class="sub-link {{ isActive('admin.stock-transfer.*') }}">
+              <i class="fas fa-truck-moving me-1"></i> Stock Transfer
             </a>
           </li>
 
         </ul>
       </li>
+
 
       <!-- orders -->
       <li class="nav-item">
@@ -236,6 +244,33 @@
           <li>
             <a href="{{ route('admin.bonuses.index') }}" class="sub-link {{ isActive('admin.bonuses.index') }}">
               <i class="fas fa-list me-1"></i> Bonus History
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Company Global Costs -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('admin.company_costs.*') }}">
+          <i class="fas fa-money-bill-wave"></i>
+          <span>Global Expenses</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.company_costs.*') }}">
+          <li>
+            <a href="{{ route('admin.costs.dashboard') }}" class="sub-link {{ isActive('admin.costs.dashboard') }}">
+              <i class="fas fa-chart-line me-1"></i> Cost Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.company_costs.create') }}" class="sub-link {{ isActive('admin.company_costs.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> Record Global Cost
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.company_costs.index') }}" class="sub-link {{ isActive('admin.company_costs.index') }}">
+              <i class="fas fa-list me-1"></i> Expense History
             </a>
           </li>
         </ul>

@@ -4,15 +4,7 @@
 <div class="container justify-center">
   <div class="form-card">
     <h2><i class="fas fa-file-invoice"></i> Create Stock-in Request</h2>
-    @if ($errors->any())
-    <div class="alert alert-danger">
-      <ul class="mb-0">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-      </ul>
-    </div>
-    @endif
+    @include('components.alert')
 
     <form method="POST" action="{{ route('manager.stock.store') }}" id="stockForm">
       @csrf
@@ -27,10 +19,11 @@
         </select>
       </div>
 
-      <div class="product-table-header">
+      <div class="product-table-header" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
         <span>Product</span>
         <span>Rate</span>
         <span>Qty</span>
+        <span>Tree Deduction</span>
         <span>Subtotal</span>
         <span></span>
       </div>
@@ -113,9 +106,8 @@
         options += `<option value="${p.id}" data-price="${p.price || 0}">${p.name}</option>`;
     });
 
-    // ইনলাইন স্টাইল সরিয়ে শুধু ক্লাস রাখা হয়েছে
     let html = `
-    <div class="product-row animate__animated animate__fadeIn">
+    <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
         <div>
             <select name="products[${index}][product_id]" class="input-form" required onchange="updateRow(this)">
                 ${options}
@@ -126,6 +118,9 @@
         </div>
         <div>
             <input type="number" name="products[${index}][qty]" class="input-form qty" placeholder="Qty" min="1" required oninput="updateRow(this)">
+        </div>
+        <div>
+            <input type="number" name="products[${index}][tree_deduction]" class="input-form tree-ded" placeholder="0.00" min="0" step="0.01" value="0">
         </div>
         <div>
             <input type="number" class="input-form subtotal" placeholder="0.00" readonly tabindex="-1">

@@ -14,6 +14,8 @@ use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\BonusController;
+use App\Http\Controllers\Admin\CompanyCostController;
+use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use Illuminate\Support\Facades\Route;
@@ -40,7 +42,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::resource('branches', BranchController::class);
   Route::resource('customers', CustomerController::class);
   Route::resource('categories', CategoryController::class);
-  Route::resource('costs', CostController::class);
+  Route::resource('company_costs', CompanyCostController::class);
+
+  // Cost Dashboard Routes
+  Route::get('/costs-dashboard', [CostDashboardController::class, 'index'])->name('costs.dashboard');
+  Route::get('/costs-branch/{id}', [CostDashboardController::class, 'branchCosts'])->name('costs.branch');
+
   Route::resource('products', ProductController::class);
   Route::resource('offers', OfferController::class);
   Route::resource('deductions', DeductionController::class);
@@ -91,4 +98,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   // Admin chaitile shob role-er payment delete o korte parbe
   Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
   Route::get('/payments/show/{payment}', [PaymentController::class, 'showForAdmin'])->name('payments.show');
+
+  // Stock Transfer Routes
+  Route::get('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'index'])->name('stock-transfer.index');
+  Route::get('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'show'])->name('stock-transfer.show');
+  Route::post('/stock-transfer/{id}/approve', [\App\Http\Controllers\StockTransferController::class, 'approve'])->name('stock-transfer.approve');
+  Route::post('/stock-transfer/{id}/reject', [\App\Http\Controllers\StockTransferController::class, 'reject'])->name('stock-transfer.reject');
+  Route::delete('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'destroy'])->name('stock-transfer.destroy');
 });
+
