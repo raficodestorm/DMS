@@ -1,93 +1,155 @@
 @extends('layouts.srlayout')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 style="font-size: 22px; font-family: 'Cinzel', serif;">Dashboard Overview</h2>
-  <span class="badge p-2" style="letter-spacing: 1px; color: var(--text-muted);">
-    <?php echo date('d M, Y'); ?>
+<style>
+  .quick-access-card {
+    border-radius: 15px;
+    padding: 15px 10px;
+    
+  }
+
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 10px;
+  }
+
+  .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    group;
+  }
+
+  .icon-item:hover {
+    transform: translateY(-5px);
+  }
+
+  .icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .icon-circle::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .icon-item:hover .icon-circle::after {
+    opacity: 1;
+  }
+
+  .icon-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Specific Icon Colors with Gradients */
+  .bg-order { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+  .bg-customer { background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); color: white; }
+  .bg-account { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+  .bg-payment { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: white; }
+  .bg-return { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
+  .bg-all-orders { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+
+  @media (max-width: 576px) {
+    .icon-circle {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    .icon-item span {
+      font-size: 10px;
+    }
+    .quick-access-card {
+      padding: 20px 10px;
+    }
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+  <h2 style="font-size: 22px; font-family: 'Cinzel', serif; font-weight: 700; color: var(--primary);">Overview</h2>
+  <span class="badge p-2 px-3" style="letter-spacing: 1px; color: var(--text-muted); background: var(--section-bg); border-radius: 50px; border: 1px solid var(--border-color);">
+    <i class="far fa-calendar-alt me-1"></i> {{ date('d M, Y') }}
   </span>
 </div>
 
-<div class="dashboard-row row g-3">
-
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-account-tie text-white"></i></h3>
-          <p class="amount text-info">10</p>
-        </div>
-        <div class="trend-icon bg-info-soft"><span class="mdi mdi-account-check"></span></div>
+<div class="quick-access-card animate__animated animate__fadeInUp">
+  <h6 class="mb-4" style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Quick Actions</h6>
+  <div class="icon-grid">
+    <!-- Row 1 -->
+    <a href="{{ route('sr.order.create') }}" class="icon-item">
+      <div class="icon-circle bg-order">
+        <i class="fas fa-cart-plus"></i>
       </div>
-      <h6 class="card-label">Total Editors</h6>
-    </div>
-  </div>
+      <span>Order</span>
+    </a>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-shape text-white"></i></h3>
-          <p class="amount text-warning">15</p>
-        </div>
-        <div class="trend-icon bg-warning-soft"><span class="mdi mdi-label-outline"></span></div>
+    <a href="{{ route('customers.create') }}" class="icon-item">
+      <div class="icon-circle bg-customer">
+        <i class="fas fa-user-plus"></i>
       </div>
-      <h6 class="card-label">Total Categories</h6>
-    </div>
-  </div>
+      <span>Customer</span>
+    </a>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-newspaper-variant-outline text-white"></i></h3>
-          <p class="amount text-success">20</p>
-        </div>
-        <div class="trend-icon bg-success-soft"><span class="mdi mdi-database-check"></span></div>
+    <a href="{{ route('sr.users.create') }}" class="icon-item">
+      <div class="icon-circle bg-account">
+        <i class="fas fa-user-gear"></i>
       </div>
-      <h6 class="card-label">Total Posts</h6>
-    </div>
-  </div>
+      <span>Account</span>
+    </a>
 
-  <div class="col-lg-3 col-6">
-    <div class="stat-card today-highlight">
-      <div class="card-top">
-        <div class="value-box">
-          <h3><i class="mdi mdi-calendar-star text-white"></i></h3>
-          <p class="amount text-white">25</p>
-        </div>
-        <div class="trend-icon pulse-animation"><span class="mdi mdi-fire"></span></div>
+    <!-- Row 2 -->
+    <a href="{{ route('sr.payments.create') }}" class="icon-item">
+      <div class="icon-circle bg-payment">
+        <i class="fas fa-money-bill-wave"></i>
       </div>
-      <h6 class="card-label">Today's Posts</h6>
-    </div>
-  </div>
+      <span>Payment</span>
+    </a>
 
+    <a href="{{ route('sr.return.create') }}" class="icon-item">
+      <div class="icon-circle bg-return">
+        <i class="fas fa-rotate-left"></i>
+      </div>
+      <span>Return</span>
+    </a>
+
+    <a href="{{ route('sr.order.all') }}" class="icon-item">
+      <div class="icon-circle bg-all-orders">
+        <i class="fas fa-list-check"></i>
+      </div>
+      <span>Orders</span>
+    </a>
+  </div>
 </div>
-
-
 @endsection
 
 @if(session('success'))
 @push('scripts')
-<script>
-  Swal.fire({
-    html: `
-        <div class="success-wrapper">
-            <div class="success-circle">
-                <div class="checkmark"></div>
-            </div>
-            <h2 class="success-title">Success</h2>
-            <p class="success-text">{{ session('success') }}</p>
-        </div>
-    `,
-    showConfirmButton: false,
-    timer: 2200,
-    background: 'transparent',
-    backdrop: 'rgba(0,0,0,0.3)',
-    customClass: {
-        popup: 'success-popup'
-    }
-});
-</script>
+
 @endpush
 @endif

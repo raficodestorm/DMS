@@ -135,8 +135,140 @@
 
 </div>
 
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s; background: var(--section-bg); border-left: 4px solid var(--primary) !important;">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h5 class="card-label mb-1" style="font-size: 16px !important; color: var(--primary);">Branch Sales Analysis</h5>
+          <p class="text-muted mb-0" style="font-size: 12px;">Monthly sales performance for the year {{ now()->year }}</p>
+        </div>
+        <div class="chart-actions">
+          <span class="badge bg-primary-soft text-primary p-2 px-3" style="background: rgba(78, 115, 223, 0.1); border-radius: 8px;">
+            <i class="fas fa-chart-line me-1"></i> Branch Performance
+          </span>
+        </div>
+      </div>
+      <div id="yearlySalesChart" style="min-height: 350px;"></div>
+    </div>
+  </div>
+</div>
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const chartData = @json($yearlySalesChart);
+    
+    const options = {
+      series: [{
+        name: 'Branch Sales',
+        data: chartData.map(item => item.sales)
+      }],
+      chart: {
+        height: 350,
+        type: 'area',
+        toolbar: {
+          show: false
+        },
+        fontFamily: "'Inter', sans-serif",
+        zoom: {
+          enabled: false
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3,
+        colors: ['#36b9cc']
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.45,
+          opacityTo: 0.05,
+          stops: [20, 100, 100],
+          colorStops: [
+            {
+              offset: 0,
+              color: '#36b9cc',
+              opacity: 0.4
+            },
+            {
+              offset: 100,
+              color: '#36b9cc',
+              opacity: 0.1
+            }
+          ]
+        }
+      },
+      xaxis: {
+        categories: chartData.map(item => item.month),
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          style: {
+            colors: '#858796',
+            fontSize: '12px',
+            fontWeight: 500
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          formatter: function(value) {
+            return "৳ " + value.toLocaleString();
+          },
+          style: {
+            colors: '#858796',
+            fontSize: '12px',
+            fontWeight: 500
+          }
+        }
+      },
+      tooltip: {
+        theme: 'dark',
+        x: {
+          show: true
+        },
+        y: {
+          formatter: function(value) {
+            return "৳ " + value.toLocaleString();
+          }
+        }
+      },
+      grid: {
+        borderColor: 'rgba(0,0,0,0.05)',
+        strokeDashArray: 4
+      },
+      markers: {
+        size: 4,
+        colors: ['#36b9cc'],
+        strokeColors: '#fff',
+        strokeWidth: 2,
+        hover: {
+          size: 6
+        }
+      }
+    };
 
+    const chart = new ApexCharts(document.querySelector("#yearlySalesChart"), options);
+    chart.render();
+  });
+</script>
+@endpush
 @endsection
 
 @if(session('success'))

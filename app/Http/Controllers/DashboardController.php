@@ -63,6 +63,33 @@ class DashboardController extends Controller
 
       $data['currentMonthCost'] = $companyCost + $branchCostTotal;
 
+      // 5. Yearly Sales Data (Monthly breakdown)
+      $yearlySales = Order::whereIn('status', $completedStatuses)
+        ->whereYear('created_at', $currentYear)
+        ->select(
+          DB::raw('MONTH(created_at) as month'),
+          DB::raw('SUM(net_total) as total_sales')
+        )
+        ->groupBy('month')
+        ->orderBy('month')
+        ->get()
+        ->pluck('total_sales', 'month')
+        ->toArray();
+
+      $months = [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
+        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+      ];
+
+      $chartData = [];
+      foreach ($months as $num => $name) {
+        $chartData[] = [
+          'month' => $name,
+          'sales' => $yearlySales[$num] ?? 0
+        ];
+      }
+      $data['yearlySalesChart'] = $chartData;
+
     } elseif ($role === 'manager') {
 
       $branchId = $user->branch_id;
@@ -101,6 +128,34 @@ class DashboardController extends Controller
         ->whereMonth('cost_date', $currentMonth)
         ->whereYear('cost_date', $currentYear)
         ->sum('amount');
+
+      // 5. Yearly Branch Sales Data (Monthly breakdown)
+      $yearlySales = Order::where('manager_id', $user->id)
+        ->whereIn('status', $completedStatuses)
+        ->whereYear('created_at', $currentYear)
+        ->select(
+          DB::raw('MONTH(created_at) as month'),
+          DB::raw('SUM(net_total) as total_sales')
+        )
+        ->groupBy('month')
+        ->orderBy('month')
+        ->get()
+        ->pluck('total_sales', 'month')
+        ->toArray();
+
+      $months = [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
+        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+      ];
+
+      $chartData = [];
+      foreach ($months as $num => $name) {
+        $chartData[] = [
+          'month' => $name,
+          'sales' => $yearlySales[$num] ?? 0
+        ];
+      }
+      $data['yearlySalesChart'] = $chartData;
     }
 
     // Role-based dashboard view
