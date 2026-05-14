@@ -16,41 +16,14 @@ class CategorySeeder extends Seeder
 
         $categories = [
             [
-                'name' => 'Light',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Cable',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Tape',
+                'name' => 'Gang Switch',
                 'description' => 'This is valid category of RElectric',
             ],
             [
                 'name' => 'Fan',
                 'description' => 'This is valid category of RElectric',
             ],
-            [
-                'name' => 'Switch',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Board',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Plug',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Socket',
-                'description' => 'This is valid category of RElectric',
-            ],
-            [
-                'name' => 'Log',
-                'description' => 'This is valid category of RElectric',
-            ],
+            
         ];
 
         foreach ($categories as $category) {

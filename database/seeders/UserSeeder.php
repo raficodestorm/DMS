@@ -31,18 +31,7 @@ class UserSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-            [
-                'fullname' => 'Mr. Manager',
-                'username' => 'manager',
-                'email' => 'sarafi3258@gmail.com',
-                'password' => Hash::make('11111111'),
-                'role' => 'manager',
-                'branch_id' => 2,
-                'status' => 'active',
-                'timezone' => 'Asia/Dhaka',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
+            
 
         ];
 

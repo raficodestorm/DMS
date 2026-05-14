@@ -22,20 +22,7 @@ class SupplierSeeder extends Seeder
                 'email' => 'walton@gmail.com',
                 'address' => 'Lalbag, Dhaka, Bangladesh',
             ],
-            [
-                'name' => 'Md. Rashed',
-                'company_name' => 'RFL',
-                'phone' => '01841252236',
-                'email' => 'rfl@gmail.com',
-                'address' => 'Dhaka, Bangladesh',
-            ],
-            [
-                'name' => 'Md. Rana Khan',
-                'company_name' => 'Singer',
-                'phone' => '01844458236',
-                'email' => 'singer@gmail.com',
-                'address' => 'Dhaka, Bangladesh',
-            ],
+            
 
         ];
 
