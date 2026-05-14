@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CompanyCostController;
 use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
@@ -105,5 +106,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::post('/stock-transfer/{id}/approve', [\App\Http\Controllers\StockTransferController::class, 'approve'])->name('stock-transfer.approve');
   Route::post('/stock-transfer/{id}/reject', [\App\Http\Controllers\StockTransferController::class, 'reject'])->name('stock-transfer.reject');
   Route::delete('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'destroy'])->name('stock-transfer.destroy');
+
+  // Report Module
+  Route::get('/report', [ReportController::class, 'index'])->name('report.index');
 });
 

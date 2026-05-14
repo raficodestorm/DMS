@@ -7,6 +7,8 @@ use App\Models\OrderItem;
 use App\Models\Stock;
 use App\Models\BranchCost;
 use App\Models\CompanyCost;
+use App\Models\Customer;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -123,13 +125,13 @@ class DashboardController extends Controller
 
       $data['currentMonthProfit'] = $orderItemsProfit - $specialDiscounts;
 
-      // 4. Branch Monthly Cost from branch_costs table (correct table/column)
+      // 4. Branch Monthly Cost
       $data['currentMonthCost'] = BranchCost::where('branch_id', $branchId)
         ->whereMonth('cost_date', $currentMonth)
         ->whereYear('cost_date', $currentYear)
         ->sum('amount');
 
-      // 5. Yearly Branch Sales Data (Monthly breakdown)
+      // 5. Yearly Branch Sales Data
       $yearlySales = Order::where('manager_id', $user->id)
         ->whereIn('status', $completedStatuses)
         ->whereYear('created_at', $currentYear)
@@ -156,13 +158,112 @@ class DashboardController extends Controller
         ];
       }
       $data['yearlySalesChart'] = $chartData;
+
+    } elseif ($role === 'sr') {
+
+      $srId     = $user->id;
+      $branchId = $user->branch_id;
+
+      // 1. SR's own current-month order amount
+      $data['srMonthlyOrderAmount'] = Order::where('sr_id', $srId)
+        ->where('status', '!=', 'rejected')
+        ->whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->sum('net_total');
+
+      // 2. Total customers in the SR's branch
+      $data['branchCustomerCount'] = Customer::where('branch_id', $branchId)->count();
+
+      // 3. Daily sales chart for current month
+      $dailySalesRaw = Order::where('sr_id', $srId)
+        ->where('status', '!=', 'rejected')
+        ->whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->select(
+          DB::raw('DAY(created_at) as day'),
+          DB::raw('SUM(net_total) as total_sales')
+        )
+        ->groupBy('day')
+        ->orderBy('day')
+        ->get()
+        ->pluck('total_sales', 'day')
+        ->toArray();
+
+      $daysInMonth = now()->daysInMonth;
+      $dailyChartData = [];
+      for ($d = 1; $d <= $daysInMonth; $d++) {
+        $dailyChartData[] = [
+          'day'   => $d,
+          'sales' => $dailySalesRaw[$d] ?? 0,
+        ];
+      }
+      $data['srDailyChart'] = $dailyChartData;
+
+    } elseif ($role === 'customer') {
+
+      $customerId = $user->customer_id;
+
+      // 1. Current-month total order amount
+      $data['customerMonthlyOrders'] = Order::where('customer_id', $customerId)
+        ->where('status', '!=', 'rejected')
+        ->whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->sum('net_total');
+
+      // 2. Current-month total payments
+      $data['customerMonthlyPayments'] = Transaction::where('customer_id', $customerId)
+        ->where('type', 'pay')
+        ->whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->sum('amount');
+
+      // 3. Latest due
+      $latestTransaction = Transaction::where('customer_id', $customerId)
+        ->latest()
+        ->first();
+      $data['customerCurrentDue'] = $latestTransaction ? $latestTransaction->due : 0;
+
+      // 4. Running order
+      $runningStatuses = ['pending_sr', 'pending_manager', 'approved'];
+      $data['runningOrder'] = Order::where('customer_id', $customerId)
+        ->whereIn('status', $runningStatuses)
+        ->latest()
+        ->first();
+
+      // 5. Daily order chart
+      $dailyOrdersRaw = Order::where('customer_id', $customerId)
+        ->where('status', '!=', 'rejected')
+        ->whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->select(
+          DB::raw('DAY(created_at) as day'),
+          DB::raw('SUM(net_total) as total_amount')
+        )
+        ->groupBy('day')
+        ->orderBy('day')
+        ->get()
+        ->pluck('total_amount', 'day')
+        ->toArray();
+
+      $daysInMonth = now()->daysInMonth;
+      $customerDailyChart = [];
+      for ($d = 1; $d <= $daysInMonth; $d++) {
+        $customerDailyChart[] = [
+          'day'    => $d,
+          'amount' => $dailyOrdersRaw[$d] ?? 0,
+        ];
+      }
+      $data['customerDailyChart'] = $customerDailyChart;
     }
 
     // Role-based dashboard view
-    $view = "pages.dashboard.{$role}";
-    if (!view()->exists($view)) {
-      $view = "pages.dashboard.user";
-    }
+    $view = match ($role) {
+      'admin'    => 'pages.dashboard.admin',
+      'manager'  => 'pages.dashboard.manager',
+      'sr'       => 'pages.dashboard.sr',
+      'customer' => 'pages.dashboard.customer',
+      default    => 'dashboards',
+    };
 
     return view($view, $data);
   }

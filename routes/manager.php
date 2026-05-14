@@ -3,6 +3,7 @@
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\Manager\OrderManagerController;
+use App\Http\Controllers\Manager\RetailOrderController;
 use App\Http\Controllers\Manager\UserManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
@@ -85,5 +86,16 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::post('/stock-transfer/{id}/receive', [\App\Http\Controllers\StockTransferController::class, 'receive'])->name('stock-transfer.receive');
   Route::delete('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'destroy'])->name('stock-transfer.destroy');
 
-});
+  // ── Retail Sales (Manager direct orders) ─────────────────────────────
+  Route::prefix('retail')->name('retail.')->group(function () {
+    Route::get('/',                          [RetailOrderController::class, 'index'])  ->name('index');
+    Route::get('/create',                    [RetailOrderController::class, 'create']) ->name('create');
+    Route::post('/',                         [RetailOrderController::class, 'store'])  ->name('store');
+    Route::get('/{id}',                      [RetailOrderController::class, 'show'])   ->name('show');
+    Route::get('/{id}/edit',                 [RetailOrderController::class, 'edit'])   ->name('edit');
+    Route::put('/{id}',                      [RetailOrderController::class, 'update']) ->name('update');
+    Route::delete('/{id}',                   [RetailOrderController::class, 'destroy'])->name('destroy');
+    Route::get('/product-data/{id}',         [RetailOrderController::class, 'getProductData'])->name('product.data');
+  });
 
+});

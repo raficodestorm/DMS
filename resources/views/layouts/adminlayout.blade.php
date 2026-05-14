@@ -34,6 +34,13 @@
         </a>
       </li>
 
+      <!-- Reports -->
+      <li class="nav-item">
+        <a href="{{ route('admin.report.index') }}" class="nav-link {{ isActive('admin.report.*') }}">
+          <i class="fas fa-chart-pie"></i> Reports & Analytics
+        </a>
+      </li>
+
       <!-- Users -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive(['admin.users.*','admin.index.*']) }}">

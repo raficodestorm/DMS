@@ -25,6 +25,9 @@
   <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
 
   <td class="action-icons">
+    <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="icon-btn" style="color: #10b981;">
+      <i class="fa-solid fa-print"></i>
+    </a>
     <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>

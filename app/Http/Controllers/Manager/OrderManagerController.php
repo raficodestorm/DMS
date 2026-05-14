@@ -24,6 +24,7 @@ class OrderManagerController extends Controller
 
     $query = Order::with(['customer', 'sr'])
       ->where('manager_id', $user->id)
+      ->whereNotNull('sr_id') // Exclude retail orders (manager acting as SR)
       ->latest();
 
     if ($request->filled('search')) {

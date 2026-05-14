@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="{{ asset('css/crud.css') }}">
   <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
   <link rel="stylesheet" href="{{ asset('css/admin/adminstyle.css') }}">
-
+  @stack('styles')
 </head>
 
 <body id="body">
@@ -59,7 +59,6 @@
               <i class="fas fa-user-gear me-1"></i> Manage Customers
             </a>
           </li>
-
         </ul>
       </li>
 
@@ -73,8 +72,7 @@
 
         <ul class="sub-menu" style="{{ isOpen('manager.employees.*') }}">
           <li>
-            <a href="{{ route('manager.employees.create') }}"
-              class="sub-link {{ isActive('manager.employees.create') }}">
+            <a href="{{ route('manager.employees.create') }}" class="sub-link {{ isActive('manager.employees.create') }}">
               <i class="fas fa-user-plus me-1"></i> Add Employee
             </a>
           </li>
@@ -109,15 +107,13 @@
           </li>
 
           <li>
-            <a href="{{ route('manager.stock.in.requests.index') }}"
-              class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
+            <a href="{{ route('manager.stock.in.requests.index') }}" class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
               <i class="fas fa-clipboard-list me-1"></i> Stock-in Requests
             </a>
           </li>
 
           <li>
-            <a href="{{ route('manager.stock-transfer.index') }}"
-              class="sub-link {{ isActive('manager.stock-transfer.*') }}">
+            <a href="{{ route('manager.stock-transfer.index') }}" class="sub-link {{ isActive('manager.stock-transfer.*') }}">
               <i class="fas fa-truck-moving me-1"></i> Stock Transfer
             </a>
           </li>
@@ -125,10 +121,10 @@
       </li>
 
 
-      <!-- Stock -->
+      <!-- Order -->
       <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive('manager.stock.*') }}">
-          <i class="fas fa-user-tie"></i>
+        <div class="nav-link has-dropdown {{ isActive('manager.order.*') }}">
+          <i class="fas fa-file-invoice"></i>
           <span>Order</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -136,30 +132,51 @@
         <ul class="sub-menu" style="{{ isOpen('manager.order.*') }}">
           <li>
             <a href="{{ route('manager.order.index') }}" class="sub-link {{ isActive('manager.order.index') }}">
-              <i class="fas fa-user-plus me-1"></i> My all orders
+              <i class="fas fa-list me-1"></i> My all orders
             </a>
           </li>
 
           <li>
-            <a href="{{ route('manager.order.all.customers') }}"
-              class="sub-link {{ isActive('manager.order.all.customers') }}">
-              <i class="fas fa-user-plus me-1"></i> Cust based orders
+            <a href="{{ route('manager.order.all.customers') }}" class="sub-link {{ isActive('manager.order.all.customers') }}">
+              <i class="fas fa-users-viewfinder me-1"></i> Cust based orders
             </a>
           </li>
 
           <li>
             <a href="{{ route('manager.order.all.srs') }}" class="sub-link {{ isActive('manager.order.all.srs') }}">
-              <i class="fas fa-user-plus me-1"></i> Sr based orders
+              <i class="fas fa-user-tag me-1"></i> Sr based orders
             </a>
           </li>
         </ul>
 
       </li>
 
+      <!-- Retail Sales -->
+      <li class="nav-item">
+        <div class="nav-link has-dropdown {{ isActive('manager.retail.*') }}">
+          <i class="fas fa-store"></i>
+          <span>Retail Sales</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('manager.retail.*') }}">
+          <li>
+            <a href="{{ route('manager.retail.create') }}" class="sub-link {{ isActive('manager.retail.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> New Retail Order
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('manager.retail.index') }}" class="sub-link {{ isActive('manager.retail.index') }}">
+              <i class="fas fa-list-check me-1"></i> Retail Orders
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <!-- payments -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('manager.payments.*') }}">
-          <i class="fas fa-user-tie"></i>
+          <i class="fas fa-money-bill-transfer"></i>
           <span>Payments</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -167,13 +184,13 @@
         <ul class="sub-menu" style="{{ isOpen('manager.payments.*') }}">
           <li>
             <a href="{{ route('manager.payments.create') }}" class="sub-link {{ isActive('manager.payments.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Make Payment
+              <i class="fas fa-plus me-1"></i> Make Payment
             </a>
           </li>
 
           <li>
             <a href="{{ route('manager.payments.index') }}" class="sub-link {{ isActive('manager.payments.index') }}">
-              <i class="fas fa-users-cog me-1"></i> All payments
+              <i class="fas fa-list-ul me-1"></i> All payments
             </a>
           </li>
         </ul>
@@ -294,11 +311,9 @@
         <div class="profile-info" style="display:flex;align-items:center;cursor:pointer;gap:5px;">
 
 
-          <div
-            style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
+          <div style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
 
-            <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="profile"
-              style="width:100%;height:100%;object-fit:cover;display:block;">
+            <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
 
           </div>
 
@@ -342,7 +357,7 @@
   @if(session('success'))
   <script>
     Swal.fire({
-    html: `
+      html: `
         <div class="success-wrapper">
             <div class="success-circle">
                 <div class="checkmark"></div>
@@ -351,21 +366,21 @@
             <p class="success-text">{{ session('success') }}</p>
         </div>
     `,
-    showConfirmButton: false,
-    timer: 2200,
-    background: 'transparent',
-    backdrop: 'rgba(0,0,0,0.3)',
-    customClass: {
+      showConfirmButton: false,
+      timer: 2200,
+      background: 'transparent',
+      backdrop: 'rgba(0,0,0,0.3)',
+      customClass: {
         popup: 'success-popup'
-    }
-});
+      }
+    });
   </script>
   @endif
 
   @if(session('error'))
   <script>
     Swal.fire({
-    html: `
+      html: `
         <div class="error-wrapper">
             <div class="error-circle">
                 <div class="cross-mark">✕</div>
@@ -374,194 +389,124 @@
             <p class="error-text">{{ session('error') }}</p>
         </div>
     `,
-    showConfirmButton: false,
-    timer: 2600,
-    background: 'transparent',
-    backdrop: 'rgba(0,0,0,0.35)',
-    customClass: {
+      showConfirmButton: false,
+      timer: 2600,
+      background: 'transparent',
+      backdrop: 'rgba(0,0,0,0.35)',
+      customClass: {
         popup: 'error-popup'
-    }
-});
+      }
+    });
   </script>
   @endif
 
   <script>
     (function(window, document) {
-    "use strict";
+      "use strict";
 
-    // ১. DOM Elements ক্যাশ করা
-    const body = document.getElementById('body');
-    const toggleBtn = document.getElementById('toggleBtn');
-    const overlay = document.getElementById('overlay');
-    const profileBtn = document.getElementById('profileBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
+      const body = document.getElementById('body');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const overlay = document.getElementById('overlay');
+      const profileBtn = document.getElementById('profileBtn');
+      const profileDropdown = document.getElementById('profileDropdown');
 
-    // ২. সাইডবার টগল
-    if (toggleBtn) {
+      if (toggleBtn) {
         toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (window.innerWidth > 991) body.classList.toggle('sidebar-hidden');
-            else body.classList.toggle('sidebar-open');
+          e.stopPropagation();
+          if (window.innerWidth > 991) body.classList.toggle('sidebar-hidden');
+          else body.classList.toggle('sidebar-open');
         });
-    }
+      }
 
-    if (overlay) {
+      if (overlay) {
         overlay.addEventListener('click', () => body.classList.remove('sidebar-open'));
-    }
+      }
 
-    // ৩. প্রোফাইল ড্রপডাউন
-    if (profileBtn) {
+      if (profileBtn) {
         profileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('active');
+          e.stopPropagation();
+          profileDropdown.classList.toggle('active');
         });
-    }
+      }
 
-    window.addEventListener('click', () => {
+      window.addEventListener('click', () => {
         if (profileDropdown) profileDropdown.classList.remove('active');
-    });
+      });
 
-    // ৪. নেভিগেশন লিংক লজিক
-    document.querySelectorAll('.nav-link').forEach(link => {
+      document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function() {
-            document.querySelectorAll('.nav-link').forEach(item => item.classList.remove('active-nav'));
-            this.classList.add('active-nav');
-            if (this.classList.contains('has-dropdown')) {
-                this.parentElement.classList.toggle('open');
-            }
+          document.querySelectorAll('.nav-link').forEach(item => item.classList.remove('active-nav'));
+          this.classList.add('active-nav');
+          if (this.classList.contains('has-dropdown')) {
+            this.parentElement.classList.toggle('open');
+          }
         });
-    });
+      });
 
-    
-    window.toggleTheme = function() {
+
+      window.toggleTheme = function() {
         const html = document.documentElement;
         const isDark = html.getAttribute("data-theme") === "dark";
-        
+
         if (isDark) {
-            html.removeAttribute("data-theme");
-            localStorage.setItem('theme', 'light');
+          html.removeAttribute("data-theme");
+          localStorage.setItem('theme', 'light');
         } else {
-            html.setAttribute("data-theme", "dark");
-            localStorage.setItem('theme', 'dark');
+          html.setAttribute("data-theme", "dark");
+          localStorage.setItem('theme', 'dark');
         }
         console.log("Theme switched!");
-    };
+      };
 
-    // ৬. পেজ লোড হওয়ার সময় থিম চেক করা
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
         document.documentElement.setAttribute("data-theme", "dark");
-    }
+      }
 
-})(window, document);
+    })(window, document);
   </script>
-
-
 
   <script>
     window.userId = {{ auth()->id() ?? 'null' }};
-    // Notification dropdown
+
     function toggleNotifDropdown(event) {
-
-    if(event) event.stopPropagation();
-    
-    const dropdown = document.getElementById('notifDropdown');
-    dropdown.classList.toggle('show');
-}
-
-document.addEventListener('click', function (e) {
-    const dropdown = document.getElementById('notifDropdown');
-    const button = document.getElementById('notifBtn');
-
-    if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
-        dropdown.classList.remove('show');
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('notifDropdown');
+      dropdown.classList.toggle('show');
     }
-});
-    // RealTime Notification system
-    function timeSince(date) {
-        const seconds = Math.floor((new Date() - date) / 1000);
-        let interval = seconds / 31536000;
 
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " minutes ago";
-        return "Just now";
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('notifDropdown');
+      const button = document.getElementById('notifBtn');
+      if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    function timeSince(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      let interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + " years ago";
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + " months ago";
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + " days ago";
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + " hours ago";
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + " minutes ago";
+      return "Just now";
     }
 
     function updateNotifTimes() {
-        document.querySelectorAll('.notif-time').forEach(el => {
-            const timestamp = el.getAttribute('data-timestamp');
-            if (timestamp) {
-                el.innerText = timeSince(new Date(timestamp));
-            }
-        });
-    }
-
-    setInterval(updateNotifTimes, 60000);
-
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.userId && window.Echo) {
-            window.Echo.private(`App.Models.User.${window.userId}`)
-                .notification((notification) => {
-                    
-                    let displayMessage = '';
-                    let senderInfo = '';
-                    if (typeof notification.message === 'object' && notification.message !== null) {
-                        displayMessage = notification.message.text || '';
-                        senderInfo = notification.message.from ? `from <span class="text-primary fw-bold">${notification.message.from}</span>` : '';
-                    } else {
-                        displayMessage = notification.message || '';
-                    }
-
-                    const dropdown = document.getElementById('notifDropdown');
-                    if (dropdown) {
-                        const noNotif = dropdown.querySelector('.no-notif');
-                        if (noNotif) noNotif.remove();
-
-                        // এখানে বর্তমান সময় স্টোর করা হচ্ছে data-timestamp এ
-                        const now = new Date().toISOString();
-
-                        const newNotifHtml = `
-                            <a href="/notifications/${notification.id}/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">
-                                <div class="notif-title">${notification.title}</div>
-                                <div class="notif-msg">${displayMessage} ${senderInfo}</div>
-                                <div class="notif-time" data-timestamp="${now}">Just now</div>
-                            </a>
-                        `;
-
-                        const header = dropdown.querySelector('.notif-header');
-                        header.insertAdjacentHTML('afterend', newNotifHtml);
-                    }
-
-                    let countBadge = document.querySelector('.notif-count');
-                    let iconWrapper = document.querySelector('.notification-icon');
-
-                    if (countBadge) {
-                        countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
-                    } else if (iconWrapper) {
-                        let newBadge = document.createElement('span');
-                        newBadge.className = 'notif-count';
-                        newBadge.innerText = '1';
-                        iconWrapper.appendChild(newBadge);
-                    }
-
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'info',
-                        title: notification.title,
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                });
+      document.querySelectorAll('.notif-time').forEach(el => {
+        const timestamp = el.getAttribute('data-timestamp');
+        if (timestamp) {
+          el.innerText = timeSince(new Date(timestamp));
         }
-    });
+      });
+    }
+    setInterval(updateNotifTimes, 60000);
   </script>
   @stack('scripts')
 </body>
