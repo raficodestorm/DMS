@@ -51,9 +51,6 @@
   </div>
 
   <div class="card-actions">
-    <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="icon-btn" style="color: #10b981;">
-      <i class="fa-solid fa-print"></i>
-    </a>
     <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>

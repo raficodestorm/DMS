@@ -38,15 +38,7 @@
                 @error('my_deduction')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            <div class="input-box">
-                <label>Tree Deduction <small style="color: red;">(optional)</small></label>
-                <input type="number" step="0.01" class="input-form" name="tree_deduction" placeholder="0.00"
-                    value="{{ old('tree_deduction') }}">
-                @error('tree_deduction')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-
-
+            
             <div class="mt-4">
                 <button class="btn-submit" type="submit">Save</button>
             </div>

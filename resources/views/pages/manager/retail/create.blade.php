@@ -201,19 +201,7 @@
         </div>
       </div>
 
-      {{-- Customer Select --}}
-      <div class="customer-section mb-4">
-        <label class="form-label fw-bold">Select Shop / Customer</label>
-        <select name="customer_id" class="input-form @error('customer_id') is-invalid @enderror" required>
-          <option value="">-- Choose Customer --</option>
-          @foreach($customers as $c)
-          <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
-            {{ $c->shop_name }} (Due: {{ number_format($c->due, 0) }} TK)
-          </option>
-          @endforeach
-        </select>
-        @error('customer_id') <div class="error-msg">{{ $message }}</div> @enderror
-      </div>
+      
 
       {{-- Product Grid --}}
       <div id="product-wrapper" class="row"></div>

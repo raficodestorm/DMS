@@ -78,15 +78,31 @@ class ReportController extends Controller
 
         // --- 3. Profit Report ---
         // Gross Profit = (Selling Price - Purchase Price - Discount) - Special Discount
-        $orderIds = Order::whereIn('status', $completedStatuses)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->pluck('id');
+        // Total COGS (Cost of Goods Sold)
 
-        $orderItemsProfit = OrderItem::join('products', 'order_items.product_id', '=', 'products.id')
-            ->whereIn('order_id', $orderIds)
-            ->sum(DB::raw('order_items.quantity * ((order_items.selling_rate - order_items.discount_amount) - products.purchase_price)'));
+       // Gross Profit = Revenue - COGS - Discount
 
-        $grossProfit = $orderItemsProfit - $totalSpecialDiscount;
+$orderIds = Order::whereIn('status', $completedStatuses)
+    ->whereBetween('created_at', [$startDate, $endDate])
+    ->pluck('id');
+
+// Total COGS
+$totalCOGS = OrderItem::join('products', 'order_items.product_id', '=', 'products.id')
+    ->whereIn('order_id', $orderIds)
+    ->sum(DB::raw('order_items.quantity * products.purchase_price'));
+
+// Gross Profit From Items
+$orderItemsProfit = OrderItem::join('products', 'order_items.product_id', '=', 'products.id')
+    ->whereIn('order_id', $orderIds)
+    ->sum(DB::raw(
+        'order_items.quantity * (
+            (order_items.selling_rate - order_items.discount_amount)
+            - products.purchase_price
+        )'
+    ));
+
+$grossProfit = $orderItemsProfit - $totalSpecialDiscount;
+        
 
         // Bonus increases profit
         $totalBonus = Bonus::whereBetween('bonus_date', [$startDate, $endDate])->sum('amount');
@@ -104,7 +120,7 @@ class ReportController extends Controller
         $companySalary = CompanyCost::whereBetween('cost_date', [$startDate, $endDate])
             ->where('category', 'salary')->sum('amount');
         $branchSalary = BranchCost::whereBetween('cost_date', [$startDate, $endDate])
-            ->where('category', 'staff')->sum('amount');
+            ->where('category', 'salary')->sum('amount');
         $totalSalary = $companySalary + $branchSalary;
 
         // --- 4. Product & Inventory Report ---
@@ -186,6 +202,7 @@ class ReportController extends Controller
 
         return view('pages.admin.report.index', compact(
             'periodLabel', 'totalOrders', 'totalSalesAmount', 'totalPaidAmount', 
+            'totalCOGS',
             'totalDueAmount', 'totalDiscount', 'totalReturnedAmount',
             'grossProfit', 'totalBonus', 'profit', 'totalCost', 'netProfit', 'totalSalary',
             'totalStockValue', 'mostSoldProducts',

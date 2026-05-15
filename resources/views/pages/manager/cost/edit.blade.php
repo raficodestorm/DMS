@@ -28,7 +28,7 @@
         <div class="col-md-6">
             <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
             <select name="category" class="input-form @error('category') is-invalid @enderror" required>
-                @foreach(['office', 'transport', 'staff', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
+                @foreach(['office', 'transport', 'salary', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
                     <option value="{{ $cat }}" {{ old('category', $cost->category) == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
                 @endforeach
             </select>

@@ -22,8 +22,9 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">{{ config('app.name') }}</div>
-
+    <div class="sidebar-brand">
+      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 170px; height: 60x;">
+    </div>
     <ul class="nav-menu">
 
       <!-- Dashboard -->
@@ -177,7 +178,7 @@
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('manager.payments.*') }}">
           <i class="fas fa-money-bill-transfer"></i>
-          <span>Payments</span>
+          <span>Transactions</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
@@ -190,7 +191,7 @@
 
           <li>
             <a href="{{ route('manager.payments.index') }}" class="sub-link {{ isActive('manager.payments.index') }}">
-              <i class="fas fa-list-ul me-1"></i> All payments
+              <i class="fas fa-list-ul me-1"></i> All Transactions
             </a>
           </li>
         </ul>
@@ -217,7 +218,7 @@
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('manager.costs.*') }}">
           <i class="fas fa-wallet"></i>
-          <span>Expense Management</span>
+          <span>Expense</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
@@ -247,10 +248,10 @@
         <i style="color:var(--primary);" class="fa-solid fa-bars"></i>
       </div>
 
-      <div class="search-box" style="position: relative;">
+      <!-- <div class="search-box" style="position: relative;">
         <input type="text" id="mainSearch" placeholder="Search articles or categories..." autocomplete="off">
         <div id="search-results" class="search-suggestions-box"></div>
-      </div>
+      </div> -->
 
     </div>
 

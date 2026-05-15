@@ -44,7 +44,7 @@
                     <label class="small text-muted">Category</label>
                     <select name="category" class="input-form py-1" onchange="this.form.submit()">
                         <option value="">All Categories</option>
-                        @foreach(['office', 'transport', 'staff', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
+                        @foreach(['office', 'transport', 'salary', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
                             <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
                         @endforeach
                     </select>

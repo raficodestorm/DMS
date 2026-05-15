@@ -60,7 +60,7 @@ class BranchCostController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'cost_date' => 'required|date',
-            'category' => 'required|in:office,transport,staff,maintenance,product,utility,marketing,miscellaneous',
+            'category' => 'required|in:office,transport,salary,maintenance,product,utility,marketing,miscellaneous',
             'description' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -107,7 +107,7 @@ class BranchCostController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'cost_date' => 'required|date',
-            'category' => 'required|in:office,transport,staff,maintenance,product,utility,marketing,miscellaneous',
+            'category' => 'required|in:office,transport,salary,maintenance,product,utility,marketing,miscellaneous',
             'description' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);

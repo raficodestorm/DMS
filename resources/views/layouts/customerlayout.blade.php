@@ -22,8 +22,9 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">{{ config('app.name') }}</div>
-
+   <div class="sidebar-brand">
+      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 170px; height: 60x;">
+    </div>
     <ul class="nav-menu">
 
       <!-- Dashboard -->
@@ -35,7 +36,7 @@
 
       <li class="nav-item">
         <a href="{{ route('customer.payments.index') }}" class="nav-link {{ isActive('customer.payments.index') }}">
-          <i class="fas fa-gauge-high"></i> Transactions
+          <i class="fas fa-money-bill-transfer"></i> Transactions
         </a>
       </li>
 
@@ -76,10 +77,7 @@
         <i style="color:var(--primary);" class="fa-solid fa-bars"></i>
       </div>
 
-      <div class="search-box" style="position: relative;">
-        <input type="text" id="mainSearch" placeholder="Search articles or categories..." autocomplete="off">
-        <div id="search-results" class="search-suggestions-box"></div>
-      </div>
+      
 
     </div>
 

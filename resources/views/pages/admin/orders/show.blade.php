@@ -299,27 +299,50 @@
 
     @if($order->status == 'pending_manager')
 
-    <form action="{{ route('admin.order.reject', $order->id) }}" method="POST">
-      @csrf @method('PATCH')
-      <button type="submit" class="btn-smart btn-reject" onclick="return confirm('Reject this order?')">
-        <i class="fas fa-times-circle"></i> Reject
-      </button>
-    </form>
+        <form action="{{ route('admin.order.reject', $order->id) }}" method="POST">
+            @csrf
+            @method('PATCH')
 
-    <form action="{{ route('admin.order.approve', $order->id) }}" method="POST">
-      @csrf @method('PATCH')
-      <button type="submit" class="btn-smart btn-admin">
-        <i class="fas fa-check-circle"></i> Approve
-      </button>
-    </form>
+            <button type="submit"
+                class="btn-smart btn-reject"
+                onclick="return confirm('Reject this order?')">
 
-    @elseif($order->status == 'complete' || $order->status == 'delivered')
-    <a href="{{ route('admin.order.view_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i>Invoice
-    </a>
+                <i class="fas fa-times-circle"></i> Reject
+            </button>
+        </form>
+
+        <form action="{{ route('admin.order.approve', $order->id) }}" method="POST">
+            @csrf
+            @method('PATCH')
+
+            <button type="submit" class="btn-smart btn-admin">
+                <i class="fas fa-check-circle"></i> Approve
+            </button>
+        </form>
+
+    @elseif(in_array($order->status, ['complete', 'delivered']))
+
+        @if(optional($order->sr)->fullname)
+
+            <a href="{{ route('admin.order.view_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @else
+
+            <a href="{{ route('admin.order.view_retail_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @endif
 
     @endif
-  </div>
+
+</div>
 </div>
 
 <div style="text-align: center; margin-top: 20px;">

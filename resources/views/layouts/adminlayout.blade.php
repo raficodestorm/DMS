@@ -23,7 +23,9 @@
   <div class="sidebar-overlay" id="overlay"></div>
 
   <aside class="sidebar">
-    <div class="sidebar-brand">{{ config('app.name') }}</div>
+    <div class="sidebar-brand">
+      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 170px; height: 60x;">
+    </div>
 
     <ul class="nav-menu">
 
@@ -127,7 +129,7 @@
 
       <li class="nav-item">
         <a href="{{ route('admin.customers.index') }}" class="nav-link {{ isActive('admin.customer.index') }}">
-          <i class="fas fa-users-cog"></i> Manage Customers
+          <i class="fas fa-handshake"></i> Manage Customers
         </a>
       </li>
 
@@ -168,7 +170,7 @@
       <!-- orders -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.orders.*') }}">
-          <i class="fa-solid fa-box"></i>
+          <i class="fa-solid fa-cart-shopping"></i>
           <span>Order</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -213,7 +215,7 @@
 
       <li class="nav-item">
         <a href="{{ route('admin.payments.index') }}" class="nav-link {{ isActive('admin.payments.index') }}">
-          <i class="fas fa-users-cog"></i> Transactions
+          <i class="fas fa-wallet"></i> Transactions
         </a>
       </li>
 
@@ -238,7 +240,7 @@
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.bonuses.*') }}">
           <i class="fas fa-gift"></i>
-          <span>Bonus Management</span>
+          <span>Bonus</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
@@ -311,7 +313,7 @@
       <!-- Products -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.suppliers.*') }}">
-          <i class="fa-solid fa-box"></i>
+          <i class="fa-solid fa-truck-field"></i>
           <span>Supplier</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -361,7 +363,7 @@
       <!-- offer -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
-          <i class="fa-solid fa-box"></i>
+          <i class="fa-solid fa-tags"></i>
           <span>Offer</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -386,7 +388,7 @@
       <!-- deductin -->
       <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
-          <i class="fa-solid fa-box"></i>
+          <i class="fa-solid fa-scissors"></i>
           <span>Deduction</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -433,10 +435,10 @@
         <i style="color:var(--primary);" class="fa-solid fa-bars"></i>
       </div>
 
-      <div class="search-box" style="position: relative;">
+      <!-- <div class="search-box" style="position: relative;">
         <input type="text" id="mainSearch" placeholder="Search articles or categories..." autocomplete="off">
         <div id="search-results" class="search-suggestions-box"></div>
-      </div>
+      </div> -->
 
     </div>
 

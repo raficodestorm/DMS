@@ -13,9 +13,103 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
 
     <link rel="stylesheet" href="{{ asset('./css/user/userstyle.css') }}">
+    <style>
+        #preloader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      /* background: #131518ff; */
+      background: #f9fcfeff;
+      z-index: 99999;
+      /* Ensure it is above everything */
+      transition: opacity 0.6s ease, visibility 0.6s;
+    }
+
+    .loader-logo {
+      width: 240px;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.3));
+      animation: logoPulse 2s ease-in-out infinite;
+    }
+
+    .dots-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: dotJump 1.4s infinite ease-in-out both;
+    }
+
+    .dot:nth-child(2) {
+      background: var(--third);
+      animation-delay: 0.2s;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes logoPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes dotJump {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+        opacity: 0.3;
+      }
+
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 3. Exit Animation Logic */
+    body.loaded #preloader {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    body.loaded {
+      opacity: 1;
+    }
+
+    </style>
 </head>
 
 <body>
+    <div id="preloader">
+    <img src="{{ asset('image/relectric-logo.png') }}" class="loader-logo" alt="R ELECTRIC">
+    <div class="dots-container">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
     @include('components.navbar')
 
     <div>
@@ -30,6 +124,14 @@
     </script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        window.addEventListener("load", () => {
+      // Artificial delay for demonstration
+      setTimeout(() => {
+        document.body.classList.add("loaded");
+      }, 2500);
+    });
+    </script>
 
 </body>
 

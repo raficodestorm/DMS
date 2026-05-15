@@ -208,9 +208,9 @@
         <div class="fixed-col-6">
           <div class="info-card">
             <b>Customer Details:</b><br>
-            Shop Name: {{ $customerData['details']->shop_name }}<br>
-            Address: {{ $customerData['details']->address ?? 'Chattogram' }}<br>
-            Phone: {{ $customerData['details']->phone }}
+            Customer: unknown<br>
+            Address: unknown<br>
+            Phone: unknown
           </div>
         </div>
 
@@ -219,7 +219,7 @@
             <b>Invoice Info:</b><br>
             Order ID: BRS{{ $order->id }}<br>
             Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
-            Reference (SR): {{ $order->sr->fullname ?? 'N/A' }}
+            Reference : {{ $order->manager->fullname ?? 'N/A' }}
           </div>
         </div>
       </div>
@@ -288,18 +288,11 @@
           <div class="summary-card">
 
             <h5 class="text-danger">Payment Status</h5>
-            <div class="mb-2">
-              Previous Due:
-              <strong>{{ number_format($customerData['previous_due'],2) }} ৳</strong>
-            </div>
+            <h2 class="text-success">Paid</h2>
 
-            <div>
-              Current Total Due:
-              <strong>{{ number_format($customerData['current_due'],2) }} ৳</strong>
-            </div>
-            
           </div>
         </div>
+
 
         <div class="fixed-col-7">
           <div class="summary-card">

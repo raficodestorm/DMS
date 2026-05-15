@@ -22,10 +22,7 @@
                 <span class="i-label">Own-Deduction</span>
                 <span class="i-value">{{ $deduction->my_deduction }}</span>
             </div>
-            <div class="info-group">
-                <span class="i-label">Tree-Deduction</span>
-                <span class="i-value">{{ $deduction->tree_deduction }}</span>
-            </div>
+            
 
             <div class="info-group">
                 <span class="i-label">Created at</span>

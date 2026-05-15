@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('category', [
                 'office', 
                 'transport', 
-                'staff', 
+                'salary', 
                 'maintenance', 
                 'product', 
                 'utility', 

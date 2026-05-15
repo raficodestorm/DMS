@@ -2,9 +2,9 @@
     <div class="container">
         <div class="row g-5">
             <div class="col-lg-4 col-md-6">
-                <a class="nav-brand-custom" href="#">
-                    <span class="top-logo">{{ config('app.name') }}</span>
-                </a>
+                <a class="brand" href="{{ route('home-page') }}">
+      <img src="{{ asset('image/relectric-logo.png') }}" class="img-logo img-fluid" id="img-logo" alt="relectric" >
+    </a>
                 <p class="mt-3"
                     style="font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--text-muted); line-height: 1.8;">
                     "Touch and Shock" <br>

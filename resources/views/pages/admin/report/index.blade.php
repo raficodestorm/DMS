@@ -321,16 +321,17 @@
 
 <!-- SUMMARY CARDS -->
 <div class="summary-grid animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+    <div class="summary-card sc-stock">
+        <div class="sc-title">Stock Value</div>
+        <div class="sc-value text-info">৳ {{ number_format($totalStockValue, 2) }}</div>
+        <div class="sc-sub"><i class="fas fa-warehouse me-1 text-info"></i> Current inventory asset</div>
+    </div>
     <div class="summary-card sc-sales">
         <div class="sc-title">Total Sales</div>
         <div class="sc-value">৳ {{ number_format($totalSalesAmount, 2) }}</div>
         <div class="sc-sub"><i class="fas fa-shopping-bag me-1 text-primary"></i> {{ $totalOrders }} Orders</div>
     </div>
-    <div class="summary-card sc-profit">
-        <div class="sc-title">Net Profit</div>
-        <div class="sc-value val-success">৳ {{ number_format($netProfit, 2) }}</div>
-        <div class="sc-sub"><i class="fas fa-chart-line me-1 text-success"></i> After costs & bonuses</div>
-    </div>
+    
     <div class="summary-card sc-due">
         <div class="sc-title">Market Due</div>
         <div class="sc-value val-danger">৳ {{ number_format($totalDueAmount, 2) }}</div>
@@ -341,10 +342,11 @@
         <div class="sc-value">৳ {{ number_format($totalCost, 2) }}</div>
         <div class="sc-sub"><i class="fas fa-file-invoice-dollar me-1 text-warning"></i> Includes salary & office</div>
     </div>
-    <div class="summary-card sc-stock">
-        <div class="sc-title">Stock Value</div>
-        <div class="sc-value text-info">৳ {{ number_format($totalStockValue, 2) }}</div>
-        <div class="sc-sub"><i class="fas fa-warehouse me-1 text-info"></i> Current inventory asset</div>
+    
+    <div class="summary-card sc-profit">
+        <div class="sc-title">Net Profit</div>
+        <div class="sc-value val-success">৳ {{ number_format($netProfit, 2) }}</div>
+        <div class="sc-sub"><i class="fas fa-chart-line me-1 text-success"></i> After costs & bonuses</div>
     </div>
 </div>
 
@@ -356,49 +358,104 @@
         
         <!-- Profit Calculation Report -->
         <div class="report-section">
-            <div class="rs-header">
-                <h3 class="rs-title"><i class="fas fa-calculator text-primary"></i> Profit & Loss Statement</h3>
+    <div class="rs-header">
+        <h3 class="rs-title">
+            <i class="fas fa-calculator text-primary"></i>
+            Profit & Loss Statement
+        </h3>
+    </div>
+
+    <div class="rs-body">
+        <div class="waterfall">
+
+            {{-- Revenue --}}
+            <div class="wf-row">
+                <span>Total Sales Revenue</span>
+                <span class="val-primary">
+                    ৳ {{ number_format($totalSalesAmount, 2) }}
+                </span>
             </div>
-            <div class="rs-body">
-                <div class="waterfall">
-                    <div class="wf-row">
-                        <span>Total Sales Revenue</span>
-                        <span class="val-primary">৳ {{ number_format($totalSalesAmount, 2) }}</span>
-                    </div>
-                    <div class="wf-row sub">
-                        <span>Less: Discounts Provided</span>
-                        <span class="val-danger">- ৳ {{ number_format($totalDiscount, 2) }}</span>
-                    </div>
-                    <div class="wf-row main" style="border-top: none; padding-top: 0; margin-top: 0;">
-                        <span>Gross Profit <small class="text-muted">(Revenue - COGS - Discount)</small></span>
-                        <span>৳ {{ number_format($grossProfit, 2) }}</span>
-                    </div>
-                    
-                    <div class="wf-row sub mt-2">
-                        <span>Add: Bonuses Earned</span>
-                        <span class="val-success">+ ৳ {{ number_format($totalBonus, 2) }}</span>
-                    </div>
-                    <div class="wf-row main">
-                        <span>Total Profit</span>
-                        <span>৳ {{ number_format($profit, 2) }}</span>
-                    </div>
-                    
-                    <div class="wf-row sub mt-2">
-                        <span>Less: Operating Costs (Excl. Salary)</span>
-                        <span class="val-danger">- ৳ {{ number_format($totalCost - $totalSalary, 2) }}</span>
-                    </div>
-                    <div class="wf-row sub">
-                        <span>Less: Salary Expenses</span>
-                        <span class="val-danger">- ৳ {{ number_format($totalSalary, 2) }}</span>
-                    </div>
-                    
-                    <div class="wf-row main" style="font-size: 18px; color: var(--primary); padding-top: 15px; margin-top: 10px;">
-                        <span>Net Profit</span>
-                        <span>৳ {{ number_format($netProfit, 2) }}</span>
-                    </div>
-                </div>
+
+            {{-- COGS --}}
+            <div class="wf-row sub">
+                <span>Less: Cost of Goods Sold (COGS)</span>
+                <span class="val-danger">
+                    - ৳ {{ number_format($totalCOGS, 2) }}
+                </span>
             </div>
+
+            {{-- Discount --}}
+            <div class="wf-row sub">
+                <span>Less: Discounts Provided</span>
+                <span class="val-danger">
+                    - ৳ {{ number_format($totalDiscount, 2) }}
+                </span>
+            </div>
+
+            {{-- Gross Profit --}}
+            <div class="wf-row main" style="border-top:none;padding-top:0;margin-top:0;">
+                <span>
+                    Gross Profit
+                    <small class="text-muted">
+                        (Revenue - COGS - Discount)
+                    </small>
+                </span>
+
+                <span class="{{ $grossProfit >= 0 ? 'val-success' : 'val-danger' }}">
+                    ৳ {{ number_format($grossProfit, 2) }}
+                </span>
+            </div>
+
+            {{-- Bonus --}}
+            <div class="wf-row sub mt-2">
+                <span>Add: Bonuses Earned</span>
+
+                <span class="val-success">
+                    + ৳ {{ number_format($totalBonus, 2) }}
+                </span>
+            </div>
+
+            {{-- Total Profit --}}
+            <div class="wf-row main">
+                <span>Total Profit</span>
+
+                <span class="{{ $profit >= 0 ? 'val-success' : 'val-danger' }}">
+                    ৳ {{ number_format($profit, 2) }}
+                </span>
+            </div>
+
+            {{-- Operating Cost --}}
+            <div class="wf-row sub mt-2">
+                <span>Less: Operating Costs (Excl. Salary)</span>
+
+                <span class="val-danger">
+                    - ৳ {{ number_format($totalCost - $totalSalary, 2) }}
+                </span>
+            </div>
+
+            {{-- Salary --}}
+            <div class="wf-row sub">
+                <span>Less: Salary Expenses</span>
+
+                <span class="val-danger">
+                    - ৳ {{ number_format($totalSalary, 2) }}
+                </span>
+            </div>
+
+            {{-- Net Profit --}}
+            <div class="wf-row main"
+                 style="font-size:18px;color:var(--primary);padding-top:15px;margin-top:10px;">
+
+                <span>Net Profit</span>
+
+                <span class="{{ $netProfit >= 0 ? 'val-success' : 'val-danger' }}">
+                    ৳ {{ number_format($netProfit, 2) }}
+                </span>
+            </div>
+
         </div>
+    </div>
+</div>
 
         <!-- Sales Chart -->
         <div class="report-section">

@@ -37,16 +37,19 @@
       </div>
 
       <div class="input-box">
-        <label>Branch</label>
-        <select class="input-form" name="branch_id">
-          <option value="">--Select Branch--</option>
-          @foreach($branches as $branch)
-          <option value="{{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}">
-            {{ $branch->name }}
-          </option>
-          @endforeach
-        </select>
-      </div>
+    <label>Branch</label>
+
+    <select class="input-form" name="branch_id">
+        <option value="">--Select Branch--</option>
+
+        @foreach($branches as $branch)
+            <option value="{{ $branch->id }}"
+                {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}>
+                {{ $branch->name }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
       <div class="input-box">
         <label>Status</label>
@@ -88,7 +91,7 @@
           @foreach($employees as $employee)
           <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' :
             '' }}>
-            BRE100{{ $employee->id }}
+            BRE100{{ $employee->id }} ({{$employee->name}})
           </option>
           @endforeach
 

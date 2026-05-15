@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Manager\RetailOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
@@ -85,6 +86,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
 
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
+  Route::get('/retail/invoice/view/{order}', [RetailOrderController::class, 'viewRetailInvoice'])->name('order.view_retail_invoice');
 
   Route::get('/return', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'index'])->name('return.index');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'show'])->name('return.show');

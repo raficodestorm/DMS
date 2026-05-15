@@ -5,13 +5,19 @@
 <div class="container d-flex flex-column align-items-center" id="invoice-scale-target">
   {{-- The Slip Card --}}
   <div class="receipt-card" id="printArea">
+    
+    <!-- Watermark Logo -->
+    <img src="{{ asset('image/relectric-logo.png') }}" class="watermark-logo" alt="Watermark">
+
     <div class="receipt-header">
       <div class="brand-info">
-        <h2>{{ config('app.name') }}</h2>
+        <div>
+          <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60x;">
+        </div>
         <p>Payment Receipt</p>
       </div>
       <div class="receipt-status">
-        <span class="paid-stamp">PAID</span>
+        <img src="{{ asset('image/paid.png') }}" alt="Paid" class="paid-stamp-img">
       </div>
     </div>
 
@@ -82,7 +88,7 @@
 <style>
   /* Professional Receipt Styling */
   .receipt-card {
-    background: #fff;
+    background: #fff !important;
     width: 100%;
     max-width: 450px;
     padding: 40px;
@@ -91,6 +97,28 @@
     position: relative;
     overflow: hidden;
     border: 1px solid #eee;
+    z-index: 1;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .receipt-card > *:not(.watermark-logo) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .watermark-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    max-width: 300px;
+    opacity: 0.08;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .receipt-header {
@@ -114,15 +142,14 @@
     font-size: 0.9rem;
   }
 
-  .paid-stamp {
-    border: 3px dashed #2d6a4f;
-    color: #2d6a4f;
-    padding: 5px 15px;
-    font-weight: 900;
-    border-radius: 5px;
-    transform: rotate(-15deg);
-    display: inline-block;
+  .paid-stamp-img {
+    width: 150px;
+    height: auto;
+    margin-right: -25px;
     opacity: 0.8;
+    transform: rotate(-12deg);
+    display: inline-block;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
   }
 
   .amount-section {

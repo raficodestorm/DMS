@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home-page');
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 
 
 // Route::post('/notifications/read/{id}', function ($id) {
@@ -40,17 +46,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboards');
 
-    Route::get('/dashboard/user', function () {
-        return view('pages.dashboard.user');
-    })->name('dashboard.user')->middleware('role:user'); // user page - accessible by user (admin can also view if needed)
+    Route::get('/dashboard/user', [DashboardController::class, 'index'])->name('dashboard.user')->middleware('role:user');
 
-    Route::get('/dashboard/counter', function () {
-        return view('pages.dashboard.counter');
-    })->name('dashboard.counter_manager')->middleware('role:manager');
+    Route::get('/dashboard/counter', [DashboardController::class, 'index'])->name('dashboard.counter_manager')->middleware('role:manager');
 
-    Route::get('/dashboard/admin', function () {
-        return view('pages.dashboard.admin');
-    })->name('dashboard.admin')->middleware('role:admin');
+    Route::get('/dashboard/admin', [DashboardController::class, 'index'])->name('dashboard.admin')->middleware('role:admin');
 
     Route::get('/myprofile', [ProfileController::class, 'index'])->name('profile.index');
 

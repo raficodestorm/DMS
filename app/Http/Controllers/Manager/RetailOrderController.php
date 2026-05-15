@@ -13,6 +13,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Notifications\SystemNotification;
 
 class RetailOrderController extends Controller
 {
@@ -53,10 +55,6 @@ class RetailOrderController extends Controller
     $user     = auth()->user();
     $branchId = $user->branch_id;
 
-    $customers = Customer::where('branch_id', $branchId)
-      ->orderBy('shop_name', 'asc')
-      ->get();
-
     $products = Stock::with('product')
       ->where('branch_id', $branchId)
       ->where('quantity', '>', 0)
@@ -69,7 +67,7 @@ class RetailOrderController extends Controller
         'available_qty' => $stock->quantity,
       ]);
 
-    return view('pages.manager.retail.create', compact('customers', 'products'));
+    return view('pages.manager.retail.create', compact( 'products'));
   }
 
   /**
@@ -78,7 +76,6 @@ class RetailOrderController extends Controller
   public function store(Request $request)
   {
     $request->validate([
-      'customer_id' => 'required|exists:customers,id',
       'products'    => 'required|array|min:1',
       'net_total'   => 'required|numeric|min:0',
     ]);
@@ -93,18 +90,33 @@ class RetailOrderController extends Controller
         $totalDeductionPercent = min($customRate, 100);
 
         $order = Order::create([
-          'customer_id'               => $request->customer_id,
           'sr_id'                     => null, // Retail orders don't have an SR
           'manager_id'                => $managerId,
-          'status'                    => 'approved', // auto-approved
+          'status'                    => 'delivered', // auto-approved
           'special_discount'          => $request->special_discount ?? 0,
           'discount_amount'           => $request->total_discount ?? 0,
           'net_total'                 => $request->net_total,
           'applied_deduction_percent' => $totalDeductionPercent,
           'note'                      => $request->note,
         ]);
-
+        $branchId = auth()->user()->branch_id;
         foreach ($request->products as $item) {
+          // Stock Check & Update
+            $stock = Stock::where([
+                'product_id' => $item['product_id'],
+                'branch_id'  => $branchId
+            ])->lockForUpdate()->first();
+
+            if (!$stock) {
+                throw new \Exception("Stock not found.");
+            }
+
+            if ($stock->quantity < $item['qty']) {
+                throw new \Exception("Insufficient stock.");
+            }
+
+            $stock->decrement('quantity', $item['qty']);
+
           $basePrice       = (float) $item['price'];
           $deductionAmount = $basePrice * $totalDeductionPercent / 100;
           $sellingRate     = $basePrice - $deductionAmount;
@@ -119,6 +131,25 @@ class RetailOrderController extends Controller
             'discount_amount'       => $item['discount'] ?? 0,
             'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty'],
           ]);
+
+          
+          }
+
+        // Send Notification To Admin After Everything Stored
+        $notificationData = [
+            'title'   => 'New Retail Order Done',
+            'message' => [
+                'text' => 'A new retail order has been created by',
+                'from' => Auth::user()->branch->name ?? 'Unknown Branch'
+            ],
+            'url'  => route('admin.order.show', $order->id),
+            'type' => 'retail_order'
+        ];
+
+        $admins = \App\Models\User::where('role', 'admin')->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\SystemNotification($notificationData));
         }
 
         return redirect()
@@ -158,10 +189,6 @@ class RetailOrderController extends Controller
       ->whereNotIn('status', ['complete', 'delivered'])
       ->findOrFail($id);
 
-    $customers = Customer::where('branch_id', $branchId)
-      ->orderBy('shop_name', 'asc')
-      ->get();
-
     $products = Stock::with('product')
       ->where('branch_id', $branchId)
       ->where('quantity', '>', 0)
@@ -174,67 +201,103 @@ class RetailOrderController extends Controller
         'available_qty' => $stock->quantity,
       ]);
 
-    return view('pages.manager.retail.edit', compact('order', 'customers', 'products'));
+    return view('pages.manager.retail.edit', compact('order', 'products'));
   }
 
   /**
    * Update an existing retail order.
    */
   public function update(Request $request, int $id)
-  {
+{
     $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'products'    => 'required|array|min:1',
-      'net_total'   => 'required|numeric|min:0',
+        'products'    => 'required|array|min:1',
+        'net_total'   => 'required|numeric|min:0',
     ]);
 
     try {
-      return DB::transaction(function () use ($request, $id) {
-        $user  = auth()->user();
-        $order = Order::where('manager_id', $user->id)
-          ->whereNull('sr_id')
-          ->whereNotIn('status', ['complete', 'delivered'])
-          ->findOrFail($id);
 
-        $customRate            = (float) ($request->applied_custom_deduction ?? 0);
-        $totalDeductionPercent = min($customRate, 100);
+        return DB::transaction(function () use ($request, $id) {
 
-        $order->update([
-          'customer_id'               => $request->customer_id,
-          'special_discount'          => $request->special_discount ?? 0,
-          'discount_amount'           => $request->total_discount ?? 0,
-          'net_total'                 => $request->net_total,
-          'applied_deduction_percent' => $totalDeductionPercent,
-          'note'                      => $request->note,
-        ]);
+            $user  = auth()->user();
 
-        $order->items()->delete();
+            $order = Order::where('manager_id', $user->id)
+                ->whereNull('sr_id')
+                ->findOrFail($id);
 
-        foreach ($request->products as $item) {
-          $basePrice       = (float) $item['price'];
-          $deductionAmount = $basePrice * $totalDeductionPercent / 100;
-          $sellingRate     = $basePrice - $deductionAmount;
+            $customRate            = (float) ($request->applied_custom_deduction ?? 0);
+            $totalDeductionPercent = min($customRate, 100);
 
-          OrderItem::create([
-            'order_id'              => $order->id,
-            'product_id'            => $item['product_id'],
-            'quantity'              => $item['qty'],
-            'price'                 => $basePrice,
-            'unit_deduction_amount' => $deductionAmount,
-            'selling_rate'          => $sellingRate,
-            'discount_amount'       => $item['discount'] ?? 0,
-            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty'],
-          ]);
-        }
+            $order->update([
+                'special_discount'          => $request->special_discount ?? 0,
+                'discount_amount'           => $request->total_discount ?? 0,
+                'net_total'                 => $request->net_total,
+                'applied_deduction_percent' => $totalDeductionPercent,
+                'note'                      => $request->note,
+            ]);
 
-        return redirect()
-          ->route('manager.retail.index')
-          ->with('success', "Retail Order #BRS{$order->id} updated successfully!");
-      });
+            $branchId = auth()->user()->branch_id;
+
+            // Restore Previous Stock
+            foreach ($order->items as $oldItem) {
+
+                $stock = Stock::where([
+                    'product_id' => $oldItem->product_id,
+                    'branch_id'  => $branchId
+                ])->lockForUpdate()->first();
+
+                if ($stock) {
+                    $stock->increment('quantity', $oldItem->quantity);
+                }
+            }
+
+            $order->items()->delete();
+
+            foreach ($request->products as $item) {
+
+                // Stock Check
+                $stock = Stock::where([
+                    'product_id' => $item['product_id'],
+                    'branch_id'  => $branchId
+                ])->lockForUpdate()->first();
+
+                if (!$stock) {
+                    throw new \Exception("Stock not found.");
+                }
+
+                if ($stock->quantity < $item['qty']) {
+                    throw new \Exception("Insufficient stock.");
+                }
+
+                // Deduct New Stock
+                $stock->decrement('quantity', $item['qty']);
+
+                $basePrice       = (float) $item['price'];
+                $deductionAmount = $basePrice * $totalDeductionPercent / 100;
+                $sellingRate     = $basePrice - $deductionAmount;
+
+                OrderItem::create([
+                    'order_id'              => $order->id,
+                    'product_id'            => $item['product_id'],
+                    'quantity'              => $item['qty'],
+                    'price'                 => $basePrice,
+                    'unit_deduction_amount' => $deductionAmount,
+                    'selling_rate'          => $sellingRate,
+                    'discount_amount'       => $item['discount'] ?? 0,
+                    'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty'],
+                ]);
+            }
+
+            return redirect()
+                ->route('manager.retail.index')
+                ->with('success', "Retail Order #BRS{$order->id} updated successfully!");
+        });
+
     } catch (\Exception $e) {
-      return redirect()->back()->with('error', 'Something went wrong! ' . $e->getMessage());
+
+        return redirect()->back()
+            ->with('error', 'Something went wrong! ' . $e->getMessage());
     }
-  }
+}
 
   /**
    * Delete a retail order.
@@ -273,5 +336,27 @@ class RetailOrderController extends Controller
       'discount'      => $offer ? $offer->discount_amount : 0,
       'discount_type' => $offer ? $offer->type : 'fixed',
     ]);
+  }
+
+
+
+
+  public function viewRetailInvoice(Order $order)
+  {
+    $order->load(['items.product.category', 'customer', 'manager']);
+
+    $items = $order->items->sortBy(function ($item) {
+      return $item->product->category->name ?? 'General';
+    });
+
+    $hasDiscount = $items->contains(function ($item) {
+      return (float) $item->discount_amount > 0;
+    });
+
+    return view("pages.manager.order.retail-invoice", compact(
+      'order',
+      'items',
+      'hasDiscount'
+    ));
   }
 }

@@ -17,7 +17,6 @@
                     <th>Type</th>
                     <th>Cust-Deduction</th>
                     <th>Own Deduction</th>
-                    <th>Tree Deduction</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -30,7 +29,7 @@
                     <td>{{ $deduction->type }}</td>
                     <td>{{ $deduction->customer_deduction }}</td>
                     <td>{{ $deduction->my_deduction }}</td>
-                    <td>{{ $deduction->tree_deduction }}</td>
+                    
 
                     <td class="action-icons">
                         <a href="{{ route('admin.deductions.show', $deduction) }}" class="icon-btn view-icon">
@@ -64,9 +63,7 @@
                 <div><span>Own-Deduction</span>
                     <p>{{ $deduction->my_deduction }}</p>
                 </div>
-                <div><span>Tree-Deduction</span>
-                    <p>{{ $deduction->tree_deduction }}</p>
-                </div>
+               
 
             </div>
 

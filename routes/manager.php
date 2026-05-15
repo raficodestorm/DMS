@@ -67,6 +67,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
 
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
+  Route::get('/retail/invoice/view/{order}', [RetailOrderController::class, 'viewRetailInvoice'])->name('order.view_retail_invoice');
 
 
   Route::get('/payments', [PaymentController::class, 'indexForManager'])->name('payments.index');

@@ -234,7 +234,7 @@
         </td>
         <td style="color:var(--text-muted);">{{ $order->created_at->format('d M Y') }}</td>
         <td style="text-align:right;">
-          <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="action-btn btn-invoice">
+          <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="action-btn btn-invoice">
             <i class="fas fa-print"></i> Invoice
           </a>
           <a href="{{ route('manager.retail.show', $order->id) }}" class="action-btn btn-view">
@@ -290,7 +290,7 @@
       &nbsp;|&nbsp; Deduction: {{ $order->applied_deduction_percent ?? 0 }}%
     </p>
     <div class="d-flex gap-2 flex-wrap">
-      <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="action-btn btn-invoice">
+      <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="action-btn btn-invoice">
         <i class="fas fa-print"></i> Invoice
       </a>
       <a href="{{ route('manager.retail.show', $order->id) }}" class="action-btn btn-view">

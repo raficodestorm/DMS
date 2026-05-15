@@ -8,6 +8,7 @@
         width: 100%;
         height: 100vh;
         display: flex;
+        margin-top: 6rem;
         justify-content: center;
         align-items: center;
     }
@@ -262,7 +263,7 @@
     }
 </style>
 <div class="login-main">
-    <div class="mt-5 login-form-card enter" aria-labelledby="login-title">
+    <div class="login-form-card enter" aria-labelledby="login-title">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
             <div>
                 <h2 id="login-title">Welcome back</h2>

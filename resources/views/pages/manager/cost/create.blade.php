@@ -30,7 +30,7 @@
                 <option value="">Select Category</option>
                 <option value="office" {{ old('category') == 'office' ? 'selected' : '' }}>Office Expenses</option>
                 <option value="transport" {{ old('category') == 'transport' ? 'selected' : '' }}>Transport Cost</option>
-                <option value="staff" {{ old('category') == 'staff' ? 'selected' : '' }}>Staff Expenses</option>
+                <option value="salary" {{ old('category') == 'salary' ? 'selected' : '' }}>Salary</option>
                 <option value="maintenance" {{ old('category') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                 <option value="product" {{ old('category') == 'product' ? 'selected' : '' }}>Product Related</option>
                 <option value="utility" {{ old('category') == 'utility' ? 'selected' : '' }}>Utility Bills</option>

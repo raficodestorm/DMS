@@ -25,7 +25,7 @@ class BranchSeeder extends Seeder
                 'manager' => 'Newman',
                 'address' => 'New Market, Chattogram',
             ],
-        ];-
+        ];
 
         foreach ($branches as $branch) {
 

@@ -94,8 +94,9 @@ class UserManagementController extends Controller
 
   public function edit(User $user)
   {
+    $employees = Employee::select('id', 'name')->where('branch_id', auth()->user()->branch_id)->latest()->get();
     $branches = Branch::orderBy('name', 'asc')->get();
-    return view('pages.manager.users.edit', compact('user', 'branches'));
+    return view('pages.manager.users.edit', compact('user', 'branches', 'employees'));
   }
 
   public function update(Request $request, User $user)
