@@ -54,6 +54,13 @@
                 </select>
             </div>
 
+            <div>
+                <label>Due</label>
+                <input class="input-form" name="due" value="{{ old('due', $customer->due) }}"
+                    required>
+                @error('due')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
 
             <div>
                 <button class="btn-submit" type="submit">Update</button>

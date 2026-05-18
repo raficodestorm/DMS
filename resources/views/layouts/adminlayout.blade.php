@@ -410,6 +410,14 @@
       </li>
 
 
+      <!-- Stock cut-->
+      <li class="nav-item">
+        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.index') }}">
+          <i class="fas fa-handshake"></i> Stock Cut
+        </a>
+      </li>
+
+
 
     </ul>
 

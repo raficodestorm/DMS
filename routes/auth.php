@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+    // Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
@@ -70,5 +70,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-password', [PasswordChangeController::class, 'verifyUser'])->name('password.verify');
 
     Route::get('/reset-password', [PasswordChangeController::class, 'showResetForm'])->name('password.reset.form');
-    Route::post('/reset-password', [PasswordChangeController::class, 'updatePassword'])->name('password.update');
+    Route::post('/reset-password', [PasswordChangeController::class, 'updatePassword'])->name('custom.password.update');
 });

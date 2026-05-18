@@ -24,7 +24,7 @@
       <p><strong>Email:</strong> {{ auth()->user()->email }}</p>
     </div>
 
-    <form method="POST" action="{{ route('password.update') }}">
+    <form method="POST" action="{{ route('custom.password.update') }}">
       @csrf
 
       <div class="input-box password-box">

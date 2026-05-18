@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CompanyCostController;
 use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
+use App\Http\Controllers\StockCutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Manager\RetailOrderController;
 use Illuminate\Support\Facades\Route;
@@ -111,5 +112,31 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
   // Report Module
   Route::get('/report', [ReportController::class, 'index'])->name('report.index');
+
+
+
+
+
+
+
+
+
+
+
+  Route::get('/stock-cut-create', [StockCutController::class, 'createStockCut'])->name('stock.cut.create');
+
+
+  Route::get('/stock/get-products/{supplier_id}', [StockCutController::class, 'getProductsBySupplier'])->name('getProducts');
+  Route::post('/stock/store', [StockCutController::class, 'store'])->name('stockcut.store');
+  Route::get('/stock-cut-cuts/index', [StockCutController::class, 'index'])->name('stock.cut.cuts.index');
+
+  Route::get('/stock-cut-cut/{id}', [StockCutController::class, 'show'])->name('stock.cut.cut.show');
+
+  Route::delete('/stock-cut-cut/{id}', [StockCutController::class, 'destroy'])->name('stock.cut.cut.destroy');
+
+  Route::get('/stock-cut-cut/{id}/edit', [StockCutController::class, 'edit'])->name('stock.cut.cut.edit');
+
+  Route::put('stock-cut/cut/{id}', [StockCutController::class, 'update'])->name('stock.cut.update');
+
 });
 

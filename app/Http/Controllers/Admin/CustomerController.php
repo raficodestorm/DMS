@@ -63,6 +63,7 @@ class CustomerController extends Controller
             'phone' => 'required|string|max:30',
             'address' => 'required|string|max:255',
             'branch_id' => 'nullable|integer|max:100',
+            'due' => 'nullable|numeric',
         ]);
         $customer->update($validated);
 

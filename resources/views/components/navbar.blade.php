@@ -36,7 +36,9 @@
           <a class="nav-link  px-3" href="{{ route('contact') }}">Contact</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link  px-3" href="{{ route('login') }}">Login</a>
+          <a class="btn-login" href="{{ route('login') }}">
+            <i class="fas fa-user-circle" style="font-size: 32px; color: var(--primary);"></i>
+          </a>
         </li>
       </ul>
     </div>
@@ -67,8 +69,11 @@
 
 
       <div class="sidebar-footer">
-        <a class="btn-login" href="{{ route('login') }}">Login<i class="fas fa-arrow-right"></i></a>
-      </div>
+    <a class="btn-login" href="{{ route('login') }}">
+        <i class="fas fa-user-circle"
+           style="font-size: 32px; color: var(--primary);"></i>
+    </a>
+</div>
     </div>
     <button class="navbar-toggler" type="button" onclick="toggleSidebar()" style="border-color: var(--primary);">
       <span class="fa-solid fa-bars" style="color: var(--primary);"></span>

@@ -14,11 +14,30 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::orderBy('id', 'asc')->paginate(10);
+        $query = Product::orderBy('id', 'asc');
+
+        if ($request->filled('search')) {
+            $query->where('name', 'LIKE', "%{$request->search}%");
+        }
+
+        if ($request->filled('amount')) {
+            $query->where('price', '>=', $request->amount);
+        }
+
+        $products = $query->paginate(10);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'table' => view('pages.admin.product.table', compact('products'))->render(),
+                'mobile' => view('pages.admin.product.mtable', compact('products'))->render(),
+            ]);
+        }
+
         return view('pages.admin.product.index', compact('products'));
     }
+
 
     /**
      * Show the form for creating a new resource.

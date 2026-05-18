@@ -6,8 +6,14 @@
     <div class="card-header">
         <h2>All Products</h2>
         <p>Manage all registered products</p>
-        @include('components.alert')
     </div>
+
+    <div style="margin: 15px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <input type="text" id="search" class="input-form" placeholder="Search by Product Name...">
+        <input type="number" id="amount" class="input-form" placeholder="Filter by Minimum Price...">
+    </div>
+
+    @include('components.alert')
 
     <div class="table-wrapper">
         <table>
@@ -21,83 +27,45 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody class="desktop-table">
-                @forelse($products as $product)
-                <tr>
-                    {{-- <td>{{ $user->id }}</td> --}}
-                    <td scope="row">{{ $products->firstItem() ? $products->firstItem() + $loop->index :
-                        $loop->iteration
-                        }}</td>
-                    <td class="name">{{ $product->name }}</td>
-                    <td>{{ $product->sku }}</td>
-                    <td>{{ $product->price }}</td>
-                    <td>
-                        @if($product->status == 1)
-                        <span class="status-active-badge">● Active</span>
-                        @else
-                        <span class="status-inactive-badge">● Inactive</span>
-                        @endif
-                    </td>
-
-                    <td class="action-icons">
-                        <a href="{{ route('admin.products.show', $product) }}" class="icon-btn view-icon">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="text-center text-muted">No records found.</td>
-                </tr>
-                @endforelse
+            <tbody class="desktop-table" id="productTable">
+                @include('pages.admin.product.table')
             </tbody>
         </table>
     </div>
-    <div class="manage-mobile-cards">
-        @forelse($products as $product)
-        <div class="manage-card">
-
-            <div class="card-body">
-                <div><span>S.No</span>
-                    <p>{{ $products->firstItem() ? $products->firstItem() + $loop->index : $loop->iteration }}</p>
-                </div>
-                <div><span>Name</span>
-                    <p>{{ $product->name }}</p>
-                </div>
-                <div><span>SKU</span>
-                    <p>{{ $product->sku }}</p>
-                </div>
-                <div><span>Price</span>
-                    <p>{{ $product->price }}</p>
-                </div>
-                <div><span>Status</span>
-                    <p>
-                        @if($product->status == 1)
-                        <span style="color:green;">● Active</span>
-                        @else
-                        <span style="color:red;">● Inactive</span>
-                        @endif
-                    </p>
-                </div>
-            </div>
-
-            <div class="card-actions">
-                <a href="{{ route('admin.products.show', $product) }}" class="icon-btn view-icon">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
-
-            </div>
-
-        </div>
-        @empty
-        <p class="text-center text-muted">No records found.</p>
-        @endforelse
+    <div class="manage-mobile-cards" id="productMobile">
+        @include('pages.admin.product.mtable')
     </div>
 
 
 </div>
-<div class="d-flex justify-content-center mt-3">
+<div class="d-flex justify-content-center mt-3" id="pagination-links">
     {{ $products->links() }}
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    const searchInput = document.getElementById('search');
+    const amountInput = document.getElementById('amount');
+    const productTable = document.getElementById('productTable');
+    const productMobile = document.getElementById('productMobile');
+
+    const filterProducts = () => {
+        let search = searchInput.value;
+        let amount = amountInput.value;
+
+        fetch(`{{ route('admin.products.index') }}?search=${search}&amount=${amount}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            productTable.innerHTML = data.table;
+            productMobile.innerHTML = data.mobile;
+        });
+    };
+
+    searchInput.addEventListener('keyup', filterProducts);
+    amountInput.addEventListener('input', filterProducts);
+</script>
+@endpush

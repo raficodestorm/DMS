@@ -101,13 +101,13 @@ h5 {
 }
 
 #img-logo {
-    width: 28%;
+    width: 24%;
 }
 
 /* Mobile */
 @media (max-width: 768px) {
     #img-logo {
-        width: 22%;
+        width: 20%;
     }
 }
 

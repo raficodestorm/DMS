@@ -15,15 +15,15 @@
             </div>
             <div class="info-group">
                 <span class="i-label">Shop name</span>
-                <span class="i-value">{{ $customer->shop_name }}</span>
+                <span class="i-value">{{ $customer->shop_name ?? 'N/A'  }}</span>
             </div>
             <div class="info-group">
                 <span class="i-label">Manager</span>
-                <span class="i-value">{{ $customer->manager }}</span>
+                <span class="i-value">{{ $customer->manager ?? 'N/A' }}</span>
             </div>
             <div class="info-group">
                 <span class="i-label">Phone</span>
-                <span class="i-value">{{ $customer->phone }}</span>
+                <span class="i-value">{{ $customer->phone ?? 'N/A' }}</span>
             </div>
             <div class="info-group">
                 <span class="i-label">Zone</span>
@@ -31,13 +31,18 @@
             </div>
             <div class="info-group">
                 <span class="i-label">Address</span>
-                <span class="i-value">{{ $customer->address }}</span>
+                <span class="i-value">{{ $customer->address ?? 'N/A' }}</span>
             </div>
 
             <div class="info-group">
                 <span class="i-label">Created at</span>
                 <span class="i-value">{{ $customer->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i
                     A') }}</span>
+            </div>
+
+            <div class="info-group">
+                <span class="i-label">Due</span>
+                <span class="i-value">{{ $customer->due ?? 'N/A' }}</span>
             </div>
 
         </div>
