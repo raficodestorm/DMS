@@ -668,110 +668,100 @@ function toggleTheme() {
 
   <script>
     window.userId = {{ auth()->id() ?? 'null' }};
-    // Notification dropdown
+
+    // Notification dropdown toggle
     function toggleNotifDropdown(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('notifDropdown').classList.toggle('show');
+    }
 
-    if(event) event.stopPropagation();
-    
-    const dropdown = document.getElementById('notifDropdown');
-    dropdown.classList.toggle('show');
-}
-
-document.addEventListener('click', function (e) {
-    const dropdown = document.getElementById('notifDropdown');
-    const button = document.getElementById('notifBtn');
-
-    if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
+    document.addEventListener('click', function (e) {
+      const dropdown = document.getElementById('notifDropdown');
+      const button = document.getElementById('notifBtn');
+      if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
         dropdown.classList.remove('show');
-    }
-});
-    // RealTime Notification system
+      }
+    });
+
     function timeSince(date) {
-        const seconds = Math.floor((new Date() - date) / 1000);
-        let interval = seconds / 31536000;
-
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " minutes ago";
-        return "Just now";
+      const seconds = Math.floor((new Date() - date) / 1000);
+      let interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + " years ago";
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + " months ago";
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + " days ago";
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + " hours ago";
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + " minutes ago";
+      return "Just now";
     }
 
-    // ২. প্রতি ১ মিনিটে সব নোটিফিকেশন টাইম আপডেট করার ফাংশন
     function updateNotifTimes() {
-        document.querySelectorAll('.notif-time').forEach(el => {
-            const timestamp = el.getAttribute('data-timestamp');
-            if (timestamp) {
-                el.innerText = timeSince(new Date(timestamp));
-            }
-        });
+      document.querySelectorAll('.notif-time').forEach(el => {
+        const timestamp = el.getAttribute('data-timestamp');
+        if (timestamp) el.innerText = timeSince(new Date(timestamp));
+      });
     }
-
-    // প্রতি ৬০ সেকেন্ডে রান করবে
     setInterval(updateNotifTimes, 60000);
 
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.userId && window.Echo) {
-            window.Echo.private(`App.Models.User.${window.userId}`)
-                .notification((notification) => {
-                    
-                    let displayMessage = '';
-                    let senderInfo = '';
-                    if (typeof notification.message === 'object' && notification.message !== null) {
-                        displayMessage = notification.message.text || '';
-                        senderInfo = notification.message.from ? `from <span class="text-primary fw-bold">${notification.message.from}</span>` : '';
-                    } else {
-                        displayMessage = notification.message || '';
-                    }
+    // Real-time notification listener — polls until window.Echo is ready
+    function initAdminEcho(attempt) {
+      if (!window.userId) return;
+      if (window.Echo) {
+        window.Echo.private('App.Models.User.' + window.userId)
+          .notification(function(notification) {
+            var displayMessage = '';
+            var senderInfo = '';
+            if (notification.message && typeof notification.message === 'object') {
+              displayMessage = notification.message.text || '';
+              senderInfo = notification.message.from
+                ? ' <span class="text-primary fw-bold">' + notification.message.from + '</span>'
+                : '';
+            } else {
+              displayMessage = notification.message || '';
+            }
 
-                    const dropdown = document.getElementById('notifDropdown');
-                    if (dropdown) {
-                        const noNotif = dropdown.querySelector('.no-notif');
-                        if (noNotif) noNotif.remove();
+            var dropdown = document.getElementById('notifDropdown');
+            if (dropdown) {
+              var noNotif = dropdown.querySelector('.no-notif');
+              if (noNotif) noNotif.remove();
 
-                        // এখানে বর্তমান সময় স্টোর করা হচ্ছে data-timestamp এ
-                        const now = new Date().toISOString();
+              var now = new Date().toISOString();
+              var newHtml = '<a href="/notifications/' + notification.id + '/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">'
+                + '<div class="notif-title">' + (notification.title || '') + '</div>'
+                + '<div class="notif-msg">' + displayMessage + senderInfo + '</div>'
+                + '<div class="notif-time" data-timestamp="' + now + '">Just now</div>'
+                + '</a>';
+              var header = dropdown.querySelector('.notif-header');
+              if (header) header.insertAdjacentHTML('afterend', newHtml);
+            }
 
-                        const newNotifHtml = `
-                            <a href="/notifications/${notification.id}/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">
-                                <div class="notif-title">${notification.title}</div>
-                                <div class="notif-msg">${displayMessage} ${senderInfo}</div>
-                                <div class="notif-time" data-timestamp="${now}">Just now</div>
-                            </a>
-                        `;
+            var countBadge = document.querySelector('.notif-count');
+            var iconWrapper = document.querySelector('.notification-icon');
+            if (countBadge) {
+              countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
+            } else if (iconWrapper) {
+              var badge = document.createElement('span');
+              badge.className = 'notif-count';
+              badge.innerText = '1';
+              iconWrapper.appendChild(badge);
+            }
 
-                        const header = dropdown.querySelector('.notif-header');
-                        header.insertAdjacentHTML('afterend', newNotifHtml);
-                    }
-
-                    let countBadge = document.querySelector('.notif-count');
-                    let iconWrapper = document.querySelector('.notification-icon');
-
-                    if (countBadge) {
-                        countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
-                    } else if (iconWrapper) {
-                        let newBadge = document.createElement('span');
-                        newBadge.className = 'notif-count';
-                        newBadge.innerText = '1';
-                        iconWrapper.appendChild(newBadge);
-                    }
-
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'info',
-                        title: notification.title,
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                });
-        }
-    });
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                toast: true, position: 'top-end', icon: 'info',
+                title: notification.title || 'New Notification',
+                showConfirmButton: false, timer: 3000
+              });
+            }
+          });
+      } else if ((attempt || 0) < 25) {
+        setTimeout(function() { initAdminEcho((attempt || 0) + 1); }, 200);
+      }
+    }
+    initAdminEcho();
   </script>
   @stack('scripts')
 </body>

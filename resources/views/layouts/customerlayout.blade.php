@@ -40,6 +40,12 @@
         </a>
       </li>
 
+      <li class="nav-item">
+        <a href="{{ route('customer.orders.index') }}" class="nav-link {{ isActive('customer.orders.index') }}">
+          <i class="fas fa-money-bill-transfer"></i> Orders
+        </a>
+      </li>
+
       <!-- Users -->
       {{-- <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive(['admin.users.*','admin.index.managers']) }}">

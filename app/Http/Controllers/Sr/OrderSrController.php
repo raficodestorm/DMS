@@ -56,6 +56,30 @@ class OrderSrController extends Controller
     return view('pages.sr.order.index', compact('orders'));
   }
 
+
+  public function indexForCustomer()
+  {
+      $user = auth()->user();
+
+      $orders = Order::with(['customer', 'sr'])
+          ->where('customer_id', $user->customer_id)
+          ->latest()
+          ->paginate(10);
+
+      return view('pages.customer.order.index', compact('orders'));
+  }
+
+  public function showForCustomer($id)
+  {
+      $user = auth()->user();
+
+      $order = Order::with(['customer', 'sr', 'items.product'])
+          ->where('customer_id', $user->customer_id)
+          ->findOrFail($id);
+
+      return view('pages.customer.order.show', compact('order'));
+  }
+
   public function allOrders()
   {
     $customers = Customer::with(['orders' => function ($query) {

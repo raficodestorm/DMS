@@ -178,6 +178,51 @@
 
 
     <div class="nav-right">
+
+      {{-- Notifications --}}
+      <div class="notification-wrapper">
+        <div class="notification-icon" id="notifBtn" onclick="toggleNotifDropdown(event)">
+          <i class="fas fa-bell"></i>
+
+          @if(auth()->user()->unreadNotifications->count() > 0)
+          <span class="notif-count">
+            {{ auth()->user()->unreadNotifications->count() }}
+          </span>
+          @endif
+        </div>
+
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Notifications</div>
+          <div class="notif-body">
+            @forelse(auth()->user()->unreadNotifications as $note)
+            <a href="{{ route('notifications.markAndRedirect', $note->id) }}" class="notif-item unread">
+              <div class="notif-title">
+                {{ $note->data['title'] }}
+              </div>
+              <div class="notif-msg">
+                @if(is_array($note->data['message']))
+                {{ $note->data['message']['text'] }}
+                <span class="text-primary fw-bold">
+                  {{ $note->data['message']['from'] }} branch
+                </span>
+                @else
+                {{ $note->data['message'] }}
+                @endif
+              </div>
+              <div class="notif-time">
+                <i class="fa-regular fa-clock"></i> {{ $note->created_at->diffForHumans() }}
+              </div>
+            </a>
+            @empty
+            <div class="no-notif">
+              <i class="fa-solid fa-bell-slash"></i>
+              <p>No new notifications</p>
+            </div>
+            @endforelse
+          </div>
+        </div>
+      </div>
+
       <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fa-solid fa-moon"></i>
       </button>
@@ -340,6 +385,103 @@ function toggleTheme() {
     html.setAttribute("data-theme", "dark");
   }
 }
+  </script>
+  <script>
+    window.userId = {{ auth()->id() ?? 'null' }};
+
+    function toggleNotifDropdown(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('notifDropdown');
+      dropdown.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('notifDropdown');
+      const button = document.getElementById('notifBtn');
+      if (dropdown && !dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    function timeSince(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      let interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + " years ago";
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + " months ago";
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + " days ago";
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + " hours ago";
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + " minutes ago";
+      return "Just now";
+    }
+
+    function updateNotifTimes() {
+      document.querySelectorAll('.notif-time').forEach(el => {
+        const timestamp = el.getAttribute('data-timestamp');
+        if (timestamp) el.innerText = timeSince(new Date(timestamp));
+      });
+    }
+    setInterval(updateNotifTimes, 60000);
+
+    // Real-time notification listener — polls until window.Echo is ready
+    function initSrEcho(attempt) {
+      if (!window.userId) return;
+      if (window.Echo) {
+        window.Echo.private('App.Models.User.' + window.userId)
+          .notification(function(notification) {
+            var displayMessage = '';
+            var senderInfo = '';
+            if (notification.message && typeof notification.message === 'object') {
+              displayMessage = notification.message.text || '';
+              senderInfo = notification.message.from
+                ? ' <span class="text-primary fw-bold">' + notification.message.from + '</span>'
+                : '';
+            } else {
+              displayMessage = notification.message || '';
+            }
+
+            var dropdown = document.getElementById('notifDropdown');
+            if (dropdown) {
+              var noNotif = dropdown.querySelector('.no-notif');
+              if (noNotif) noNotif.remove();
+
+              var now = new Date().toISOString();
+              var newHtml = '<a href="/notifications/' + notification.id + '/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">'
+                + '<div class="notif-title">' + (notification.title || '') + '</div>'
+                + '<div class="notif-msg">' + displayMessage + senderInfo + '</div>'
+                + '<div class="notif-time" data-timestamp="' + now + '">Just now</div>'
+                + '</a>';
+              var header = dropdown.querySelector('.notif-header');
+              if (header) header.insertAdjacentHTML('afterend', newHtml);
+            }
+
+            var countBadge = document.querySelector('.notif-count');
+            var iconWrapper = document.querySelector('.notification-icon');
+            if (countBadge) {
+              countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
+            } else if (iconWrapper) {
+              var badge = document.createElement('span');
+              badge.className = 'notif-count';
+              badge.innerText = '1';
+              iconWrapper.appendChild(badge);
+            }
+
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                toast: true, position: 'top-end', icon: 'info',
+                title: notification.title || 'New Notification',
+                showConfirmButton: false, timer: 3000
+              });
+            }
+          });
+      } else if ((attempt || 0) < 25) {
+        setTimeout(function() { initSrEcho((attempt || 0) + 1); }, 200);
+      }
+    }
+    initSrEcho();
   </script>
   @stack('scripts')
 </body>
