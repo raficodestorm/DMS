@@ -272,7 +272,7 @@
                 <div class="product-img-box mb-2">
                   @php
                   $finalImgPath = ($item->product->image)
-                  ? asset('storage/' . $item->product->image)
+                  ? (str_starts_with($item->product->image, 'uploads/') ? asset($item->product->image) : asset('uploads/' . $item->product->image))
                   : "https://ui-avatars.com/api/?name=".urlencode($item->product->name)."&background=3131ff&color=fff";
                   @endphp
                   <img src="{{ $finalImgPath }}" class="img-fluid rounded" alt="{{ $item->product->name }}">
@@ -413,9 +413,8 @@
     let stock = option.attr('data-stock');
     let imageName = option.attr('data-image-name');
 
-    let storagePath = "{{ asset('storage') }}";
     let finalImgPath = (imageName && imageName.trim() !== "" && imageName !== "null") ?
-      storagePath.replace(/\/$/, "") + '/' + imageName.replace(/^\//, "") :
+      (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName) :
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff`;
 
     $.get(`/sr/get-product-data/${productId}`, function(data) {

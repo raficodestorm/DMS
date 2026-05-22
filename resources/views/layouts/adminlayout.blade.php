@@ -24,7 +24,8 @@
 
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 170px; height: 60x;">
+      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid"
+        style="width: 170px; height: 60x;">
     </div>
 
     <ul class="nav-menu">
@@ -136,7 +137,8 @@
 
       <!-- Stock -->
       <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive(['admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*']) }}">
+        <div
+          class="nav-link has-dropdown {{ isActive(['admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*']) }}">
           <i class="fas fa-boxes-stacked"></i>
           <span>Stock</span>
           <i class="fas fa-chevron-down arrow"></i>
@@ -273,12 +275,14 @@
             </a>
           </li>
           <li>
-            <a href="{{ route('admin.company_costs.create') }}" class="sub-link {{ isActive('admin.company_costs.create') }}">
+            <a href="{{ route('admin.company_costs.create') }}"
+              class="sub-link {{ isActive('admin.company_costs.create') }}">
               <i class="fas fa-plus-circle me-1"></i> Record Global Cost
             </a>
           </li>
           <li>
-            <a href="{{ route('admin.company_costs.index') }}" class="sub-link {{ isActive('admin.company_costs.index') }}">
+            <a href="{{ route('admin.company_costs.index') }}"
+              class="sub-link {{ isActive('admin.company_costs.index') }}">
               <i class="fas fa-list me-1"></i> Expense History
             </a>
           </li>
@@ -385,8 +389,13 @@
       </li>
 
 
-      <!-- deductin -->
       <li class="nav-item">
+        <a href="{{ route('admin.deductions.index') }}" class="nav-link {{ isActive('admin.deductions.index') }}">
+          <i class="fa-solid fa-scissors"></i> Deduction
+        </a>
+      </li>
+      <!-- deductin -->
+      {{-- <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
           <i class="fa-solid fa-scissors"></i>
           <span>Deduction</span>
@@ -407,7 +416,7 @@
           </li>
 
         </ul>
-      </li>
+      </li> --}}
 
 
       <!-- Stock cut-->
@@ -427,7 +436,7 @@
     {{-- <div class="side-footer-float">
       <div class="settings-menu"><i class="fas fa-settings"></i>Settings</div>
       <div class="side-profile">
-        <div class="img-container"><img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="profile"
+        <div class="img-container"><img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile"
             style="width:100%;height:100%;object-fit:cover;display:block;"></div>
         <span>{{ auth()->check() ? auth()->user()->fullname : 'Guest' }}</span>
       </div>
@@ -511,7 +520,7 @@
           <div
             style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
 
-            <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="profile"
+            <img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile"
               style="width:100%;height:100%;object-fit:cover;display:block;">
 
           </div>

@@ -111,6 +111,7 @@
   </div>
 
     @include('components.navbar')
+    @include('components.login-modal')
 
     <div>
         @yield('content')

@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Branch;
+use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EmployeeController extends Controller
 {
+    use UploadHelper;
+
     public function index(Request $request)
     {
         $query = Employee::orderBy('branch_id', 'asc');
@@ -64,7 +67,7 @@ class EmployeeController extends Controller
 
         // photo upload
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('employees', 'public');
+            $validated['photo'] = $this->uploadFile($request->file('photo'), 'employees');
         }
 
         Employee::create($validated);
@@ -118,7 +121,8 @@ class EmployeeController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('employees', 'public');
+            $this->deleteFile($employee->photo);
+            $validated['photo'] = $this->uploadFile($request->file('photo'), 'employees');
         }
 
         $employee->update($validated);
@@ -129,8 +133,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-
-
+        $this->deleteFile($employee->photo);
         $employee->delete();
 
         return redirect()->route('admin.employees.index')

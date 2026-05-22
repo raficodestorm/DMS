@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\User;
+use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -13,6 +14,8 @@ use Illuminate\Validation\Rule;
 
 class UserManagementController extends Controller
 {
+  use UploadHelper;
+
   public function __construct()
   {
     $this->middleware(['auth', 'role:sr']);
@@ -61,7 +64,7 @@ class UserManagementController extends Controller
 
     $profilePath = null;
     if ($request->hasFile('profile_photo')) {
-      $profilePath = $request->file('profile_photo')->store('profile_photos', 'public');
+      $profilePath = $this->uploadFile($request->file('profile_photo'), 'profile_photos');
     }
 
     $user = User::create([
@@ -96,7 +99,8 @@ class UserManagementController extends Controller
     ]);
 
     if ($request->hasFile('profile_photo')) {
-      $user->profile_photo_path = $request->file('profile_photo')->store('profile_photos', 'public');
+      $this->deleteFile($user->profile_photo_path);
+      $user->profile_photo_path = $this->uploadFile($request->file('profile_photo'), 'profile_photos');
     }
 
     $user->fullname = $request->fullname;
@@ -111,6 +115,7 @@ class UserManagementController extends Controller
 
   public function destroy(User $user)
   {
+    $this->deleteFile($user->profile_photo_path);
     $user->delete();
     return back()->with('success', 'User deleted.');
   }

@@ -69,6 +69,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/verify-email-password', [PasswordChangeController::class, 'showVerifyForm'])->name('password.verify.form');
     Route::post('/verify-password', [PasswordChangeController::class, 'verifyUser'])->name('password.verify');
 
-    Route::get('/reset-password', [PasswordChangeController::class, 'showResetForm'])->name('password.reset.form');
-    Route::post('/reset-password', [PasswordChangeController::class, 'updatePassword'])->name('custom.password.update');
+    Route::get('/change-password', [PasswordChangeController::class, 'showResetForm'])->name('password.reset.form');
+    Route::post('/change-password', [PasswordChangeController::class, 'updatePassword'])->name('custom.password.update');
 });

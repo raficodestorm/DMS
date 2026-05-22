@@ -79,7 +79,7 @@
                     <div class="preview-box">
 
                         @if($product->image)
-                        <img id="photoPreview" src="{{ asset('storage/' . $product->image) }}" alt="Preview"
+                        <img id="photoPreview" src="{{ str_starts_with($product->image, 'uploads/') ? asset($product->image) : asset('uploads/' . $product->image) }}" alt="Preview"
                             style="display:block;">
                         <i class="fa-solid fa-user" id="defaultIcon" style="display:none;"></i>
                         @else

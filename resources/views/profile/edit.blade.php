@@ -186,7 +186,7 @@
 
             <div class="profile-pic-wrapper">
                 <img id="previewImg" class="img-edit"
-                    src="{{ $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : 'https://ui-avatars.com/api/?name='.urlencode($user->fullname).'&background=3131ff&color=fff' }}"
+                    src="{{ $user->profile_photo_path ? (str_starts_with($user->profile_photo_path, 'uploads/') ? asset($user->profile_photo_path) : asset('uploads/'.$user->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode($user->fullname).'&background=3131ff&color=fff' }}"
                     alt="Profile">
 
                 <label for="profile_photo" class="camera-icon-label shadow">

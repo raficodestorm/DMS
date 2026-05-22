@@ -100,7 +100,7 @@
     <div class="profile-header">
       <div class="profile-avatar-wrapper">
         <img
-          src="{{ asset('storage/' . auth()->user()->profile_photo_path) ?? 'https://ui-avatars.com/api/?name='.Auth::user()->username.'&background=3131ff&color=fff' }}"
+          src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.Auth::user()->username.'&background=3131ff&color=fff' }}"
           alt="Profile" class="profile-avatar shadow">
       </div>
     </div>

@@ -6,7 +6,7 @@
   <div class="header-accent">
     <div class="photo-container">
       <img class="img-fluid"
-        src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name='.urlencode($user->username).'&background=3131ff&color=fff' }}">
+        src="{{ $user->profile_photo_path ? (str_starts_with($user->profile_photo_path, 'uploads/') ? asset($user->profile_photo_path) : asset('uploads/' . $user->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode($user->username).'&background=3131ff&color=fff' }}">
     </div>
   </div>
 

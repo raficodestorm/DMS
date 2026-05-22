@@ -17,12 +17,12 @@ class BranchSeeder extends Seeder
         $branches = [
             [
                 'name' => 'Head Office',
-                'manager' => 'Sarwar',
+                'manager' => 'Abdul Hakim Tanvir',
                 'address' => 'Mistri Para, Dewanhat, Chattogram',
             ],
             [
-                'name' => 'New Market',
-                'manager' => 'Newman',
+                'name' => 'Jubilee Road',
+                'manager' => 'Anwarul Alam Sakib',
                 'address' => 'New Market, Chattogram',
             ],
         ];

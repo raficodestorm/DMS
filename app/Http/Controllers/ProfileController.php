@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Traits\UploadHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    use UploadHelper;
+
     public function index()
     {
         $user = Auth::user();
@@ -25,6 +27,7 @@ class ProfileController extends Controller
         $user = Auth::user();
         return view('profile.edit', compact('user'));
     }
+
     /**
      * Update the user's profile information.
      */
@@ -33,25 +36,21 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'username'      => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
+            'email'         => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'password'      => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
 
         // Handle profile picture upload
         if ($request->hasFile('profile_photo')) {
-            if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
-                Storage::disk('public')->delete($user->profile_photo_path);
-            }
-
-            $path = $request->file('profile_photo')->store('profile_photos', 'public');
-            $user->profile_photo_path = $path;
+            $this->deleteFile($user->profile_photo_path);
+            $user->profile_photo_path = $this->uploadFile($request->file('profile_photo'), 'profile_photos');
         }
 
         // Assign fields
         $user->username = $validated['username'];
-        $user->email = $validated['email'];
+        $user->email    = $validated['email'];
 
         // Handle password change
         if (!empty($validated['password'])) {

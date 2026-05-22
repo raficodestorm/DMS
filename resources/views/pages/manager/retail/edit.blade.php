@@ -216,7 +216,7 @@
                 <div class="product-img-box mb-2">
                   @php
                   $imgSrc = ($p->image && $p->image !== 'null')
-                  ? asset('storage/' . $p->image)
+                  ? (str_starts_with($p->image, 'uploads/') ? asset($p->image) : asset('uploads/' . $p->image))
                   : 'https://ui-avatars.com/api/?name='.urlencode($p->name).'&background=10b981&color=fff';
                   @endphp
                   <img src="{{ $imgSrc }}" class="img-fluid rounded" alt="{{ $p->name }}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($p->name) }}&background=10b981&color=fff'">
@@ -329,9 +329,8 @@
     let name = option.attr('data-name');
     let stock = option.attr('data-stock');
     let imageName = option.attr('data-image-name');
-    let storagePath = "{{ asset('storage') }}";
     let finalImgPath = (imageName && imageName.trim() !== '' && imageName !== 'null') ?
-      storagePath.replace(/\/$/, '') + '/' + imageName.replace(/^\//, '') :
+      (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName) :
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff`;
 
     $.get(`{{ url('manager/retail/product-data') }}/${productId}`, function(data) {

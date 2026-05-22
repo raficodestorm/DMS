@@ -22,8 +22,8 @@ class UserSeeder extends Seeder
             [
                 'fullname' => 'Mr. Admin',
                 'username' => 'admin',
-                'email' => 'admin@system.com',
-                'password' => Hash::make('11111111'),
+                'email' => 'relectricbdofficial@gmail.com',
+                'password' => Hash::make('33333333'),
                 'role' => 'admin',
                 'branch_id' => 1,
                 'status' => 'active',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-            
+
 
         ];
 

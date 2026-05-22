@@ -8,7 +8,7 @@
         <p style="color: gray;">Always input decimal number and it will count as percentage in the software system.</p>
         @include('components.alert')
 
-        <form class="adduser-form" method="POST" action="{{ route('admin.deductions.update', $offer->id) }}">
+        <form class="adduser-form" method="POST" action="{{ route('admin.deductions.update', $deduction->id) }}">
             @csrf
             @method('PUT')
 
@@ -43,7 +43,7 @@
                 @error('my_deduction')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            
+
             <div class="mt-4">
                 <button class="btn-submit" type="submit">Update</button>
             </div>

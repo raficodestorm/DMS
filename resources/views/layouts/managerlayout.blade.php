@@ -314,7 +314,7 @@
 
           <div style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
 
-            <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
+            <img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
 
           </div>
 

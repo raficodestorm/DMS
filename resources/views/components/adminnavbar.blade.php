@@ -22,7 +22,7 @@
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="profileDropdown"
           data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="User"
+          <img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="User"
             style="width:40px; height:40px; object-fit:cover; border:2px solid #ff0000; border-radius:50%;">
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">

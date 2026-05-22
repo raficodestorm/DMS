@@ -285,9 +285,8 @@
     let stock = option.attr('data-stock');
     let imageName = option.attr('data-image-name');
 
-    let storagePath = "{{ asset('storage') }}";
     let finalImgPath = (imageName && imageName.trim() !== '' && imageName !== 'null') ?
-      storagePath.replace(/\/$/, '') + '/' + imageName.replace(/^\//, '') :
+      (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName) :
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff`;
 
     $.get(`{{ url('manager/retail/product-data') }}/${productId}`, function(data) {

@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Branch;
+use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
+    use UploadHelper;
+
     public function index(Request $request)
     {
         $query = Employee::where('branch_id', auth()->user()->branch_id)
@@ -62,7 +65,7 @@ class EmployeeController extends Controller
 
         // photo upload
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('employees', 'public');
+            $validated['photo'] = $this->uploadFile($request->file('photo'), 'employees');
         }
 
         // add logged user id
@@ -107,7 +110,8 @@ class EmployeeController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('employees', 'public');
+            $this->deleteFile($employee->photo);
+            $validated['photo'] = $this->uploadFile($request->file('photo'), 'employees');
         }
 
         $employee->update($validated);
@@ -118,7 +122,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-
+        $this->deleteFile($employee->photo);
         $employee->delete();
 
         return redirect()->route('manager.employees.index')

@@ -70,7 +70,7 @@
           <div class="preview-box">
 
             @if($user->profile_photo_path)
-            <img id="photoPreview" src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="Preview"
+            <img id="photoPreview" src="{{ str_starts_with($user->profile_photo_path, 'uploads/') ? asset($user->profile_photo_path) : asset('uploads/' . $user->profile_photo_path) }}" alt="Preview"
               style="display:block;">
             <i class="fa-solid fa-user" id="defaultIcon" style="display:none;"></i>
             @else

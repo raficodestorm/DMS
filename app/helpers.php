@@ -32,7 +32,7 @@ if (!function_exists('getLayout')) {
     $user = auth()->user();
 
     if (!$user) {
-      return 'layouts.app'; // guest fallback
+      return 'layouts.blank'; // guest fallback
     }
 
     return match ($user->role) {
@@ -40,7 +40,7 @@ if (!function_exists('getLayout')) {
       'sr' => 'layouts.srlayout',
       'manager' => 'layouts.managerlayout',
       'customer' => 'layouts.customerlayout',
-      default => 'layouts.app',
+      default => 'layouts.userlayout',
     };
   }
 }

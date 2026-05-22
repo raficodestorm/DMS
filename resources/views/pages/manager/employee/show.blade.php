@@ -6,7 +6,7 @@
     <div class="header-accent">
         <div class="photo-container">
             <img class="img-fluid"
-                src="{{ $employee->photo ? asset('storage/' . $employee->photo) : 'https://ui-avatars.com/api/?name='.urlencode($employee->name).'&background=3131ff&color=fff' }}">
+                src="{{ $employee->photo ? (str_starts_with($employee->photo, 'uploads/') ? asset($employee->photo) : asset('uploads/' . $employee->photo)) : 'https://ui-avatars.com/api/?name='.urlencode($employee->name).'&background=3131ff&color=fff' }}">
         </div>
     </div>
 

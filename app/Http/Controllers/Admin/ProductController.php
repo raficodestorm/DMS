@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
+    use UploadHelper;
+
     /**
      * Display a listing of the resource.
      */
@@ -66,7 +69,7 @@ class ProductController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $this->uploadFile($request->file('image'), 'products');
         }
         Product::create($validated);
 
@@ -109,7 +112,8 @@ class ProductController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $this->deleteFile($product->image);
+            $validated['image'] = $this->uploadFile($request->file('image'), 'products');
         }
         $product->update($validated);
 
@@ -121,6 +125,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $this->deleteFile($product->image);
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'product deleted successfully!');
     }
