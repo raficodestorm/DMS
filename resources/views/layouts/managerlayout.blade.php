@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ config('app.name') }}</title>
+  <title>{{ config('app.name') }} | Manager panel</title>
+  <link rel="icon" type="image/png" sizes="35x35" href="{{ asset('image/relectric-r-logo.webp') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
@@ -23,7 +24,8 @@
 
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 170px; height: 60x;">
+      <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid"
+        style="width: 170px; height: 60x;">
     </div>
     <ul class="nav-menu">
 
@@ -73,7 +75,8 @@
 
         <ul class="sub-menu" style="{{ isOpen('manager.employees.*') }}">
           <li>
-            <a href="{{ route('manager.employees.create') }}" class="sub-link {{ isActive('manager.employees.create') }}">
+            <a href="{{ route('manager.employees.create') }}"
+              class="sub-link {{ isActive('manager.employees.create') }}">
               <i class="fas fa-user-plus me-1"></i> Add Employee
             </a>
           </li>
@@ -108,13 +111,15 @@
           </li>
 
           <li>
-            <a href="{{ route('manager.stock.in.requests.index') }}" class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
+            <a href="{{ route('manager.stock.in.requests.index') }}"
+              class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
               <i class="fas fa-clipboard-list me-1"></i> Stock-in Requests
             </a>
           </li>
 
           <li>
-            <a href="{{ route('manager.stock-transfer.index') }}" class="sub-link {{ isActive('manager.stock-transfer.*') }}">
+            <a href="{{ route('manager.stock-transfer.index') }}"
+              class="sub-link {{ isActive('manager.stock-transfer.*') }}">
               <i class="fas fa-truck-moving me-1"></i> Stock Transfer
             </a>
           </li>
@@ -138,7 +143,8 @@
           </li>
 
           <li>
-            <a href="{{ route('manager.order.all.customers') }}" class="sub-link {{ isActive('manager.order.all.customers') }}">
+            <a href="{{ route('manager.order.all.customers') }}"
+              class="sub-link {{ isActive('manager.order.all.customers') }}">
               <i class="fas fa-users-viewfinder me-1"></i> Cust based orders
             </a>
           </li>
@@ -312,9 +318,12 @@
         <div class="profile-info" style="display:flex;align-items:center;cursor:pointer;gap:5px;">
 
 
-          <div style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
+          <div
+            style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
 
-            <img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
+            <img
+              src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}"
+              alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
 
           </div>
 

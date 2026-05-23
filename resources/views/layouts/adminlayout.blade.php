@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ config('app.name') }}</title>
+  <title>{{ config('app.name') }} | Admin panel</title>
+  <link rel="icon" type="image/png" sizes="35x35" href="{{ asset('image/relectric-r-logo.webp') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
   <!-- Vite CSS + JS -->
@@ -436,8 +437,9 @@
     {{-- <div class="side-footer-float">
       <div class="settings-menu"><i class="fas fa-settings"></i>Settings</div>
       <div class="side-profile">
-        <div class="img-container"><img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile"
-            style="width:100%;height:100%;object-fit:cover;display:block;"></div>
+        <div class="img-container"><img
+            src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}"
+            alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;"></div>
         <span>{{ auth()->check() ? auth()->user()->fullname : 'Guest' }}</span>
       </div>
     </div> --}}
@@ -520,8 +522,9 @@
           <div
             style="width:40px;height:40px;min-width:40px;overflow:hidden;border-radius:50%;border:2px solid var(--primary);background:#2A3038;display:flex;align-items:center;justify-content:center;">
 
-            <img src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}" alt="profile"
-              style="width:100%;height:100%;object-fit:cover;display:block;">
+            <img
+              src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username).'&background=3131ff&color=fff' }}"
+              alt="profile" style="width:100%;height:100%;object-fit:cover;display:block;">
 
           </div>
 

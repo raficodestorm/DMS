@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name') }}</title>
+    <link rel="icon" type="image/png" sizes="35x35" href="{{ asset('image/relectric-r-logo.webp') }}">
     <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
