@@ -6,7 +6,6 @@
 
 
 <style>
-    
   /* ======================
 GLOBAL
 ====================== */
@@ -492,7 +491,7 @@ TRUST
 
             <div>
               <i class="fas fa-envelope about-icon"></i>
-              Email: relectric@gmail.com
+              Email: relectricbdofficial@gmail.com
             </div>
             <div>
               <i class="fas fa-user about-icon"></i>

@@ -1,4 +1,3 @@
-
 @extends('layouts.userlayout')
 
 @section('title','Contact Us')
@@ -22,19 +21,19 @@
     width: 420px;
     height: 420px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(49,49,255,0.16) 0%, rgba(174,4,241,0.08) 45%, transparent 75%);
+    background: radial-gradient(circle, rgba(49, 49, 255, 0.16) 0%, rgba(174, 4, 241, 0.08) 45%, transparent 75%);
     top: -120px;
     left: -120px;
     pointer-events: none;
   }
 
   .contact-card {
-    background: rgba(255,255,255,0.92);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 34px;
     padding: 55px;
-    box-shadow: 0 20px 60px rgba(15,23,42,0.08);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
     position: relative;
     z-index: 2;
   }
@@ -91,7 +90,7 @@
 
   .info-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 24px 50px rgba(15,23,42,0.08);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
   }
 
   .info-icon {
@@ -129,7 +128,7 @@
     border-radius: 34px;
     padding: 50px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 20px 50px rgba(15,23,42,0.05);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.05);
     height: 100%;
   }
 
@@ -172,7 +171,7 @@
   .form-control-modern:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(49,49,255,0.10);
+    box-shadow: 0 0 0 4px rgba(49, 49, 255, 0.10);
   }
 
   textarea.form-control-modern {
@@ -192,7 +191,7 @@
     align-items: center;
     gap: 12px;
     transition: 0.35s ease;
-    box-shadow: 0 12px 30px rgba(49,49,255,0.25);
+    box-shadow: 0 12px 30px rgba(49, 49, 255, 0.25);
   }
 
   .btn-contact:hover {
@@ -215,7 +214,7 @@
     width: 300px;
     height: 300px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(174,4,241,0.08), transparent 70%);
+    background: radial-gradient(circle, rgba(174, 4, 241, 0.08), transparent 70%);
     bottom: -100px;
     right: -100px;
   }
@@ -294,7 +293,7 @@
     position: absolute;
     width: 250px;
     height: 250px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 50%;
     top: -80px;
     left: -70px;
@@ -305,7 +304,7 @@
     position: absolute;
     width: 320px;
     height: 320px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     right: -120px;
     bottom: -120px;
@@ -323,7 +322,7 @@
   .cta-text {
     position: relative;
     z-index: 2;
-    color: rgba(255,255,255,0.88);
+    color: rgba(255, 255, 255, 0.88);
     max-width: 760px;
     margin: 0 auto 35px;
     line-height: 1.9;
@@ -429,7 +428,8 @@
         </h1>
 
         <p class="contact-description">
-          Have questions, business inquiries, or partnership ideas? Our team is here to assist you with fast communication, reliable support, and professional service.
+          Have questions, business inquiries, or partnership ideas? Our team is here to assist you with fast
+          communication, reliable support, and professional service.
         </p>
 
         <div class="info-grid">
@@ -456,9 +456,9 @@
             <h4 class="info-title">Email Address</h4>
 
             <p class="info-text">
-              relectric@gmail.com
+              relectricbdofficial@gmail.com
               <br>
-              info@relectric.com
+              relectricbdofficial@gmail.com
             </p>
           </div>
 
@@ -577,7 +577,7 @@
                   <p class="contact-item-text">
                     R Electric Corporate Office,
                     <br>
-                    Dhaka, Bangladesh
+                    Chattogram, Bangladesh
                   </p>
                 </div>
               </div>
@@ -607,7 +607,7 @@
                   <p class="contact-item-text">
                     support@relectric.com
                     <br>
-                    info@relectric.com
+                    relectricbdofficial@gmail.com
                   </p>
                 </div>
               </div>
@@ -644,7 +644,8 @@
         </h2>
 
         <p class="cta-text">
-          We are committed to providing modern electrical solutions, trusted services, and long-term business relationships.
+          We are committed to providing modern electrical solutions, trusted services, and long-term business
+          relationships.
         </p>
 
         <a href="#" class="btn-light-modern">
