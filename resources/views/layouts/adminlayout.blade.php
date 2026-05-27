@@ -46,7 +46,7 @@
       </li>
 
       <!-- Users -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.users.*', 'admin.index.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['admin.users.*','admin.index.*']) }}">
           <i class="fas fa-users"></i>
           <span>Users</span>
@@ -83,7 +83,7 @@
       </li>
 
       <!-- Branches -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.branches.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.branches.*') }}">
           <i class="fas fa-code-branch"></i>
           <span>Branches</span>
@@ -106,7 +106,7 @@
       </li>
 
       <!-- Employees -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.employees.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.employees.*') }}">
           <i class="fas fa-user-tie"></i>
           <span>Employees</span>
@@ -137,7 +137,8 @@
 
 
       <!-- Stock -->
-      <li class="nav-item">
+      <li
+        class="nav-item {{ request()->routeIs('admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*') ? 'open' : '' }}">
         <div
           class="nav-link has-dropdown {{ isActive(['admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*']) }}">
           <i class="fas fa-boxes-stacked"></i>
@@ -171,14 +172,14 @@
 
 
       <!-- orders -->
-      <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive('admin.orders.*') }}">
+      <li class="nav-item {{ request()->routeIs('admin.order.*', 'admin.orders.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive(['admin.order.*', 'admin.orders.*']) }}">
           <i class="fa-solid fa-cart-shopping"></i>
           <span>Order</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('admin.order.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['admin.order.*', 'admin.orders.*']) }}">
 
           <li>
             <a href="{{ route('admin.order.pending.index') }}"
@@ -223,7 +224,7 @@
       </li>
 
       <!-- Product Return -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.return.*') }}">
           <i class="fas fa-undo"></i>
           <span>Product Return</span>
@@ -240,7 +241,7 @@
       </li>
 
       <!-- Bonus Management -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.bonuses.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.bonuses.*') }}">
           <i class="fas fa-gift"></i>
           <span>Bonus</span>
@@ -262,14 +263,14 @@
       </li>
 
       <!-- Company Global Costs -->
-      <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive('admin.company_costs.*') }}">
+      <li class="nav-item {{ request()->routeIs('admin.company_costs.*', 'admin.costs.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive(['admin.company_costs.*', 'admin.costs.*']) }}">
           <i class="fas fa-money-bill-wave"></i>
           <span>Global Expenses</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('admin.company_costs.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['admin.company_costs.*', 'admin.costs.*']) }}">
           <li>
             <a href="{{ route('admin.costs.dashboard') }}" class="sub-link {{ isActive('admin.costs.dashboard') }}">
               <i class="fas fa-chart-line me-1"></i> Cost Dashboard
@@ -291,7 +292,7 @@
       </li>
 
       <!-- category -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.categories.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.categories.*') }}">
           <i class="fa-solid fa-folder-open"></i>
           <span>Category</span>
@@ -316,7 +317,7 @@
 
 
       <!-- Products -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.suppliers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.suppliers.*') }}">
           <i class="fa-solid fa-truck-field"></i>
           <span>Supplier</span>
@@ -340,7 +341,7 @@
       </li>
 
       <!-- Products -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.products.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.products.*') }}">
           <i class="fa-solid fa-box"></i>
           <span>Product</span>
@@ -366,7 +367,7 @@
 
 
       <!-- offer -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('admin.offers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
           <i class="fa-solid fa-tags"></i>
           <span>Offer</span>

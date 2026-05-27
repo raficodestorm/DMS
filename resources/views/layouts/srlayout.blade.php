@@ -37,7 +37,7 @@
       </li>
 
       <!-- Users -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('sr.users.*', 'sr.index.customers') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['sr.users.*','sr.index.customers']) }}">
           <i class="fas fa-users"></i>
           <span>User Account</span>
@@ -60,7 +60,7 @@
       </li>
 
       <!-- Customers -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('customers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('customers.*') }}">
           <i class="fas fa-handshake"></i>
           <span>Customer</span>
@@ -84,7 +84,7 @@
 
 
       <!-- Customers -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('sr.order.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('sr.order.*') }}">
           <i class="fas fa-cart-shopping"></i>
           <span>Order</span>
@@ -115,7 +115,7 @@
 
 
       <!-- Payment -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('sr.payments.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('sr.payments.*') }}">
           <i class="fas fa-money-bill-transfer"></i>
           <span>payments</span>
@@ -140,7 +140,7 @@
       </li>
 
       <!-- Product Return -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('sr.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('sr.return.*') }}">
           <i class="fas fa-undo"></i>
           <span>Product Return</span>

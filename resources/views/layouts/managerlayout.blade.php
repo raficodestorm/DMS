@@ -37,14 +37,16 @@
       </li>
 
       <!-- Users -->
-      <li class="nav-item">
-        <div class="nav-link has-dropdown {{ isActive(['manager.users.*','manager.index.srs']) }}">
+      <li
+        class="nav-item {{ request()->routeIs('manager.users.*', 'manager.index.srs', 'manager.index.customers') ? 'open' : '' }}">
+        <div
+          class="nav-link has-dropdown {{ isActive(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
           <i class="fas fa-users"></i>
           <span>User Accounts</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen(['manager.users.*','manager.index.srs']) }}">
+        <ul class="sub-menu" style="{{ isOpen(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
           <li>
             <a href="{{ route('manager.users.create') }}" class="sub-link {{ isActive('manager.users.create') }}">
               <i class="fas fa-user-plus me-1"></i> Add User
@@ -66,7 +68,7 @@
       </li>
 
       <!-- Employees -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.employees.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.employees.*') }}">
           <i class="fas fa-user-tie"></i>
           <span>Employees</span>
@@ -90,7 +92,7 @@
       </li>
 
       <!-- Stock -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.stock.*', 'manager.stock-transfer.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['manager.stock.*', 'manager.stock-transfer.*']) }}">
           <i class="fas fa-boxes-stacked"></i>
           <span>Stock</span>
@@ -128,7 +130,7 @@
 
 
       <!-- Order -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.order.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.order.*') }}">
           <i class="fas fa-file-invoice"></i>
           <span>Order</span>
@@ -159,7 +161,7 @@
       </li>
 
       <!-- Retail Sales -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.retail.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.retail.*') }}">
           <i class="fas fa-store"></i>
           <span>Retail Sales</span>
@@ -181,7 +183,7 @@
       </li>
 
       <!-- payments -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.payments.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.payments.*') }}">
           <i class="fas fa-money-bill-transfer"></i>
           <span>Transactions</span>
@@ -204,7 +206,7 @@
       </li>
 
       <!-- Product Return -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.return.*') }}">
           <i class="fas fa-undo"></i>
           <span>Product Return</span>
@@ -221,7 +223,7 @@
       </li>
 
       <!-- Expense Management -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('manager.costs.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.costs.*') }}">
           <i class="fas fa-wallet"></i>
           <span>Expense</span>

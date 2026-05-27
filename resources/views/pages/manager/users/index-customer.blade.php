@@ -81,7 +81,7 @@
 
 </div>
 <div class="d-flex justify-content-center mt-3">
-  {{ $categories->links() }}
+  {{ $customers->links() }}
 </div>
 
 @endsection
