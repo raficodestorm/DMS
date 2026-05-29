@@ -6,7 +6,7 @@
       <p>{{ $loop->iteration }}</p>
     </div>
     <div><span>Customer ID</span>
-      <p>BRE100{{ $customer->id }}</p>
+      <p>BRC200{{ $customer->id }}</p>
     </div>
     <div><span>Shop Name</span>
       <p>{{ $customer->shop_name }}</p>

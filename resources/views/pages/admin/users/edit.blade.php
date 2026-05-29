@@ -59,7 +59,7 @@
           @foreach($employees as $employee)
           <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' :
             '' }}>
-            BRE100{{ $employee->id }}
+            BRE100{{$employee->id}} ({{$employee->name}})
           </option>
           @endforeach
 
@@ -85,8 +85,9 @@
           <div class="preview-box">
 
             @if($user->profile_photo_path)
-            <img id="photoPreview" src="{{ str_starts_with($user->profile_photo_path, 'uploads/') ? asset($user->profile_photo_path) : asset('uploads/' . $user->profile_photo_path) }}" alt="Preview"
-              style="display:block;">
+            <img id="photoPreview"
+              src="{{ str_starts_with($user->profile_photo_path, 'uploads/') ? asset($user->profile_photo_path) : asset('uploads/' . $user->profile_photo_path) }}"
+              alt="Preview" style="display:block;">
             <i class="fa-solid fa-user" id="defaultIcon" style="display:none;"></i>
             @else
             <i class="fa-solid fa-user" id="defaultIcon"></i>
