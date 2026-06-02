@@ -1,5 +1,5 @@
 @extends('layouts.managerlayout')
-
+@section('content')
 <style>
   .dashboard-row {
     overflow-x: hidden;
@@ -169,7 +169,7 @@
     </div>
   </div>
 </div>
-
+@endsection
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
@@ -285,7 +285,7 @@
   });
 </script>
 @endpush
-@endsection
+
 
 @if(session('success'))
 @push('scripts')

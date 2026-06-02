@@ -79,8 +79,18 @@ class DashboardController extends Controller
         ->toArray();
 
       $months = [
-        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
-        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+        1 => 'Jan',
+        2 => 'Feb',
+        3 => 'Mar',
+        4 => 'Apr',
+        5 => 'May',
+        6 => 'Jun',
+        7 => 'Jul',
+        8 => 'Aug',
+        9 => 'Sep',
+        10 => 'Oct',
+        11 => 'Nov',
+        12 => 'Dec'
       ];
 
       $chartData = [];
@@ -91,7 +101,6 @@ class DashboardController extends Controller
         ];
       }
       $data['yearlySalesChart'] = $chartData;
-
     } elseif ($role === 'manager') {
 
       $branchId = $user->branch_id;
@@ -146,8 +155,18 @@ class DashboardController extends Controller
         ->toArray();
 
       $months = [
-        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
-        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+        1 => 'Jan',
+        2 => 'Feb',
+        3 => 'Mar',
+        4 => 'Apr',
+        5 => 'May',
+        6 => 'Jun',
+        7 => 'Jul',
+        8 => 'Aug',
+        9 => 'Sep',
+        10 => 'Oct',
+        11 => 'Nov',
+        12 => 'Dec'
       ];
 
       $chartData = [];
@@ -158,7 +177,6 @@ class DashboardController extends Controller
         ];
       }
       $data['yearlySalesChart'] = $chartData;
-
     } elseif ($role === 'sr') {
 
       $srId     = $user->id;
@@ -198,7 +216,6 @@ class DashboardController extends Controller
         ];
       }
       $data['srDailyChart'] = $dailyChartData;
-
     } elseif ($role === 'customer') {
 
       $customerId = $user->customer_id;
@@ -221,7 +238,7 @@ class DashboardController extends Controller
       $latestTransaction = Transaction::where('customer_id', $customerId)
         ->latest()
         ->first();
-      $data['customerCurrentDue'] = $latestTransaction ? $latestTransaction->due : 0;
+      $data['customerCurrentDue'] = Customer::find($customerId)?->due ?? 0;
 
       // 4. Running order
       $runningStatuses = ['pending_sr', 'pending_manager', 'approved'];
