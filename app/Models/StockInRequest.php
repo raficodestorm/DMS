@@ -9,6 +9,7 @@ class StockInRequest extends Model
     protected $fillable = [
         'supplier_id',
         'requested_by',
+        'branch_id',
         'net_total',
         'status',
         'approved_by',
@@ -37,4 +38,8 @@ class StockInRequest extends Model
     {
         return $this->hasMany(StockInItem::class, 'stock_in_request_id');
     }
+    public function branch()
+{
+    return $this->belongsTo(Branch::class);
+}
 }

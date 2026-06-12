@@ -49,6 +49,7 @@ class StockRequestController extends Controller
         $stockRequest = StockInRequest::create([
           'supplier_id' => $request->supplier_id,
           'requested_by' => Auth::id(),
+          'branch_id'   => auth()->user()->branch_id,
           'net_total' => $request->net_total,
           'status' => 'pending'
         ]);
@@ -103,7 +104,7 @@ class StockRequestController extends Controller
   public function stockInRequestIndexForManager()
   {
     $requests = StockInRequest::with(['supplier', 'requestedBy'])
-      ->where('requested_by', auth()->user()->id)
+      ->where('branch_id', auth()->user()->branch_id)
       ->orderBy('created_at', 'desc')
       ->get();
     return view('pages.manager.stock.stock-in-requests-index', compact('requests'));
@@ -167,7 +168,7 @@ class StockRequestController extends Controller
 
     try {
       return DB::transaction(function () use ($request, $id) {
-        $stockRequest = StockInRequest::where('requested_by', Auth::id())
+        $stockRequest = StockInRequest::where('branch_id', auth()->user()->branch_id)
           ->findOrFail($id);
 
         if ($stockRequest->status !== 'pending') {
@@ -218,7 +219,7 @@ class StockRequestController extends Controller
           throw new \Exception('This request has already been ' . $stockInRequest->status);
         }
 
-        $targetBranchId = $stockInRequest->requestedBy->branch_id;
+        $targetBranchId = $stockInRequest->branch_id;
 
         if (!$targetBranchId) {
           throw new \Exception('The requesting user is not assigned to any branch.');
@@ -274,4 +275,201 @@ class StockRequestController extends Controller
       return back()->with('error', 'Something went wrong!');
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function stockInAdminEdit($id)
+  {
+    $request = StockInRequest::findOrFail($id);
+    $suppliers = Supplier::select('id', 'company_name')->orderBy('company_name', 'asc')->get();
+    
+    return view('pages.admin.stock.stock-in-edit', compact('request', 'suppliers'));
+  }
+
+
+
+
+  public function stockInAdinUpdate(Request $request, $id)
+{
+    $request->validate([
+        'supplier_id'               => 'required|exists:suppliers,id',
+        'products'                  => 'required|array|min:1',
+        'products.*.product_id'     => 'required|exists:products,id',
+        'products.*.qty'            => 'required|integer|min:1',
+        'products.*.tree_deduction' => 'nullable|numeric|min:0',
+        'net_total'                 => 'required|numeric|min:0',
+    ]);
+
+    try {
+
+        DB::transaction(function () use ($request, $id) {
+
+            $stockRequest = StockInRequest::with([
+                'items.product',
+                'requestedBy'
+            ])->lockForUpdate()->findOrFail($id);
+
+            $branchId = $stockRequest->branch_id;
+
+            if (!$branchId) {
+                throw new \Exception('Branch not found.');
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 1
+            | Rollback old approved stock effect
+            |--------------------------------------------------------------------------
+            */
+            if ($stockRequest->status === 'approved') {
+
+                foreach ($stockRequest->items as $oldItem) {
+
+                    $stock = Stock::where([
+                        'product_id' => $oldItem->product_id,
+                        'branch_id'  => $branchId,
+                    ])->lockForUpdate()->first();
+
+                    if ($stock) {
+
+                        $newQty = $stock->quantity - $oldItem->quantity;
+
+                        if ($newQty < 0) {
+                            throw new \Exception(
+                                "Stock inconsistency detected for {$oldItem->product->name}"
+                            );
+                        }
+
+                        $stock->update([
+                            'quantity' => $newQty
+                        ]);
+                    }
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 2
+            | Update request header
+            |--------------------------------------------------------------------------
+            */
+
+            $stockRequest->update([
+                'supplier_id' => $request->supplier_id,
+                'net_total'   => $request->net_total,
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 3
+            | Replace request items
+            |--------------------------------------------------------------------------
+            */
+
+            $stockRequest->items()->delete();
+
+            $itemsToInsert = [];
+
+            foreach ($request->products as $item) {
+
+                $product = Product::findOrFail(
+                    $item['product_id']
+                );
+
+                $itemsToInsert[] = [
+                    'stock_in_request_id' => $stockRequest->id,
+                    'product_id'          => $product->id,
+                    'quantity'            => $item['qty'],
+                    'cost_price'          => $product->price,
+                    'tree_deduction'      => $item['tree_deduction'] ?? 0,
+                    'created_at'          => now(),
+                    'updated_at'          => now(),
+                ];
+            }
+
+            StockInItem::insert($itemsToInsert);
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 4
+            | Re-load items
+            |--------------------------------------------------------------------------
+            */
+
+            $stockRequest->load('items.product');
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 5
+            | Re-apply stock effect
+            |--------------------------------------------------------------------------
+            */
+
+            if ($stockRequest->status === 'approved') {
+
+                $deduction = Deduction::where(
+                    'type',
+                    'main'
+                )->first();
+
+                $calculator = new PurchasePriceCalculator();
+
+                foreach ($stockRequest->items as $item) {
+
+                    $stock = Stock::firstOrCreate(
+                        [
+                            'product_id' => $item->product_id,
+                            'branch_id'  => $branchId,
+                        ],
+                        [
+                            'quantity' => 0
+                        ]
+                    );
+
+                    $stock->increment(
+                        'quantity',
+                        $item->quantity
+                    );
+
+                    $purchasePrice =
+                        $calculator->calculate(
+                            $item,
+                            $deduction
+                        );
+
+                    $item->product->update([
+                        'purchase_price' => $purchasePrice
+                    ]);
+                }
+            }
+
+        });
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Stock request & stock updated successfully.'
+            );
+
+    } catch (\Exception $e) {
+
+        return back()->with(
+            'error',
+            $e->getMessage()
+        );
+    }
+}
 }

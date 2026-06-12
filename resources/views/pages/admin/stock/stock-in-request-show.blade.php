@@ -116,7 +116,7 @@
   <div class="info-grid">
     <div class="info-item">
       <label>Requested By</label>
-      <p>{{ $request->requestedBy->branch->name }} branch</p>
+      <p>{{ $request->branch->name }} branch</p>
     </div>
     <div class="info-item">
       <label>Supplier</label>
@@ -139,7 +139,7 @@
           <th>Product</th>
           <th>Rate</th>
           <th>Quantity</th>
-          <th>Tree Deduction</th>
+          <th>Tree Deduction</th> 
           <th>Subtotal</th>
         </tr>
       </thead>
@@ -197,6 +197,18 @@
   <div style="text-align: right; margin-top: 20px;">
     <h3 style="color: var(--primary);">Net Total: {{ number_format($request->net_total, 2) }} TK</h3>
   </div>
+
+
+
+  
+    @if($request->status == 'approved')
+  <div class="action-bar">
+    <a href="{{ route('admin.stock.in.request.edit', $request->id) }}" class="btn-smart btn-edit">
+      <i class="fas fa-edit"></i> Edit
+    </a>
+
+  </div>
+  @endif
 
   @if($request->status == 'pending')
   <div class="action-bar">
