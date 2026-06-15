@@ -146,6 +146,34 @@ class OrderSrController extends Controller
     return view('pages.sr.order.create', compact('customers', 'products', 'deductionSettings'));
   }
 
+  public function searchProducts(Request $request)
+  {
+    $search = trim($request->search ?? '');
+
+    if (strlen($search) < 2) {
+      return response()->json([]);
+    }
+
+    $branchId = auth()->user()->branch_id;
+
+    $products = Stock::with('product')
+      ->where('branch_id', $branchId)
+      ->where('quantity', '>', 0)
+      ->whereHas('product', function ($q) use ($search) {
+        $q->where('name', 'like', "%{$search}%");
+      })
+      ->limit(20)
+      ->get()
+      ->map(fn($s) => [
+        'id'            => $s->product_id,
+        'name'          => $s->product?->name ?? '',
+        'image'         => $s->product?->image,
+        'available_qty' => $s->quantity,
+      ]);
+
+    return response()->json($products);
+  }
+
   // discount check
   public function getProductData($id)
   {

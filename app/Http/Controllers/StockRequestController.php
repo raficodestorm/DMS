@@ -301,7 +301,7 @@ public function stockInAdminEdit($id)
 
 
 
-  public function stockInAdinUpdate(Request $request, $id)
+  public function stockInAdminUpdate(Request $request, $id)
 {
     $request->validate([
         'supplier_id'               => 'required|exists:suppliers,id',

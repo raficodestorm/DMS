@@ -70,7 +70,7 @@
             </div>
             <div>
               <h6 class="card-label mb-1">Branch Stock</h6>
-              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 15px; font-weight: 600;">৳ {{
                 number_format($totalStockValue, 2) }}</p>
             </div>
           </div>
@@ -92,7 +92,7 @@
             </div>
             <div>
               <h6 class="card-label mb-1">{{ $monthName }} Sales</h6>
-              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 15px; font-weight: 600;">৳ {{
                 number_format($currentMonthSales, 2) }}</p>
             </div>
           </div>
@@ -114,7 +114,7 @@
             </div>
             <div>
               <h6 class="card-label mb-1">{{ $monthName }} Profit</h6>
-              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 15px; font-weight: 600;">৳ {{
                 number_format($currentMonthProfit, 2) }}</p>
             </div>
           </div>
@@ -136,7 +136,7 @@
             </div>
             <div>
               <h6 class="card-label mb-1">{{ $monthName }} Cost</h6>
-              <p class="amount mb-0" style="color: var(--text-main); font-size: 20px; font-weight: 700;">৳ {{
+              <p class="amount mb-0" style="color: var(--text-main); font-size: 15px; font-weight: 600;">৳ {{
                 number_format($currentMonthCost, 2) }}</p>
             </div>
           </div>

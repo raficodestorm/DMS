@@ -193,6 +193,55 @@
       text-transform: uppercase;
     }
   }
+
+  /* ── Product Live Search ───────────────────────────────────────── */
+  .pls-container { position: relative; margin-bottom: 1rem; }
+
+  .pls-input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--section-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .pls-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(49,49,255,.12);
+  }
+  .pls-search-icon  { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
+  .pls-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    padding: 12px 0; font-size: 15px; color: var(--text-main);
+  }
+  .pls-input::placeholder { color: var(--text-muted); }
+  .pls-spinner { color: var(--primary); font-size: 14px; margin-left: 8px; }
+
+  .pls-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.13);
+    max-height: 280px; overflow-y: auto; z-index: 9999;
+  }
+  .pls-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .15s;
+  }
+  .pls-item:last-child  { border-bottom: none; }
+  .pls-item:hover, .pls-item:active { background: var(--primary-soft, #eef2ff); }
+  .pls-item-name  { font-weight: 600; font-size: 14px; color: var(--text-main); }
+  .pls-item-stock {
+    font-size: 12px; color: var(--text-muted);
+    background: var(--background); padding: 2px 8px;
+    border-radius: 20px; white-space: nowrap; margin-left: 8px;
+  }
+  .pls-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
+  @media (max-width: 576px) { .pls-input { font-size: 16px; } }
 </style>
 <div class="container py-4">
   <div class="form-card">
@@ -205,7 +254,7 @@
     <form method="POST" action="{{ route('sr.order.store') }}" id="orderForm">
       @csrf
 
-      <div class="deduction-control-card p-3 mb-4 border rounded bg-light shadow-sm">
+      <div class="deduction-control-card p-3 mb-4 border rounded shadow-sm">
         <div class="row align-items-center">
           <div class="col-md-6 mb-2 mb-md-0">
             <div class="form-check form-switch">
@@ -242,17 +291,22 @@
       <div id="product-wrapper" class="row">
       </div>
 
-      <div class="mb-3">
-        <select id="product-search" class="input-form text-center" onchange="addProductCard(this)">
-          <option value="">+ Click to Add Product</option>
-          @foreach($products as $p)
-          @php $p = (object)$p; @endphp
-          <option value="{{ $p->id }}" data-name="{{ $p->name }}" data-stock="{{ $p->available_qty }}"
-            data-image-name="{{ $p->image }}">
-            {{ $p->name }} (Stock: {{ $p->available_qty }})
-          </option>
-          @endforeach
-        </select>
+      <div class="pls-container" id="pls-container">
+        <label class="form-label fw-bold">Add Product</label>
+        <div class="pls-input-wrap">
+          <span class="pls-search-icon"><i class="fas fa-search"></i></span>
+          <input
+            type="text"
+            id="pls-input"
+            class="pls-input"
+            placeholder="Type product name to search..."
+            autocomplete="off"
+            inputmode="search">
+          <span class="pls-spinner" id="pls-spinner" style="display:none">
+            <i class="fas fa-circle-notch fa-spin"></i>
+          </span>
+        </div>
+        <div id="pls-dropdown" class="pls-dropdown" style="display:none"></div>
       </div>
 
       <div class="mb-4">
@@ -297,18 +351,7 @@
 <script>
   let index = 0;
   
-$(document).ready(function() {
-    
-    $('#applyGlobalDeduction').on('change', function() {
-        refreshAllCards();
-    });
 
-    
-    $('#customDeductionRate').on('input', function() {
-        $('#hiddenCustomDeduction').val($(this).val());
-        refreshAllCards();
-    });
-});
 
 function refreshAllCards() {
     
@@ -318,27 +361,24 @@ function refreshAllCards() {
 }
 
 
-function addProductCard(el) {
-    let productId = $(el).val();
+function addProductCard(productId, name, stock, imageName) {
     if (!productId) return;
 
     if ($(`.product-card[data-id="${productId}"]`).length > 0) {
         alert('প্রোডাক্টটি অলরেডি লিস্টে আছে!');
-        $(el).val('');
         return;
     }
 
-    let option = $(el).find(':selected');
-    let name = option.attr('data-name');
-    let stock = option.attr('data-stock');
-    let imageName = option.attr('data-image-name'); 
+    name      = name      || '';
+    stock     = parseInt(stock)  || 0;
+    imageName = imageName || '';
 
-    let finalImgPath = (imageName && imageName.trim() !== "" && imageName !== "null") 
+    let finalImgPath = (imageName && imageName.trim() !== '' && imageName !== 'null')
         ? (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName)
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff`;
 
     $.get(`/sr/get-product-data/${productId}`, function(data) {
-        
+
         let basePrice = parseFloat(data.price);
         let globalRate = $('#applyGlobalDeduction').is(':checked') ? parseFloat($('#applyGlobalDeduction').data('percentage')) : 0;
         let customRate = parseFloat($('#customDeductionRate').val()) || 0;
@@ -347,17 +387,17 @@ function addProductCard(el) {
         let deductionAmountPerUnit = (basePrice * totalDeductionPercent / 100);
         let sellingPricePerUnit = basePrice - deductionAmountPerUnit;
         let disc = data.discount_type === 'percentage' ? (sellingPricePerUnit * data.discount / 100) : data.discount;
-        let showDisc = data.discount_type === 'percentage' ? data.discount+'%' : data.discount+'TK';
+        let showDisc = data.discount_type === 'percentage' ? data.discount + '%' : data.discount + 'TK';
 
         let cardHtml = `
         <div class="col-12 col-md-6 col-lg-4 mb-3 product-card-container">
             <div class="product-card h-100" data-id="${productId}">
                 <div class="remove-card-btn" onclick="removeCard(this)"><i class="fas fa-times"></i></div>
-                
+
                 <div class="row g-2 align-items-center">
                     <div class="col-4">
                         <div class="product-img-box mb-2">
-                            <img src="${finalImgPath}" class="img-fluid rounded" alt="${name}" 
+                            <img src="${finalImgPath}" class="img-fluid rounded" alt="${name}"
                                  onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff'">
                         </div>
                         <div class="qty-controls d-flex align-items-center justify-content-between">
@@ -390,9 +430,8 @@ function addProductCard(el) {
             </div>
         </div>`;
 
-        $('#product-wrapper').append(cardHtml); 
+        $('#product-wrapper').append(cardHtml);
         index++;
-        $(el).val(''); 
 
         let lastInput = $('#product-wrapper .product-card').last().find('.qty-input');
         calculateCard(lastInput);
@@ -495,5 +534,91 @@ function calculateTotal() {
     $('#netTotalInput').val(finalNetTotal.toFixed(2));
     $('#totalDiscountInput').val(totalPromotionalDiscount.toFixed(2));
 }
+
+// Wait for DOM & deferred scripts (Vite modules, jQuery) to load
+document.addEventListener('DOMContentLoaded', function () {
+  // Bind jQuery listeners
+  $('#applyGlobalDeduction').on('change', function() {
+      refreshAllCards();
+  });
+
+  $('#customDeductionRate').on('input', function() {
+      $('#hiddenCustomDeduction').val($(this).val());
+      refreshAllCards();
+  });
+
+  // Initialize Live Product Search
+  var timer;
+  var plsInput    = document.getElementById('pls-input');
+  var plsDropdown = document.getElementById('pls-dropdown');
+  var plsSpinner  = document.getElementById('pls-spinner');
+
+  if (!plsInput) return;
+
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  plsInput.addEventListener('input', function () {
+    clearTimeout(timer);
+    var q = this.value.trim();
+    if (q.length < 2) {
+      plsDropdown.style.display = 'none';
+      plsDropdown.innerHTML     = '';
+      return;
+    }
+    timer = setTimeout(function () {
+      plsSpinner.style.display = 'inline';
+      fetch('/sr/products/search?search=' + encodeURIComponent(q), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (products) {
+        plsSpinner.style.display = 'none';
+        if (!products.length) {
+          plsDropdown.innerHTML     = '<div class="pls-empty"><i class="fas fa-box-open me-1"></i> No products found</div>';
+          plsDropdown.style.display = 'block';
+          return;
+        }
+        var html = '';
+        products.forEach(function (p) {
+          html += '<div class="pls-item"'
+            + ' data-id="'    + p.id                   + '"'
+            + ' data-name="'  + esc(p.name)            + '"'
+            + ' data-stock="' + (p.available_qty || 0) + '"'
+            + ' data-image="' + esc(p.image || '')     + '">'
+            + '<span class="pls-item-name">'  + esc(p.name)                    + '</span>'
+            + '<span class="pls-item-stock">Stock: ' + (p.available_qty || 0) + '</span>'
+            + '</div>';
+        });
+        plsDropdown.innerHTML     = html;
+        plsDropdown.style.display = 'block';
+      })
+      .catch(function (err) {
+        console.error('Search error:', err);
+        plsSpinner.style.display = 'none';
+      });
+    }, 300);
+  });
+
+  plsDropdown.addEventListener('click', function (e) {
+    var item = e.target.closest('.pls-item');
+    if (!item) return;
+    addProductCard(item.dataset.id, item.dataset.name, item.dataset.stock, item.dataset.image);
+    plsInput.value            = '';
+    plsDropdown.style.display = 'none';
+    plsDropdown.innerHTML     = '';
+    plsInput.focus();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#pls-container')) {
+      plsDropdown.style.display = 'none';
+    }
+  });
+});
+
 </script>
 @endpush

@@ -25,6 +25,7 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
   Route::get('/orders/show/{order}', [OrderSrController::class, 'showForSr'])->name('order.show');
   Route::patch('/orders/delivered/{order}', [OrderSrController::class, 'delivered'])->name('order.delivered');
+  Route::get('/products/search', [OrderSrController::class, 'searchProducts'])->name('products.search');
 
   Route::get('/return', [\App\Http\Controllers\Sr\ReturnSrController::class, 'index'])->name('return.index');
   Route::get('/return/create', [\App\Http\Controllers\Sr\ReturnSrController::class, 'create'])->name('return.create');

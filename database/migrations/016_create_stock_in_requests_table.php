@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stock_in_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('requested_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('net_total', 10, 2);

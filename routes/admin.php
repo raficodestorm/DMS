@@ -69,7 +69,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/stock/get-products/{supplier_id}', [StockRequestController::class, 'getProductsBySupplier'])->name('getProducts');
   Route::get('/stock-in-request/{id}/edit', [StockRequestController::class, 'stockInAdminEdit'])->name('stock.in.request.edit');
 
-  Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInAdinUpdate'])->name('stock.in.update');
+  Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInAdminUpdate'])->name('stock.in.update');
   // সব ব্রাঞ্চের সামারি ভিউ
   Route::get('/all-stocks', [StockController::class, 'allStocksSummary'])->name('stocks.all');
 

@@ -46,7 +46,7 @@ class UserManagementController extends Controller
       ->latest() // cleaner than orderBy
       ->paginate(20);
 
-    return view('pages.manager.users.index-cuatomer', [
+    return view('pages.manager.users.index-customer', [
       'customers' => $customers,
       'roleTitle' => 'Customer'
     ]);
