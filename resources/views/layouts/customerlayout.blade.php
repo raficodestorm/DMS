@@ -97,6 +97,11 @@
 
     <div class="nav-right">
 
+    {{-- Calculator Toggle --}}
+      <button class="theme-toggle" onclick="toggleCalculator(event)" title="Calculator">
+        <i class="fa-solid fa-calculator"></i>
+      </button>
+
       {{-- Notifications --}}
       <div class="notification-wrapper">
         <div class="notification-icon" id="notifBtn" onclick="toggleNotifDropdown(event)">
@@ -413,6 +418,7 @@ document.addEventListener('click', function (e) {
         }
     });
   </script>
+  <x-calculator />
   @stack('scripts')
 </body>
 

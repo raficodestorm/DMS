@@ -186,6 +186,11 @@
 
     <div class="nav-right">
 
+    {{-- Calculator Toggle --}}
+      <button class="theme-toggle" onclick="toggleCalculator(event)" title="Calculator">
+        <i class="fa-solid fa-calculator"></i>
+      </button>
+
       {{-- Notifications --}}
       <div class="notification-wrapper">
         <div class="notification-icon" id="notifBtn" onclick="toggleNotifDropdown(event)">
@@ -229,6 +234,8 @@
           </div>
         </div>
       </div>
+
+      
 
       <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fa-solid fa-moon"></i>
@@ -493,6 +500,7 @@ function toggleTheme() {
     }
     initSrEcho();
   </script>
+  <x-calculator />
   @stack('scripts')
 </body>
 
