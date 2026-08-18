@@ -21,6 +21,8 @@ return new class extends Migration
             $table->decimal('selling_rate', 10, 2);
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->decimal('net_total', 10, 2);
+            // new -------------------
+            $table->decimal('profit', 15, 2)->default(0);
             $table->timestamps();
         });
     }

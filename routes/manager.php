@@ -57,6 +57,8 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/orders/allsrs', [OrderManagerController::class, 'allSrOrders'])->name('order.all.srs');
 
   Route::get('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'index'])->name('return.index');
+  Route::get('/return/create', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'create'])->name('return.create');
+  Route::post('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'store'])->name('return.store');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'show'])->name('return.show');
   Route::post('/return/{id}/forward', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'forwardToAdmin'])->name('return.forward');
   Route::post('/return/{id}/reject', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'reject'])->name('return.reject');

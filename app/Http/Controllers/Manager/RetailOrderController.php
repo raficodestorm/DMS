@@ -30,11 +30,25 @@ class RetailOrderController extends Controller
       ->whereNull('sr_id') // Identifying retail orders where manager is the creator and no SR is assigned
       ->latest();
 
+    // Date Range Filter
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    // Status Filter
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    // Search Filter
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-        if (str_starts_with($search, 'BRS')) {
-          $q->where('id', str_replace('BRS', '', $search));
+        if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
+          $q->where('id', $match[1]);
         } else {
           $q->where('id', $search)
             ->orWhereHas('customer', fn($c) => $c->where('shop_name', 'like', "%{$search}%"));
@@ -59,13 +73,15 @@ class RetailOrderController extends Controller
       ->where('branch_id', $branchId)
       ->where('quantity', '>', 0)
       ->get()
+      ->filter(fn($stock) => !is_null($stock->product))
       ->map(fn($stock) => [
         'id'            => $stock->product_id,
         'name'          => $stock->product->name,
         'price'         => $stock->product->price,
         'image'         => $stock->product->image,
         'available_qty' => $stock->quantity,
-      ]);
+      ])
+      ->values();
 
     return view('pages.manager.retail.create', compact( 'products'));
   }

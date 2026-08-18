@@ -194,78 +194,322 @@ class OrderSrController extends Controller
   }
 
 
-  public function store(Request $request)
-  {
 
+
+  public function store(Request $request)
+{
     $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'products'    => 'required|array|min:1',
-      'net_total'   => 'required|numeric'
+        'customer_id' => ['required', 'exists:customers,id'],
+        'products'    => ['required', 'array', 'min:1'],
+        'net_total'   => ['required', 'numeric', 'min:0'],
     ]);
 
     try {
-      return DB::transaction(function () use ($request) {
-        $user = auth()->user();
-        $branchId = $user->branch_id;
+        return DB::transaction(function () use ($request) {
 
-        $manager = User::where('branch_id', $branchId)
-          ->where('role', 'manager')
-          ->first();
+            $user = auth()->user();
 
-        // Get deduction percentage for audit
-        $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
-        $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
-        $customRate = $request->applied_custom_deduction ?? 0;
-        $totalDeductionPercent = $globalRate + $customRate;
+            $branchId = $user->branch_id;
 
-        $order = Order::create([
-          'customer_id'     => $request->customer_id,
-          'sr_id'           => $user->id,
-          'manager_id'      => $manager->id,
-          'status'          => 'pending_sr',
-          'special_discount' => $request->special_discount ?? 0,
-          'discount_amount' => $request->total_discount,
-          'net_total'       => $request->net_total,
-          'applied_deduction_percent' => $totalDeductionPercent,
-          'note'            => $request->note
-        ]);
+            /*
+             * ---------------------------------------------------------
+             * 1. Get manager
+             * ---------------------------------------------------------
+             */
+            $manager = User::query()
+                ->where('branch_id', $branchId)
+                ->where('role', 'manager')
+                ->first();
 
-        foreach ($request->products as $item) {
+            $managers = User::query()
+                ->where('branch_id', $branchId)
+                ->where('role', 'manager')
+                ->get();
 
-          $basePrice = $item['price'];
-          $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
-          $sellingRate = $basePrice - $deductionAmount;
+            /*
+             * ---------------------------------------------------------
+             * 2. Get deduction settings
+             * ---------------------------------------------------------
+             */
+            $deductionSettings = DB::table('deductions')
+                ->where('type', 'main')
+                ->first();
 
-          OrderItem::create([
-            'order_id'              => $order->id,
-            'product_id'            => $item['product_id'],
-            'quantity'              => $item['qty'],
-            'price'                 => $basePrice,
-            'unit_deduction_amount' => $deductionAmount,
-            'selling_rate'          => $sellingRate,
-            'discount_amount'       => $item['discount'] ?? 0, // Offer discount
-            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
-          ]);
-        }
+            $globalRate = $request->boolean('apply_global')
+                ? ($deductionSettings->customer_deduction ?? 0)
+                : 0;
 
-        if ($manager) {
-          $notificationData = [
-            'title'   => 'New Order Received',
-            'message' => [
-              'text' => 'A new order has been placed by',
-              'from' => $user->username
-            ],
-            'url'     => route('manager.order.show', $order->id),
-            'type'    => 'new_order'
-          ];
+            $customRate = (float) ($request->applied_custom_deduction ?? 0);
 
-          $manager->notify(new \App\Notifications\SystemNotification($notificationData));
-        }
+            $totalDeductionPercent = $globalRate + $customRate;
 
-        return redirect()->route('dashboards')->with('success', 'Order requested successfully!');
-      });
-    } catch (\Exception $e) {
-      return redirect()->back()->with('error', 'Something went wrong! ' . $e->getMessage());
+            /*
+             * ---------------------------------------------------------
+             * 3. Get all product IDs from request
+             * ---------------------------------------------------------
+             */
+            $productIds = collect($request->products)
+                ->pluck('product_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            /*
+             * ---------------------------------------------------------
+             * 4. Fetch all products in ONE query.
+             * ---------------------------------------------------------
+             */
+            $products = Product::query()
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
+            /*
+             * Make sure every requested product exists.
+             */
+            if ($products->count() !== $productIds->count()) {
+                throw new \RuntimeException(
+                    'One or more selected products no longer exist.'
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 5. Create Order
+             * ---------------------------------------------------------
+             */
+            $order = Order::create([
+                'customer_id'                 => $request->customer_id,
+                'sr_id'                       => $user->id,
+                'manager_id'                  => $manager?->id,
+                'branch_id'                   => $branchId,
+                'status'                      => 'pending_sr',
+                'special_discount'            => $request->special_discount ?? 0,
+                'discount_amount'             => $request->total_discount ?? 0,
+                'net_total'                   => $request->net_total,
+                'applied_deduction_percent'  => $totalDeductionPercent,
+                'note'                        => $request->note,
+            ]);
+
+            /*
+             * ---------------------------------------------------------
+             * 6. Create Order Items
+             * ---------------------------------------------------------
+             */
+            foreach ($request->products as $item) {
+
+                $productId = $item['product_id'];
+
+                /** @var Product $product */
+                $product = $products->get($productId);
+
+                $qty = (int) $item['qty'];
+
+                if ($qty <= 0) {
+                    throw new \RuntimeException(
+                        "Invalid quantity for product ID: {$productId}"
+                    );
+                }
+
+                /*
+                 * Base selling price
+                 */
+                $basePrice = (float) $item['price'];
+
+                /*
+                 * Deduction
+                 */
+                $deductionAmount = round(
+                    $basePrice * $totalDeductionPercent / 100,
+                    2
+                );
+
+                /*
+                 * Selling rate after deduction
+                 */
+                $sellingRate = round(
+                    $basePrice - $deductionAmount,
+                    2
+                );
+
+                /*
+                 * Offer discount
+                 */
+                $offerDiscount = (float) ($item['discount'] ?? 0);
+
+                /*
+                 * Final item net amount
+                 */
+                $itemNetTotal = round(
+                    ($sellingRate - $offerDiscount) * $qty,
+                    2
+                );
+
+                /*
+                 * -----------------------------------------------------
+                 * Purchase cost
+                 * -----------------------------------------------------
+                 */
+                $purchasePrice = (float) $product->purchase_price;
+
+                $totalPurchaseCost = round(
+                    $purchasePrice * $qty,
+                    2
+                );
+
+                /*
+                 * -----------------------------------------------------
+                 * PROFIT
+                 *
+                 * Standard formula:
+                 *
+                 * Profit = Revenue - Cost
+                 * -----------------------------------------------------
+                 */
+                $profit = round(
+                    $itemNetTotal - $totalPurchaseCost,
+                    2
+                );
+
+                OrderItem::create([
+                    'order_id'              => $order->id,
+                    'product_id'            => $product->id,
+                    'quantity'              => $qty,
+
+                    'price'                 => $basePrice,
+
+                    'unit_deduction_amount' => $deductionAmount,
+
+                    'selling_rate'          => $sellingRate,
+
+                    'discount_amount'       => $offerDiscount,
+
+                    'net_total'             => $itemNetTotal,
+
+                    'profit'                => $profit,
+                ]);
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 7. Manager notification
+             * ---------------------------------------------------------
+             */
+            foreach ($managers as $manager) {
+
+                $notificationData = [
+                    'title'   => 'New Order Received',
+                    'message' => [
+                        'text' => 'A new order has been placed by',
+                        'from' => $user->username,
+                    ],
+                    'url'     => route(
+                        'manager.order.show',
+                        $order->id
+                    ),
+                    'type'    => 'new_order',
+                ];
+
+                $manager->notify(
+                    new \App\Notifications\SystemNotification(
+                        $notificationData
+                    )
+                );
+            }
+
+            return redirect()
+                ->route('sr.order.index')
+                ->with('success', 'Order requested successfully!');
+        });
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                'Something went wrong while creating the order.'
+            );
     }
-  }
+}
+
+
+
+  // public function store(Request $request)
+  // {
+
+  //   $request->validate([
+  //     'customer_id' => 'required|exists:customers,id',
+  //     'products'    => 'required|array|min:1',
+  //     'net_total'   => 'required|numeric'
+  //   ]);
+
+  //   try {
+  //     return DB::transaction(function () use ($request) {
+  //       $user = auth()->user();
+  //       $branchId = $user->branch_id;
+
+  //       $manager = User::where('branch_id', $branchId)
+  //         ->where('role', 'manager')
+  //         ->first();
+
+        
+  //       $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
+  //       $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
+  //       $customRate = $request->applied_custom_deduction ?? 0;
+  //       $totalDeductionPercent = $globalRate + $customRate;
+
+  //       $order = Order::create([
+  //         'customer_id'     => $request->customer_id,
+  //         'sr_id'           => $user->id,
+  //         'manager_id'      => $manager->id,
+  //         'branch_id'      => $user->branch_id,
+  //         'status'          => 'pending_sr',
+  //         'special_discount' => $request->special_discount ?? 0,
+  //         'discount_amount' => $request->total_discount,
+  //         'net_total'       => $request->net_total,
+  //         'applied_deduction_percent' => $totalDeductionPercent,
+  //         'note'            => $request->note
+  //       ]);
+
+  //       foreach ($request->products as $item) {
+
+  //         $basePrice = $item['price'];
+  //         $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
+  //         $sellingRate = $basePrice - $deductionAmount;
+
+  //         OrderItem::create([
+  //           'order_id'              => $order->id,
+  //           'product_id'            => $item['product_id'],
+  //           'quantity'              => $item['qty'],
+  //           'price'                 => $basePrice,
+  //           'unit_deduction_amount' => $deductionAmount,
+  //           'selling_rate'          => $sellingRate,
+  //           'discount_amount'       => $item['discount'] ?? 0, 
+  //           'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
+  //         ]);
+  //       }
+
+  //       if ($manager) {
+  //         $notificationData = [
+  //           'title'   => 'New Order Received',
+  //           'message' => [
+  //             'text' => 'A new order has been placed by',
+  //             'from' => $user->username
+  //           ],
+  //           'url'     => route('manager.order.show', $order->id),
+  //           'type'    => 'new_order'
+  //         ];
+
+  //         $manager->notify(new \App\Notifications\SystemNotification($notificationData));
+  //       }
+
+  //       return redirect()->route('dashboards')->with('success', 'Order requested successfully!');
+  //     });
+  //   } catch (\Exception $e) {
+  //     return redirect()->back()->with('error', 'Something went wrong! ' . $e->getMessage());
+  //   }
+  // }
 }

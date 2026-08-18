@@ -15,6 +15,7 @@ class OrderItem extends Model
         'selling_rate',
         'discount_amount',
         'net_total',
+        'profit',
     ];
     public function product()
     {

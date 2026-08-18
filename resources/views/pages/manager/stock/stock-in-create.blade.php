@@ -21,11 +21,23 @@
         </select>
       </div>
 
+      <div class="mb-3" style="display: flex; align-items: center; gap: 15px; background: var(--background); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+        <label style="margin: 0; font-weight: 600; color: var(--primary); font-size: 0.95rem;">Do you want to add Tree Deduction :</label>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text-main);">
+            <input type="radio" name="has_tree_deduction" value="yes" style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;"> Yes
+          </label>
+          <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text-main);">
+            <input type="radio" name="has_tree_deduction" value="no" checked style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;"> No
+          </label>
+        </div>
+      </div>
+
       <div class="product-table-header" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
         <span>Product</span>
         <span>Rate</span>
         <span>Qty</span>
-        <span>Tree Deduction</span>
+        <span>Tree Deduct</span>
         <span>Subtotal</span>
         <span></span>
       </div>
@@ -179,6 +191,13 @@
   let currentSupplierProducts = [];
 
   $(document).ready(function () {
+    /* ── Tree Deduction Toggle Init & Listener ────── */
+    toggleTreeDeductionInputs();
+
+    $(document).on('change', 'input[name="has_tree_deduction"]', function () {
+      toggleTreeDeductionInputs();
+    });
+
     /* ── Supplier change → fetch products ────────────── */
     $('select[name="supplier_id"]').on('change', function () {
       const supplierId = $(this).val();
@@ -221,6 +240,21 @@
       }
     });
   });
+
+  /* ── Tree Deduction Toggle Logic ───────────────────── */
+  function toggleTreeDeductionInputs() {
+    const isYes = $('input[name="has_tree_deduction"]:checked').val() === 'yes';
+    $('.tree-ded').each(function () {
+      if (isYes) {
+        $(this).prop('readonly', false)
+               .css({ opacity: 1, pointerEvents: 'auto', background: '' });
+      } else {
+        $(this).val(0)
+               .prop('readonly', true)
+               .css({ opacity: 0.6, pointerEvents: 'none', background: 'var(--background)' });
+      }
+    });
+  }
 
   /* ── Build one product-search widget ──────────────── */
   function buildSearchWidget(idx) {
@@ -373,7 +407,7 @@
                min="1" required oninput="updateRow(this)">
       </div>
       <div>
-        <input type="number" name="products[${index}][tree_deduction]"
+        <input type="number" style="border: 1px solid red;" name="products[${index}][tree_deduction]"
                class="input-form tree-ded" placeholder="0.00"
                min="0" step="0.01" value="0">
       </div>
@@ -391,6 +425,7 @@
 
     $('#product-wrapper').append(html);
     index++;
+    toggleTreeDeductionInputs();
   };
 
   /* ── updateRow ───────────────────────────────────── */

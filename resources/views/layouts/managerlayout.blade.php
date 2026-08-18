@@ -244,6 +244,12 @@
 
         <ul class="sub-menu" style="{{ isOpen('manager.return.*') }}">
           <li>
+            <a href="{{ route('manager.return.create') }}" class="sub-link {{ isActive('manager.return.create') }}">
+              <i class="fas fa-plus me-1"></i> Create Return
+            </a>
+          </li>
+
+          <li>
             <a href="{{ route('manager.return.index') }}" class="sub-link {{ isActive('manager.return.index') }}">
               <i class="fas fa-list me-1"></i> Manage Returns
             </a>

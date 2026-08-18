@@ -101,12 +101,34 @@ class StockRequestController extends Controller
   }
 
   // for showing all pending requests
-  public function stockInRequestIndexForManager()
+  public function stockInRequestIndexForManager(Request $request)
   {
-    $requests = StockInRequest::with(['supplier', 'requestedBy'])
-      ->where('branch_id', auth()->user()->branch_id)
-      ->orderBy('created_at', 'desc')
-      ->get();
+    $query = StockInRequest::with(['supplier', 'requestedBy'])
+      ->where('branch_id', auth()->user()->branch_id);
+
+    // Filter by Date Range
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    // Filter by Status (pending, approved, rejected)
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    // Search by Supplier Name
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->whereHas('supplier', function ($sq) use ($search) {
+        $sq->where('company_name', 'like', "%{$search}%");
+      });
+    }
+
+    $requests = $query->orderBy('created_at', 'desc')->get();
+
     return view('pages.manager.stock.stock-in-requests-index', compact('requests'));
   }
 

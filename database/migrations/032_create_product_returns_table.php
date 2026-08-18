@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('product_returns', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained('customers');
-            $table->foreignId('sr_id')->constrained('users');
-            $table->foreignId('order_id')->nullable()->constrained('orders');
+            $table->foreignId('customer_id')->nullable()->constrained('customers')->nullOnDelete();
+            $table->foreignId('sr_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('order_id')->nullable()->constrained('orders')->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->decimal('total_amount', 15, 2)->default(0);
-            $table->string('reason')->nullable();
+            $table->text('reason')->nullable();
             $table->enum('status', ['pending_manager', 'pending_admin', 'approved', 'rejected'])->default('pending_manager');
             $table->timestamps();
         });

@@ -167,6 +167,73 @@
       margin-top: 5px;
     }
   }
+
+  /* ── Live Product Search Dropdown ─────────────────────────────── */
+  .product-search-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .product-search-input {
+    width: 100%;
+    cursor: text;
+  }
+
+  .product-search-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--section-bg, #ffffff);
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-top: 4px;
+    padding: 6px;
+  }
+
+  .product-search-dropdown.open {
+    display: block !important;
+  }
+
+  .ps-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main, #212529);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s ease;
+  }
+
+  .ps-option:hover {
+    background: var(--primary-soft, rgba(16, 185, 129, 0.1));
+    color: var(--primary, #10b981);
+  }
+
+  .ps-option.ps-already-added {
+    opacity: 0.6;
+    background: rgba(220, 53, 69, 0.05);
+  }
+
+  .ps-option.ps-already-added:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  .ps-no-result {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-muted, #6c757d);
+    font-size: 13px;
+  }
 </style>
 
 <div class="container py-4">
@@ -207,15 +274,12 @@
       <div id="product-wrapper" class="row"></div>
 
       <div class="mb-3">
-        <select id="product-search" class="input-form text-center" onchange="addProductCard(this)">
-          <option value="">+ Click to Add Product</option>
-          @foreach($products as $p)
-          @php $p = (object)$p; @endphp
-          <option value="{{ $p->id }}" data-name="{{ $p->name }}" data-stock="{{ $p->available_qty }}" data-image-name="{{ $p->image }}">
-            {{ $p->name }} (Stock: {{ $p->available_qty }})
-          </option>
-          @endforeach
-        </select>
+        <div class="product-search-wrapper">
+          <input type="text" id="product-search-input" class="input-form text-center product-search-input" placeholder="+ Click to Add Product / Type to Search" autocomplete="off">
+          <div id="product-search-dropdown" class="product-search-dropdown">
+            <div class="ps-no-result">Type 2 characters or 2 spaces to search…</div>
+          </div>
+        </div>
       </div>
 
       {{-- Note --}}
@@ -255,37 +319,121 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
   let index = 0;
+  const allProducts = @json($products);
+
+  function getSelectedProductIds() {
+    let ids = [];
+    $('.product-card').each(function() {
+      let id = $(this).attr('data-id');
+      if (id) ids.push(String(id));
+    });
+    return ids;
+  }
+
+  function renderOptions(query) {
+    const $dropdown = $('#product-search-dropdown');
+    if (!$dropdown.length) return;
+
+    const rawVal = query || '';
+    const isTwoSpaces = (rawVal.length >= 2 && rawVal.trim() === '');
+    const trimmed = rawVal.trim().toLowerCase();
+    const isSearchable = isTwoSpaces || trimmed.length >= 2;
+
+    $dropdown.empty();
+
+    if (!isSearchable) {
+      $dropdown.html('<div class="ps-no-result">Type 2 characters or 2 spaces to search…</div>');
+      return;
+    }
+
+    const selectedIds = getSelectedProductIds();
+    const productsArray = Array.isArray(allProducts) ? allProducts : Object.values(allProducts || {});
+    let matches = isTwoSpaces 
+      ? productsArray 
+      : productsArray.filter(p => p && p.name && String(p.name).toLowerCase().includes(trimmed));
+
+    if (!matches || matches.length === 0) {
+      $dropdown.html('<div class="ps-no-result">No matched products found</div>');
+      return;
+    }
+
+    let html = '';
+    matches.forEach(p => {
+      const isAdded = selectedIds.includes(String(p.id));
+      const badgeHtml = isAdded
+        ? `<span style="font-size:11px; background:#dc3545; color:#fff; padding:2px 8px; border-radius:10px; margin-left:8px;">(Already Added)</span>`
+        : `<span style="font-size:12px; color:var(--text-muted);">Stock: ${p.available_qty}</span>`;
+
+      html += `
+        <div class="ps-option ${isAdded ? 'ps-already-added' : ''}" data-id="${p.id}" data-name="${p.name}" data-added="${isAdded ? '1' : '0'}">
+          <span><strong>${p.name}</strong></span>
+          ${badgeHtml}
+        </div>
+      `;
+    });
+
+    $dropdown.html(html);
+  }
 
   $(document).ready(function() {
     $('#customDeductionRate').on('input', function() {
-      refreshAllCards();
+      window.refreshAllCards();
+    });
+
+    $(document).on('input focus', '#product-search-input', function() {
+      renderOptions($(this).val());
+      $('#product-search-dropdown').addClass('open');
+    });
+
+    $(document).on('click', '.ps-option', function(e) {
+      e.stopPropagation();
+      const $opt = $(this);
+      const id = $opt.data('id');
+      const name = $opt.data('name');
+      const isAdded = $opt.attr('data-added') === '1' || $opt.hasClass('ps-already-added');
+
+      if (isAdded) {
+        alert(`"${name}" is already in the list!`);
+        return;
+      }
+
+      window.addProductCardById(id);
+      $('#product-search-input').val('');
+      $('#product-search-dropdown').removeClass('open');
+    });
+
+    $(document).on('click', function(e) {
+      if (!$(e.target).closest('.product-search-wrapper').length) {
+        $('#product-search-dropdown').removeClass('open');
+      }
     });
   });
 
-  function refreshAllCards() {
+  window.refreshAllCards = function() {
     $('.qty-input').each(function() {
-      calculateCard(this);
+      window.calculateCard(this);
     });
-  }
+  };
 
-  function addProductCard(el) {
-    let productId = $(el).val();
+  window.addProductCardById = function(productId) {
     if (!productId) return;
 
     if ($(`.product-card[data-id="${productId}"]`).length > 0) {
       alert('Product is already in the list!');
-      $(el).val('');
       return;
     }
 
-    let option = $(el).find(':selected');
-    let name = option.attr('data-name');
-    let stock = option.attr('data-stock');
-    let imageName = option.attr('data-image-name');
+    const productsArray = Array.isArray(allProducts) ? allProducts : Object.values(allProducts || {});
+    let prod = productsArray.find(p => p && String(p.id) === String(productId));
+    if (!prod) return;
 
-    let finalImgPath = (imageName && imageName.trim() !== '' && imageName !== 'null') ?
+    let name = prod.name;
+    let stock = prod.available_qty;
+    let imageName = prod.image;
+
+    let finalImgPath = (imageName && String(imageName).trim() !== '' && imageName !== 'null') ?
       (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName) :
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff`;
 
@@ -302,7 +450,7 @@
       let cardHtml = `
     <div class="col-12 col-md-6 col-lg-4 mb-3 product-card-container">
       <div class="product-card h-100" data-id="${productId}">
-        <div class="remove-card-btn" onclick="removeCard(this)"><i class="fas fa-times"></i></div>
+        <div class="remove-card-btn" onclick="window.removeCard(this)"><i class="fas fa-times"></i></div>
         <div class="row g-2 align-items-center">
           <div class="col-4">
             <div class="product-img-box mb-2">
@@ -310,10 +458,10 @@
                    onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff'">
             </div>
             <div class="qty-controls d-flex align-items-center justify-content-between">
-              <button type="button" class="qty-btn" onclick="updateQty(this,-1)"><i class="fas fa-minus"></i></button>
+              <button type="button" class="qty-btn" onclick="window.updateQty(this,-1)"><i class="fas fa-minus"></i></button>
               <input type="number" name="products[${index}][qty]" class="qty-input mx-1"
-                     value="1" min="1" max="${stock}" oninput="calculateCard(this)">
-              <button type="button" class="qty-btn" onclick="updateQty(this,1)"><i class="fas fa-plus"></i></button>
+                     value="1" min="1" max="${stock}" oninput="window.calculateCard(this)">
+              <button type="button" class="qty-btn" onclick="window.updateQty(this,1)"><i class="fas fa-plus"></i></button>
             </div>
           </div>
           <div class="col-8 d-flex flex-column justify-content-between" style="min-height:110px;">
@@ -337,23 +485,22 @@
 
       $('#product-wrapper').append(cardHtml);
       index++;
-      $(el).val('');
       let lastInput = $('#product-wrapper .product-card').last().find('.qty-input');
-      calculateCard(lastInput);
+      window.calculateCard(lastInput);
       $('#product-wrapper .product-card').last()[0].scrollIntoView({
         behavior: 'smooth',
         block: 'nearest'
       });
     });
-  }
+  };
 
-  function updateQty(btn, change) {
+  window.updateQty = function(btn, change) {
     let input = $(btn).siblings('.qty-input');
     let newVal = parseInt(input.val()) + change;
     if (newVal >= 1) input.val(newVal).trigger('input');
-  }
+  };
 
-  function calculateCard(el) {
+  window.calculateCard = function(el) {
     let card = $(el).closest('.product-card');
     let basePrice = parseFloat(card.find('.card-price').val()) || 0;
     let qty = parseFloat(card.find('.qty-input').val()) || 0;
@@ -370,17 +517,17 @@
     card.find('.card-subtotal-val').val(subtotal.toFixed(2));
     card.find('.base-price-display').parent().toggle(totalDeduct > 0);
 
-    calculateTotal();
-  }
+    window.calculateTotal();
+  };
 
-  function removeCard(btn) {
+  window.removeCard = function(btn) {
     $(btn).closest('.product-card-container').fadeOut(300, function() {
       $(this).remove();
-      calculateTotal();
+      window.calculateTotal();
     });
-  }
+  };
 
-  function calculateTotal() {
+  window.calculateTotal = function() {
     let totalItems = 0;
     let totalSubtotal = 0;
     let totalOfferDisc = 0;
@@ -412,6 +559,6 @@
     }));
     $('#netTotalInput').val(finalNet.toFixed(2));
     $('#totalDiscountInput').val(totalDisc.toFixed(2));
-  }
+  };
 </script>
 @endpush

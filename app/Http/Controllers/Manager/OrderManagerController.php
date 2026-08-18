@@ -27,16 +27,24 @@ class OrderManagerController extends Controller
       ->whereNotNull('sr_id') // Exclude retail orders (manager acting as SR)
       ->latest();
 
-    if ($request->filled('search')) {
+    // Date Range Filter
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
 
+    // Status Filter
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    // Search Filter
+    if ($request->filled('search')) {
       $search = trim($request->search);
 
       $query->where(function ($q) use ($search) {
-
-        if (str_starts_with('BRS', strtoupper($search))) {
-          return;
-        }
-
         if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
           $q->where('id', $match[1]);
           return;
@@ -49,12 +57,13 @@ class OrderManagerController extends Controller
       });
     }
 
-    $orders = $query->paginate(15);
+    $orders = $query->paginate(15)->appends($request->query());
 
     if ($request->ajax()) {
       return response()->json([
-        'table'  => view('pages.manager.order.table', compact('orders'))->render(),
-        'mobile' => view('pages.manager.order.mtable', compact('orders'))->render(),
+        'table'      => view('pages.manager.order.table', compact('orders'))->render(),
+        'mobile'     => view('pages.manager.order.mtable', compact('orders'))->render(),
+        'pagination' => $orders->links()->render(),
       ]);
     }
 

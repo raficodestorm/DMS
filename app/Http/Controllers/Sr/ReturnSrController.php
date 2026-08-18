@@ -47,14 +47,14 @@ class ReturnSrController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $orders = Order::where('sr_id', $user->id)
+        $orders = Order::where('branch_id', $user->branch_id)
             ->where('status', 'delivered')
             ->latest()
             ->get();
 
         $selectedOrder = null;
         if ($request->has('order_id')) {
-            $selectedOrder = Order::with('items.product')->where('sr_id', $user->id)->findOrFail($request->order_id);
+            $selectedOrder = Order::with('items.product')->where('branch_id', $user->branch_id)->findOrFail($request->order_id);
             
             foreach ($selectedOrder->items as $item) {
                 $returnedQty = \App\Models\ReturnItem::whereHas('productReturn', function($q) use ($selectedOrder) {
@@ -97,7 +97,7 @@ class ReturnSrController extends Controller
                 $order = Order::with('items')->findOrFail($request->order_id);
 
                 // Check if SR owns this order
-                if ($order->sr_id != $user->id) {
+                if ($order->branch_id != $user->branch_id) {
                     throw new \Exception("Unauthorized access to this order.");
                 }
 

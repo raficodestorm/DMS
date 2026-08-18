@@ -22,11 +22,12 @@ return new class extends Migration
             $table->decimal('net_total', 10, 2);
             $table->decimal('applied_deduction_percent', 10, 2)->nullable();
             $table->text('note')->nullable();
+            // New -------------------------------------------
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->string('order_type')->default('field_order');
             // 'retail',
             // 'field_order',
-            // 'online',
+            // 'online', -----------------------------------------
             $table->timestamps();
         });
     }

@@ -192,17 +192,68 @@
   </a>
 </div>
 
-{{-- Search --}}
-<form method="GET" class="mb-3 search-bar animate__animated animate__fadeIn" style="animation-delay: 0.1s;">
-  <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by order # or customer…">
-  <button type="submit" class="action-btn btn-view px-4">
-    <i class="fas fa-search"></i> Search
-  </button>
-  @if(request('search'))
-  <a href="{{ route('manager.retail.index') }}" class="action-btn btn-del px-3">
-    <i class="fas fa-times"></i> Clear
-  </a>
-  @endif
+{{-- Search and Filter Controls --}}
+<form method="GET" action="{{ route('manager.retail.index') }}" class="mb-4 search-bar animate__animated animate__fadeIn" style="animation-delay: 0.1s; background: var(--section-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+  
+  {{-- Search Input --}}
+  <div style="flex: 1; min-width: 200px;">
+    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+    <div style="position: relative;">
+      <input type="text" 
+             name="search" 
+             class="form-control" 
+             placeholder="Order # or Customer..." 
+             value="{{ request('search') }}"
+             style="background: var(--section-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; padding-left: 36px; height: 42px;">
+      <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+    </div>
+  </div>
+
+  {{-- Status Filter --}}
+  <div style="min-width: 160px;">
+    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Filter Status</label>
+    <select name="status" class="form-select" style="background: var(--section-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; height: 42px;">
+      <option value="">-- All Statuses --</option>
+      <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+      <option value="pending_manager" {{ request('status') == 'pending_manager' ? 'selected' : '' }}>Pending Manager</option>
+      <option value="complete" {{ request('status') == 'complete' ? 'selected' : '' }}>Complete</option>
+      <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
+      <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+    </select>
+  </div>
+
+  {{-- From Date --}}
+  <div style="min-width: 120px;">
+    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
+    <input type="date" 
+           name="from_date" 
+           class="form-control" 
+           value="{{ request('from_date') }}"
+           style="min-width: 110px; background: var(--section-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; height: 42px;">
+  </div>
+
+  {{-- To Date --}}
+  <div style="min-width: 120px;">
+    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
+    <input type="date" 
+           name="to_date" 
+           class="form-control" 
+           value="{{ request('to_date') }}"
+           style="min-width: 110px; background: var(--section-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; height: 42px;">
+  </div>
+
+  {{-- Action Buttons --}}
+  <div style="display: flex; gap: 8px;">
+    <button type="submit" class="action-btn btn-view" style="height: 42px; padding: 0 1.2rem; border-radius: 8px;">
+      <i class="fas fa-filter me-1"></i> Filter
+    </button>
+    @if(request('search') || request('status') || request('from_date') || request('to_date'))
+    <a href="{{ route('manager.retail.index') }}" class="action-btn btn-del" style="height: 42px; padding: 0 1rem; border-radius: 8px; display: inline-flex; align-items: center; text-decoration: none;">
+      <i class="fas fa-undo me-1"></i> Reset
+    </a>
+    @endif
+  </div>
+
 </form>
 
 {{-- Desktop Table --}}

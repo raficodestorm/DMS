@@ -18,7 +18,7 @@ class StockTransferController extends Controller
     /**
      * Display a listing of stock transfers.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $query = StockTransfer::with(['fromBranch', 'toBranch', 'requestedBy']);
@@ -29,9 +29,50 @@ class StockTransferController extends Controller
                 $q->where('from_branch_id', $user->branch_id)
                   ->orWhere('to_branch_id', $user->branch_id);
             });
+
+            // Filter by Transfer Type for Manager (Outgoing vs Incoming)
+            if ($request->filled('transfer_type')) {
+                $type = $request->transfer_type;
+                if ($type === 'outgoing') {
+                    $query->where('from_branch_id', $user->branch_id);
+                } elseif ($type === 'incoming') {
+                    $query->where('to_branch_id', $user->branch_id);
+                }
+            }
         }
 
-        $transfers = $query->latest()->paginate(15);
+        // Date range filter
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by Transfer ID or Branch Name
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            // Clean prefix if user typed BRST123 -> 123
+            $cleanId = ltrim(preg_replace('/[^0-9]/', '', $search), '0');
+
+            $query->where(function ($q) use ($search, $cleanId) {
+                if ($cleanId) {
+                    $q->orWhere('id', $cleanId);
+                }
+                $q->orWhereHas('fromBranch', function ($bq) use ($search) {
+                    $bq->where('name', 'like', "%{$search}%");
+                })->orWhereHas('toBranch', function ($bq) use ($search) {
+                    $bq->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $transfers = $query->latest()->paginate(15)->appends($request->query());
         
         $viewPath = $user->role === 'admin' ? 'pages.admin.stock-transfer.index' : 'pages.manager.stock-transfer.index';
         return view($viewPath, compact('transfers'));

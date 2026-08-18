@@ -4,18 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Stock;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
 
-  public function managerIndex()
+  public function managerIndex(Request $request)
   {
+    $query = Stock::with(['product.supplier'])
+      ->select('stocks.*')
+      ->where('stocks.branch_id', auth()->user()->branch_id);
 
-    $stocks = Stock::with(['product.supplier'])
-      ->where('branch_id', auth()->user()->branch_id)
-      ->get();
+    $hasJoinedProducts = false;
+
+    // Search by product name OR supplier company name (using JOIN for fast DB execution)
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->join('products', 'stocks.product_id', '=', 'products.id')
+            ->leftJoin('suppliers', 'products.supplier_id', '=', 'suppliers.id')
+            ->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                  ->orWhere('suppliers.company_name', 'like', "%{$search}%");
+            });
+      $hasJoinedProducts = true;
+    }
+
+    // Filter by status (available or low_stock)
+    if ($request->filled('status')) {
+      if (!$hasJoinedProducts) {
+        $query->join('products', 'stocks.product_id', '=', 'products.id');
+        $hasJoinedProducts = true;
+      }
+      $status = $request->status;
+      if ($status === 'low_stock') {
+        $query->whereColumn('stocks.quantity', '<=', 'products.stock_alert');
+      } elseif ($status === 'available') {
+        $query->whereColumn('stocks.quantity', '>', 'products.stock_alert');
+      }
+    }
+
+    $stocks = $query->get();
 
     return view('pages.manager.stock.index', compact('stocks'));
   }

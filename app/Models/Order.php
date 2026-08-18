@@ -16,6 +16,8 @@ class Order extends Model
         'net_total',
         'applied_deduction_percent',
         'note',
+        'branch_id',
+        'order_type',
     ];
     public function customer()
     {
