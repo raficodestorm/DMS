@@ -85,14 +85,14 @@ class UserManagementController extends Controller
       'username' => $request->username,
       'email' => $request->email,
       'password' => Hash::make($request->password),
-      'role' => 'sr',
+      'role' => 'customer',
       'branch_id' => auth()->user()->branch_id,
       'employee_id' => $request->employee_id,
       'profile_photo_path' => $profilePath,
     ]);
 
     // return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
-    return redirect()->route('dashboards')->with('success', 'User created successfully.');
+    return redirect()->route('manager.index.customers')->with('success', 'User created successfully.');
   }
 
   public function edit(User $user)
@@ -108,7 +108,6 @@ class UserManagementController extends Controller
       'fullname' => ['required', 'string', 'max:255'],
       'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
       'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-      'branch_id' => ['nullable', 'integer'],
       'employee_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
       'status' => ['required', 'in:active,inactive'],
@@ -122,7 +121,6 @@ class UserManagementController extends Controller
     $user->fullname = $request->fullname;
     $user->username = $request->username;
     $user->email = $request->email;
-    $user->branch_id = $request->branch_id;
     $user->employee_id = $request->employee_id;
     $user->status = $request->status;
 
@@ -131,10 +129,10 @@ class UserManagementController extends Controller
     return redirect()->route('dashboards')->with('success', 'User updated successfully.');
   }
 
-  public function destroy(User $user)
-  {
-    $this->deleteFile($user->profile_photo_path);
-    $user->delete();
-    return back()->with('success', 'User deleted.');
-  }
+  // public function destroy(User $user)
+  // {
+  //   $this->deleteFile($user->profile_photo_path);
+  //   $user->delete();
+  //   return back()->with('success', 'User deleted.');
+  // }
 }

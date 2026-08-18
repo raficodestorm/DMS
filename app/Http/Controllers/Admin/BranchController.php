@@ -81,8 +81,20 @@ class BranchController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Branch $branch)
-    {
-        $branch->delete();
-        return redirect()->route('admin.branches.index')->with('success', 'Branch deleted successfully!');
+{
+    if ($branch->users()->exists()) {
+        return redirect()
+            ->route('admin.branches.index')
+            ->with(
+                'error',
+                'This branch cannot be deleted because users are associated with it.'
+            );
     }
+
+    $branch->delete();
+
+    return redirect()
+        ->route('admin.branches.index')
+        ->with('success', 'Branch deleted successfully!');
+}
 }

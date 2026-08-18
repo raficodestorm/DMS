@@ -4,6 +4,9 @@ namespace App\Models;
 
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\Order;
+use App\Models\Transaction;
+use App\Models\StockInRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -89,6 +92,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function customerOrders()
     {
         return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'sr_id');
+    }
+
+    
+
+        public function hasRelatedRecords(): bool
+    {
+        return $this->srOrders()->exists()
+            || $this->managerOrders()->exists()
+            || $this->customerOrders()->exists()
+            || $this->transactions()->exists();
     }
 
     /**

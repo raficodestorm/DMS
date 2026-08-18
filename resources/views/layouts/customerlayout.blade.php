@@ -118,7 +118,7 @@
           <div class="notif-header">Notifications</div>
           <div class="notif-body">
             @forelse(auth()->user()->unreadNotifications as $note)
-            <a href="{{ route('notifications.markAndRedirect', $note->id) }}" class="notif-item unread">
+            <a href="{{ route('notifications.markAndRedirect', $note->id) }}" class="notif-item unread" data-id="{{ $note->id }}">
               <div class="notif-title">
                 {{ $note->data['title'] }}
               </div>
@@ -130,7 +130,7 @@
                 {{ $note->data['message'] }}
                 @endif
               </div>
-              <div class="notif-time">
+              <div class="notif-time" data-timestamp="{{ $note->created_at->toIso8601String() }}">
                 <i class="fa-regular fa-clock"></i> {{ $note->created_at->diffForHumans() }}
               </div>
             </a>
@@ -360,63 +360,107 @@ document.addEventListener('click', function (e) {
 
     setInterval(updateNotifTimes, 60000);
 
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.userId && window.Echo) {
-            window.Echo.private(`App.Models.User.${window.userId}`)
-                .notification((notification) => {
-                    
-                    let displayMessage = '';
-                    let senderInfo = '';
-                    if (typeof notification.message === 'object' && notification.message !== null) {
-                        displayMessage = notification.message.text || '';
-                        senderInfo = notification.message.from ? `from <span class="text-primary fw-bold">${notification.message.from}</span>` : '';
-                    } else {
-                        displayMessage = notification.message || '';
-                    }
-
-                    const dropdown = document.getElementById('notifDropdown');
-                    if (dropdown) {
-                        const noNotif = dropdown.querySelector('.no-notif');
-                        if (noNotif) noNotif.remove();
-
-                        // এখানে বর্তমান সময় স্টোর করা হচ্ছে data-timestamp এ
-                        const now = new Date().toISOString();
-
-                        const newNotifHtml = `
-                            <a href="/notifications/${notification.id}/mark-as-read" class="notif-item unread animate__animated animate__fadeInDown">
-                                <div class="notif-title">${notification.title}</div>
-                                <div class="notif-msg">${displayMessage} ${senderInfo}</div>
-                                <div class="notif-time" data-timestamp="${now}">Just now</div>
-                            </a>
-                        `;
-
-                        const header = dropdown.querySelector('.notif-header');
-                        header.insertAdjacentHTML('afterend', newNotifHtml);
-                    }
-
-                    let countBadge = document.querySelector('.notif-count');
-                    let iconWrapper = document.querySelector('.notification-icon');
-
-                    if (countBadge) {
-                        countBadge.innerText = parseInt(countBadge.innerText.trim()) + 1;
-                    } else if (iconWrapper) {
-                        let newBadge = document.createElement('span');
-                        newBadge.className = 'notif-count';
-                        newBadge.innerText = '1';
-                        iconWrapper.appendChild(newBadge);
-                    }
-
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'info',
-                        title: notification.title,
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                });
-        }
+    // Real-time notification listener — Database + AJAX Polling (every 30 seconds)
+    const displayedNotifIds = new Set();
+    document.querySelectorAll('#notifDropdown .notif-item').forEach(el => {
+        const id = el.getAttribute('data-id');
+        if (id) displayedNotifIds.add(id);
     });
+
+    function pollNotifications() {
+        if (!window.userId) return;
+        fetch('/notifications/poll', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(notifications => {
+            const dropdown = document.getElementById('notifDropdown');
+            const countBadge = document.querySelector('.notif-count');
+            const iconWrapper = document.querySelector('.notification-icon');
+            if (!dropdown) return;
+            const notifBody = dropdown.querySelector('.notif-body');
+            if (!notifBody) return;
+
+            const serverIds = new Set(notifications.map(n => n.id));
+
+            // 1. Remove notifications marked read/deleted in other tabs
+            notifBody.querySelectorAll('.notif-item').forEach(el => {
+                const id = el.getAttribute('data-id');
+                if (id && !serverIds.has(id)) {
+                    el.remove();
+                    displayedNotifIds.delete(id);
+                }
+            });
+
+            // 2. Add new notifications and trigger toast (prepend newest first)
+            for (let i = notifications.length - 1; i >= 0; i--) {
+                const notification = notifications[i];
+                if (!displayedNotifIds.has(notification.id)) {
+                    displayedNotifIds.add(notification.id);
+                    const noNotif = dropdown.querySelector('.no-notif');
+                    if (noNotif) noNotif.remove();
+
+                    const newNotifHtml = `
+                        <a href="${notification.url}" class="notif-item unread animate__animated animate__fadeInDown" data-id="${notification.id}">
+                            <div class="notif-title">${notification.title}</div>
+                            <div class="notif-msg">${notification.message_html}</div>
+                            <div class="notif-time" data-timestamp="${notification.created_at}">
+                                <i class="fa-regular fa-clock"></i> Just now
+                            </div>
+                        </a>
+                    `;
+                    notifBody.insertAdjacentHTML('afterbegin', newNotifHtml);
+
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: notification.title || 'New Notification',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                }
+            }
+
+            // 3. Update Badge Count
+            const count = notifications.length;
+            if (count > 0) {
+                if (countBadge) {
+                    countBadge.innerText = count;
+                } else if (iconWrapper) {
+                    const badge = document.createElement('span');
+                    badge.className = 'notif-count';
+                    badge.innerText = count;
+                    iconWrapper.appendChild(badge);
+                }
+            } else {
+                if (countBadge) countBadge.remove();
+                if (!notifBody.querySelector('.notif-item') && !dropdown.querySelector('.no-notif')) {
+                    notifBody.innerHTML = `
+                        <div class="no-notif">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <p>No new notifications</p>
+                        </div>
+                    `;
+                }
+            }
+        })
+        .catch(err => console.error('Error polling notifications:', err));
+    }
+
+    // Run immediately and poll every 30 seconds
+    if (window.userId) {
+        pollNotifications();
+        setInterval(pollNotifications, 30000);
+    }
   </script>
   <x-calculator />
   @stack('scripts')

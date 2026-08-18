@@ -20,8 +20,7 @@ class SystemNotification extends Notification implements ShouldBroadcast
 
     public function via(object $notifiable): array
     {
-
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toArray($notifiable)

@@ -79,8 +79,20 @@ class CategoryController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Category $category)
-    {
-        $category->delete();
-        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully!');
+{
+    if ($category->products()->exists()) {
+        return redirect()
+            ->route('admin.categories.index')
+            ->with(
+                'error',
+                'This category cannot be deleted because products are associated with it.'
+            );
     }
+
+    $category->delete();
+
+    return redirect()
+        ->route('admin.categories.index')
+        ->with('success', 'Category deleted successfully!');
+}
 }

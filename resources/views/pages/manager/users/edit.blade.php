@@ -14,44 +14,45 @@
       </ul>
     </div>
     @endif
-
+    
     <form class="adduser-form" method="POST" action="{{ route('manager.users.update', $user->id) }}"
       enctype="multipart/form-data">
       @csrf
       @method('PUT')
-
-      <div class="input-box">
+      <div class="row">
+      <div class="col-md-6">
         <label>Fullname</label>
         <input class="input-form" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
         @error('fullname')<div class="error-text">{{ $message }}</div>@enderror
       </div>
 
-      <div class="input-box">
+      <div class="col-md-6">
         <label>Username</label>
         <input class="input-form" name="username" value="{{ old('username', $user->username) }}" required>
       </div>
 
-      <div class="input-box">
+      <div class="col-md-6">
         <label>Email</label>
         <input class="input-form" name="email" type="email" value="{{ old('email', $user->email) }}" required>
       </div>
 
-      <div class="input-box">
-    <label>Branch</label>
 
-    <select class="input-form" name="branch_id">
-        <option value="">--Select Branch--</option>
+<div class="col-md-6">
+        <label>Employee ID</label>
+        <select class="input-form" name="employee_id">
+          <option value="">--Select Employee ID--</option>
 
-        @foreach($branches as $branch)
-            <option value="{{ $branch->id }}"
-                {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}>
-                {{ $branch->name }}
-            </option>
-        @endforeach
-    </select>
-</div>
+          @foreach($employees as $employee)
+          <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' :
+            '' }}>
+            BRE100{{ $employee->id }} ({{$employee->name}})
+          </option>
+          @endforeach
 
-      <div class="input-box">
+        </select>
+      </div>
+
+      <div class="col-md-6">
         <label>Status</label>
         <select class="input-form" name="status">
           <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>active</option>
@@ -83,20 +84,7 @@
       </div>
 
 
-      <div class="input-box">
-        <label>Employee ID</label>
-        <select class="input-form" name="employee_id">
-          <option value="">--Select Employee ID--</option>
-
-          @foreach($employees as $employee)
-          <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' :
-            '' }}>
-            BRE100{{ $employee->id }} ({{$employee->name}})
-          </option>
-          @endforeach
-
-        </select>
-      </div>
+      </div> <!-- end row -->
 
       <div>
         <button class="btn-submit" type="submit">Update</button>

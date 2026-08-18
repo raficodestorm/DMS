@@ -107,8 +107,8 @@ class UserManagementController extends Controller
       'profile_photo_path' => $profilePath,
     ]);
 
-    // return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
-    return redirect()->route('dashboard.admin')->with('success', 'User created successfully.');
+    return redirect()->route('dashboards')->with('success', 'User created successfully.');
+    
   }
 
   public function edit(User $user)
@@ -154,10 +154,24 @@ class UserManagementController extends Controller
   }
 
   public function destroy(User $user)
-  {
-    $this->deleteFile($user->profile_photo_path);
+{
+    if ($user->hasRelatedRecords()) {
+        return redirect()
+            ->route('dashboards')
+            ->with(
+                'error',
+                'This user cannot be deleted because related records exist.'
+            );
+    }
+
+    $profilePhoto = $user->profile_photo_path;
+
     $user->delete();
-    return redirect()->route('dashboards')
-      ->with('success', 'User deleted successfully');
-  }
+
+    $this->deleteFile($profilePhoto);
+
+    return redirect()
+        ->route('dashboards')
+        ->with('success', 'User deleted successfully');
+}
 }

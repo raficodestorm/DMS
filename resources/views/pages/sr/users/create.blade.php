@@ -4,7 +4,7 @@
 
 <div class="container justify-center">
   <div class="form-card">
-    <h2>Add Users</h2>
+    <h2>Add Customer Account</h2>
     @include('components.alert')
     <form class="adduser-form" method="POST" action="{{ route('sr.users.store') }}" enctype="multipart/form-data">
       @csrf

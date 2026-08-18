@@ -4,7 +4,7 @@
 
 <div class="container justify-center">
   <div class="form-card">
-    <h2>Add Users</h2>
+    <h2>Add Customer Account</h2>
     @if ($errors->any())
     <div class="alert alert-danger">
       <ul class="mb-0">
@@ -17,31 +17,42 @@
     <form class="adduser-form" method="POST" action="{{ route('manager.users.store') }}" enctype="multipart/form-data">
       @csrf
 
-      <div>
+      <div class="row">
+        <div class="col-md-6">
         <label>Full name</label>
         <input class="input-form" name="fullname" required>
         @error('fullname')<div class="error-text">{{ $message }}</div>@enderror
       </div>
 
-      <div>
+      <div class="col-md-6">
         <label>Username</label>
         <input class="input-form" name="username" required>
         @error('username')<div class="error-text">{{ $message }}</div>@enderror
       </div>
 
-      <div>
+      <div class="col-md-6">
         <label>Email</label>
         <input class="input-form" name="email" type="email" required>
         @error('email')<div class="error-text">{{ $message }}</div>@enderror
       </div>
 
-      <div class="password-box">
+      <div class="col-md-6">
+        <label>Employee ID</label>
+        <select class="input-form" name="employee_id">
+          <option value="">--Select Employee ID--</option>
+          @foreach($employees as $employee)
+          <option value="{{$employee->id}}">BRE100{{$employee->id}} ({{$employee->name}})</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="password-box col-md-6">
         <label>Password</label>
         <input type="password" class="input-form" name="password" id="password" placeholder="New Password" required>
         <i class="fa-solid fa-eye toggle-pass" data-target="password"></i>
       </div>
 
-      <div class="password-box">
+      <div class="password-box col-md-6">
         <label>Confirm Password</label>
         <input type="password" class="input-form" name="password_confirmation" id="confirm"
           placeholder="Confirm Password" required>
@@ -62,15 +73,7 @@
         </div>
       </div>
 
-      <div>
-        <label>Employee ID</label>
-        <select class="input-form" name="employee_id">
-          <option value="">--Select Employee ID--</option>
-          @foreach($employees as $employee)
-          <option value="{{$employee->id}}">BRE100{{$employee->id}} ({{$employee->name}})</option>
-          @endforeach
-        </select>
-      </div>
+      </div> <!-- end row -->
 
       <div>
         <button class="btn-submit" type="submit">Create</button>

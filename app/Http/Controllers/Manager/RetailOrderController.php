@@ -92,6 +92,7 @@ class RetailOrderController extends Controller
         $order = Order::create([
           'sr_id'                     => null, // Retail orders don't have an SR
           'manager_id'                => $managerId,
+          'branch_id'                 => $user->branch_id,
           'status'                    => 'delivered', // auto-approved
           'special_discount'          => $request->special_discount ?? 0,
           'discount_amount'           => $request->total_discount ?? 0,

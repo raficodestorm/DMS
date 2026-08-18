@@ -8,10 +8,10 @@
       <p>BRS{{ $order->id }}</p>
     </div>
     <div><span>Branch</span>
-      <p>{{ $order->sr->branch->name ?? 'N/A' }}</p>
+      <p>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</p>
     </div>
     <div><span>Reference</span>
-      <p>{{ $order->sr->name ?? 'N/A' }}</p>
+      <p>{{ $order->sr->name ?? $order->manager->fullname }}</p>
     </div>
 
     <div><span>Amount</span>

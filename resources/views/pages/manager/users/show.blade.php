@@ -64,14 +64,6 @@
       <i class="fa-solid fa-pen"></i>
     </a>
 
-    <form action="{{ route('manager.users.destroy', $user) }}" method="POST" class="d-inline"
-      onsubmit="return confirm('Are you sure?')">
-      @csrf
-      @method('DELETE')
-      <button type="submit" class="icon-btn delete-icon" style="border: none;">
-        <i class="fa-solid fa-trash"></i>
-      </button>
-    </form>
   </div>
 
 </div>

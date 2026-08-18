@@ -29,7 +29,7 @@ class ProductController extends Controller
             $query->where('price', '>=', $request->amount);
         }
 
-        $products = $query->paginate(10);
+        $products = $query->paginate(25);
 
         if ($request->ajax()) {
             return response()->json([
@@ -124,9 +124,34 @@ class ProductController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Product $product)
-    {
-        $this->deleteFile($product->image);
-        $product->delete();
-        return redirect()->route('admin.products.index')->with('success', 'product deleted successfully!');
+{
+    if ($product->orderItems()->exists()) {
+        return redirect()
+            ->route('admin.products.index')
+            ->with(
+                'error',
+                'This product cannot be deleted because it is associated with existing orders.'
+            );
     }
+
+    if ($product->stockItems()->exists()) {
+        return redirect()
+            ->route('admin.products.index')
+            ->with(
+                'error',
+                'This product cannot be deleted because stock-in records exist for this product.'
+            );
+    }
+
+    $image = $product->image;
+
+    $product->delete();
+
+    // Delete image only after successful product deletion
+    $this->deleteFile($image);
+
+    return redirect()
+        ->route('admin.products.index')
+        ->with('success', 'Product deleted successfully!');
+}
 }

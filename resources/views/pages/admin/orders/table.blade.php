@@ -2,8 +2,8 @@
 <tr>
   <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
   <td>BRS{{ $order->id }}</td>
-  <td>{{ $order->sr->branch->name ?? 'N/A' }}</td>
-  <td>{{ $order->sr->fullname ?? 'N/A' }}</td>
+  <td>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</td>
+  <td>{{ $order->sr->fullname ?? $order->manager->fullname }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
   <td>
     @if($order->status == "pending_sr")

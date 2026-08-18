@@ -69,6 +69,39 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('customers', CustomerController::class);
 
     Route::get('/payments/{payment}/slip', [PaymentController::class, 'viewSlip'])->name('payments.slip');
+
+    Route::get('/notifications/poll', function () {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json([], 401);
+        }
+
+        $notifications = $user->unreadNotifications->map(function ($notification) {
+            $message = $notification->data['message'] ?? '';
+            $messageHtml = '';
+            if (is_array($message)) {
+                $text = $message['text'] ?? '';
+                $from = $message['from'] ?? '';
+                $messageHtml = e($text);
+                if ($from) {
+                    $messageHtml .= ' <span class="text-primary fw-bold">' . e($from) . '</span>';
+                }
+            } else {
+                $messageHtml = e($message);
+            }
+
+            return [
+                'id' => $notification->id,
+                'title' => $notification->data['title'] ?? 'System Alert',
+                'message_html' => $messageHtml,
+                'url' => route('notifications.markAndRedirect', $notification->id),
+                'created_at' => $notification->created_at->toIso8601String(),
+                'diffForHumans' => $notification->created_at->diffForHumans(),
+            ];
+        });
+
+        return response()->json($notifications);
+    })->name('notifications.poll');
 });
 
 
