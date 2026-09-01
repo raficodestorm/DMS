@@ -58,6 +58,100 @@ class OrderController extends Controller
     ]);
   }
 
+  public function searchProducts(Request $request)
+  {
+    $rawSearch = $_GET['search'] ?? $request->search ?? '';
+    $search = trim($rawSearch);
+    $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
+
+    if (!$isAll) {
+      if (strlen($rawSearch) < 2 || strlen($search) < 2) {
+        return response()->json([]);
+      }
+    }
+
+    $branchId = auth()->user()?->branch_id;
+
+    $query = Stock::with('product')
+      ->whereHas('product');
+
+    if ($branchId) {
+      $query->where('branch_id', $branchId);
+    }
+
+    if (!$isAll && $search !== '') {
+      $query->whereHas('product', function ($q) use ($search) {
+        $q->where('name', 'like', "%{$search}%");
+      });
+    }
+
+    $stocks = $query->limit(20)->get();
+
+    if ($stocks->count() > 0) {
+      $products = $stocks->map(fn($s) => [
+        'id'            => $s->product_id,
+        'name'          => $s->product?->name ?? '',
+        'image'         => $s->product?->image,
+        'available_qty' => $s->quantity ?? 0,
+      ]);
+      return response()->json($products);
+    }
+
+    $prodQuery = Product::query();
+    if (!$isAll && $search !== '') {
+      $prodQuery->where('name', 'like', "%{$search}%");
+    }
+
+    $products = $prodQuery->limit(20)->get()->map(fn($p) => [
+      'id'            => $p->id,
+      'name'          => $p->name ?? '',
+      'image'         => $p->image,
+      'available_qty' => 0,
+    ]);
+
+    return response()->json($products);
+  }
+
+  public function searchCustomers(Request $request)
+  {
+    $rawSearch = $_GET['search'] ?? $request->search ?? '';
+    $search = trim($rawSearch);
+    $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
+
+    if (!$isAll) {
+      if (strlen($rawSearch) < 2 || strlen($search) < 2) {
+        return response()->json([]);
+      }
+    }
+
+    $branchId = auth()->user()?->branch_id;
+
+    $query = Customer::query();
+
+    if ($branchId) {
+      $query->where('branch_id', $branchId);
+    }
+
+    if (!$isAll && $search !== '') {
+      $query->where(function ($q) use ($search) {
+        $q->where('shop_name', 'like', "%{$search}%")
+          ->orWhere('phone', 'like', "%{$search}%")
+          ->orWhere('manager', 'like', "%{$search}%");
+      });
+    }
+
+    $customers = $query->orderBy('shop_name', 'asc')
+      ->limit(50)
+      ->get()
+      ->map(fn($c) => [
+        'id'        => $c->id,
+        'shop_name' => $c->shop_name,
+        'due'       => (float) ($c->due ?: 0),
+      ]);
+
+    return response()->json($customers);
+  }
+
 
   public function showForManager($id)
   {
@@ -106,65 +200,277 @@ class OrderController extends Controller
   }
 
 
+
+
+
+
   public function update(Request $request, $id)
-  {
+{
     $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'products'    => 'required|array|min:1',
-      'net_total'   => 'required|numeric',
+        'customer_id' => ['required', 'exists:customers,id'],
+        'products'    => ['required', 'array', 'min:1'],
+        'net_total'   => ['required', 'numeric', 'min:0'],
     ]);
 
-    $order = Order::findOrFail($id);
-    if ($order->sr->branch_id != auth()->user()->branch_id) {
-      return redirect()->back()->with('error', 'Unauthorized access.');
+    $order = Order::with('sr')->findOrFail($id);
+
+    /*
+     * ---------------------------------------------------------
+     * Authorization
+     * ---------------------------------------------------------
+     */
+    if ($order->branch_id !== auth()->user()->branch_id) 
+      {
+        return redirect()
+            ->back()
+            ->with('error', 'Unauthorized access.');
     }
 
     try {
 
-      DB::transaction(function () use ($request, $order) {
-        // Get deduction percentage for audit
-        $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
-        $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
-        $customRate = $request->applied_custom_deduction ?? 0;
-        $totalDeductionPercent = $globalRate + $customRate;
-        $order->update([
-          'status'          => 'pending_sr',
-          'special_discount' => $request->special_discount ?? 0,
-          'discount_amount' => $request->total_discount,
-          'net_total'       => $request->net_total,
-          'applied_deduction_percent' => $totalDeductionPercent,
-          'note'            => $request->note,
-        ]);
+        DB::transaction(function () use ($request, $order) {
 
-        $order->items()->delete();
-        foreach ($request->products as $item) {
+            /*
+             * ---------------------------------------------------------
+             * 1. Get deduction settings
+             * ---------------------------------------------------------
+             */
+            $deductionSettings = DB::table('deductions')
+                ->where('type', 'main')
+                ->first();
 
-          $basePrice = $item['price'];
-          $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
-          $sellingRate = $basePrice - $deductionAmount;
+            $globalRate = $request->boolean('apply_global')
+                ? ($deductionSettings->customer_deduction ?? 0)
+                : 0;
 
-          OrderItem::create([
-            'order_id'              => $order->id,
-            'product_id'            => $item['product_id'],
-            'quantity'              => $item['qty'],
-            'price'                 => $basePrice,
-            'unit_deduction_amount' => $deductionAmount,
-            'selling_rate'          => $sellingRate,
-            'discount_amount'       => $item['discount'] ?? 0, // Offer discount
-            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
-          ]);
-        }
-      });
+            $customRate = (float) ($request->applied_custom_deduction ?? 0);
 
-      return redirect()
-        ->route(auth()->user()->role . ".order.index")
-        ->with('success', 'Order BRS' . $order->id . ' updated successfully.');
-    } catch (\Exception $e) {
-      return back()
-        ->with('error', 'Something went wrong: ' . $e->getMessage())
-        ->withInput();
+            $totalDeductionPercent = $globalRate + $customRate;
+
+
+            /*
+             * ---------------------------------------------------------
+             * 2. Get all product IDs
+             * ---------------------------------------------------------
+             */
+            $productIds = collect($request->products)
+                ->pluck('product_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+
+            /*
+             * ---------------------------------------------------------
+             * 3. Fetch products in ONE query
+             * ---------------------------------------------------------
+             */
+            $products = Product::query()
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
+
+            /*
+             * Make sure every requested product exists.
+             */
+            if ($products->count() !== $productIds->count()) {
+                throw new \RuntimeException(
+                    'One or more selected products no longer exist.'
+                );
+            }
+
+
+            /*
+             * ---------------------------------------------------------
+             * 4. Update Order
+             * ---------------------------------------------------------
+             */
+            $order->update([
+                'status'                     => 'pending_sr',
+                'special_discount'           => $request->special_discount ?? 0,
+                'discount_amount'            => $request->total_discount ?? 0,
+                'net_total'                  => $request->net_total,
+                'applied_deduction_percent' => $totalDeductionPercent,
+                'note'                       => $request->note,
+            ]);
+
+
+            /*
+             * ---------------------------------------------------------
+             * 5. Delete old Order Items
+             *
+             * Since the update form represents the complete
+             * current order, rebuilding the items is safe.
+             * ---------------------------------------------------------
+             */
+            $order->items()->delete();
+
+
+            /*
+             * ---------------------------------------------------------
+             * 6. Create new Order Items
+             * ---------------------------------------------------------
+             */
+            foreach ($request->products as $item) {
+
+                $productId = $item['product_id'];
+
+                /** @var Product $product */
+                $product = $products->get($productId);
+
+                /*
+                 * Quantity validation
+                 */
+                $qty = (int) ($item['qty'] ?? 0);
+
+                if ($qty <= 0) {
+                    throw new \RuntimeException(
+                        "Invalid quantity for product ID: {$productId}"
+                    );
+                }
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Base selling price
+                 * -----------------------------------------------------
+                 */
+                $basePrice = (float) ($item['price'] ?? 0);
+
+                if ($basePrice < 0) {
+                    throw new \RuntimeException(
+                        "Invalid price for product ID: {$productId}"
+                    );
+                }
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Deduction
+                 * -----------------------------------------------------
+                 */
+                $deductionAmount = round(
+                    $basePrice * $totalDeductionPercent / 100,
+                    2
+                );
+
+
+                /*
+                 * Selling rate after deduction
+                 * -----------------------------------------------------
+                 */
+                $sellingRate = round(
+                    $basePrice - $deductionAmount,
+                    2
+                );
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Offer discount
+                 * -----------------------------------------------------
+                 */
+                $offerDiscount = (float) ($item['discount'] ?? 0);
+
+                if ($offerDiscount < 0) {
+                    throw new \RuntimeException(
+                        "Invalid discount for product ID: {$productId}"
+                    );
+                }
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Final item net amount
+                 * -----------------------------------------------------
+                 */
+                $itemNetTotal = round(
+                    ($sellingRate - $offerDiscount) * $qty,
+                    2
+                );
+
+
+                /*
+                 * Prevent negative item total
+                 */
+                if ($itemNetTotal < 0) {
+                    throw new \RuntimeException(
+                        "Discount cannot exceed selling price for product ID: {$productId}"
+                    );
+                }
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Purchase Cost
+                 * -----------------------------------------------------
+                 */
+                $purchasePrice = (float) $product->purchase_price;
+
+                $totalPurchaseCost = round(
+                    $purchasePrice * $qty,
+                    2
+                );
+
+
+                /*
+                 * -----------------------------------------------------
+                 * PROFIT
+                 *
+                 * Profit = Revenue - Purchase Cost
+                 * -----------------------------------------------------
+                 */
+                $profit = round(
+                    $itemNetTotal - $totalPurchaseCost,
+                    2
+                );
+
+
+                /*
+                 * -----------------------------------------------------
+                 * Create Order Item
+                 * -----------------------------------------------------
+                 */
+                OrderItem::create([
+                    'order_id'              => $order->id,
+                    'product_id'            => $product->id,
+                    'quantity'              => $qty,
+
+                    'price'                 => $basePrice,
+
+                    'unit_deduction_amount' => $deductionAmount,
+
+                    'selling_rate'          => $sellingRate,
+
+                    'discount_amount'       => $offerDiscount,
+
+                    'net_total'             => $itemNetTotal,
+
+                    'profit'                => $profit,
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route(auth()->user()->role . '.order.index')
+            ->with(
+                'success',
+                'Order BRS' . $order->id . ' updated successfully.'
+            );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()
+            ->with(
+                'error',
+                'Something went wrong while updating the order.'
+            )
+            ->withInput();
     }
-  }
+}
 
 
   public function reject($id)
@@ -209,11 +515,18 @@ class OrderController extends Controller
       ->first();
 
     if ($transactionOrder) {
-      $currentDue = $transactionOrder->due;
-      $previousDue = max(0, $currentDue - $transactionOrder->amount);
+      $previousDue = round((float) ($transactionOrder->due_before_transaction ?? 0), 2);
+      $currentDue = round((float) ($transactionOrder->due_after_transaction ?? 0), 2);
     } else {
-      $previousDue = $order->customer->due;
-      $currentDue = $previousDue + $order->net_total;
+      $currentDue = round(
+            (float) ($order->customer->due ?? 0),
+            2
+        );
+
+        $previousDue = round(
+            $currentDue - (float) $order->net_total,
+            2
+        );
     }
 
     $customerData = [

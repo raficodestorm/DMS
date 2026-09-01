@@ -14,12 +14,19 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
-            $table->foreignId('order_id')->nullable()->constrained('orders')->cascadeOnDelete();
-            $table->foreignId('sr_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->enum('type', ['pay', 'buy', 'return']);
+            $table->foreignId('order_id')->nullable()->constrained('orders')->nullOnDelete();
+            $table->foreignId('sr_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->string('type');
+            // 'pay', 'buy', 'return','opening_balance'
             $table->decimal('amount', 10, 2);
-            $table->decimal('due', 10, 2);
-            $table->enum('status', ['pending', 'complete']);
+            //--- new-------------------------------
+            $table->decimal('due_before_transaction', 10, 2)->nullable();
+            $table->decimal('due_after_transaction', 10, 2)->nullable();
+            $table->string('payment_method')->nullable();
+            // cash, bank, cheque --------------------------------
+            $table->string('status');
+            // 'pending', 'complete'
             $table->text('note')->nullable();
             $table->timestamps();
         });

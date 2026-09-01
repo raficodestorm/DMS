@@ -81,7 +81,7 @@
 
           <li>
             <a href="{{ route('customers.index') }}" class="sub-link {{ isActive('customers.index') }}">
-              <i class="fas fa-users-cog me-1"></i> Manage Customers
+              <i class="fas fa-users-cog me-1"></i> All Customers
             </a>
           </li>
         </ul>
@@ -136,7 +136,7 @@
 
           <li>
             <a href="{{ route('sr.payments.index') }}" class="sub-link {{ isActive('sr.payments.index') }}">
-              <i class="fas fa-users-cog me-1"></i> All paymentss
+              <i class="fas fa-users-cog me-1"></i> All Transactions
             </a>
           </li>
 
@@ -161,7 +161,7 @@
 
           <li>
             <a href="{{ route('sr.return.index') }}" class="sub-link {{ isActive('sr.return.index') }}">
-              <i class="fas fa-list me-1"></i> My Returns
+              <i class="fas fa-list me-1"></i> All Returns
             </a>
           </li>
         </ul>

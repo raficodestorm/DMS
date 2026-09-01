@@ -199,6 +199,15 @@ $isPayment = $payment->type == 'pay';
         </span>
       </div>
 
+      @if($isPayment)
+      <div class="info-group">
+        <span class="i-label">Payment Method</span>
+        <span class="i-value">
+          <strong>{{ ucfirst($payment->payment_method) }}</strong>
+        </span>
+      </div>
+      @endif
+
       <div class="info-group">
         <span class="i-label">Status</span>
         <span class="i-value">
@@ -292,7 +301,7 @@ $isPayment = $payment->type == 'pay';
 
         <span class="i-value" style="color: var(--danger-color); font-weight:700;">
 
-          {{ number_format($payment->due, 2) }} TK
+          {{ number_format($payment->due_after_transaction, 2) }} TK
 
         </span>
 

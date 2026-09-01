@@ -27,14 +27,14 @@
     <div class="form-card">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="m-0"><i class="fas fa-edit text-primary"></i> Edit Return Request BRET{{ $return->id }}</h2>
-            <a href="{{ route('sr.return.index') }}" class="btn-smart btn-blue">
+            <a href="{{ route('manager.return.index') }}" class="btn-smart btn-blue">
                 <i class="fas fa-list me-1"></i> Back to List
             </a>
         </div>
 
         @include('components.alert')
 
-        <form action="{{ route('sr.return.update', $return->id) }}" method="POST">
+        <form action="{{ route('manager.return.update', $return->id) }}" method="POST">
             @csrf
             @method('PUT')
 

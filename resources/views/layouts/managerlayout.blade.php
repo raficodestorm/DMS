@@ -12,6 +12,8 @@
   <title>{{ config('app.name') }} | Manager panel</title>
   <link rel="icon" type="image/png" sizes="35x35" href="{{ asset('image/relectric-r-logo.webp') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <!-- jQuery self-hosted (loaded synchronously so $ is available for all inline scripts) -->
+  <script src="{{ asset('js/jquery.min.js') }}"></script>
   <!-- Vite CSS + JS -->
   @vite(['resources/css/app.css','resources/js/app.js'])
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">

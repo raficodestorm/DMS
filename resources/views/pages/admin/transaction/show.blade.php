@@ -7,54 +7,6 @@ $isPayment = $payment->type == 'pay';
 $isPurchase = $payment->type == 'buy';
 $isReturn = $payment->type == 'return';
 
-$dueBefore = 0;
-$dueAfter = 0;
-
-switch ($payment->type) {
-
-case 'pay':
-if ($payment->status == 'complete') {
-// Payment already deducted
-$dueBefore = $payment->due + $payment->amount;
-$dueAfter = $payment->due;
-
-} else {
-// Pending payment
-$dueBefore = $payment->due;
-$dueAfter = max(0, $payment->due - $payment->amount);
-}
-break;
-
-case 'buy':
-if ($payment->status == 'complete') {
-// Purchase already added
-$dueBefore = max(0, $payment->due - $payment->amount);
-$dueAfter = $payment->due;
-
-} else {
-// Pending purchase
-$dueBefore = $payment->due;
-$dueAfter = $payment->due + $payment->amount;
-}
-break;
-
-case 'return':
-if ($payment->status == 'complete') {
-// Return reduces due
-$dueBefore = $payment->due + $payment->amount;
-$dueAfter = $payment->due;
-
-} else {
-// Pending return
-$dueBefore = $payment->due;
-$dueAfter = max(0, $payment->due - $payment->amount);
-}
-break;
-default:
-$dueBefore = $payment->due;
-$dueAfter = $payment->due;
-break;
-}
 @endphp
 
 <p class="show-head">
@@ -125,6 +77,15 @@ break;
         </span>
       </div>
 
+      @if($isPayment)
+      <div class="info-group">
+        <span class="i-label">Payment Method</span>
+        <span class="i-value">
+          <strong>{{ ucfirst($payment->payment_method) }}</strong>
+        </span>
+      </div>
+      @endif
+
       <div class="info-group">
         <span class="i-label">Status</span>
         <span class="i-value">
@@ -180,7 +141,7 @@ break;
         </span>
 
         <span class="i-value" style="color: var(--text-main); font-weight:700;">
-          {{ number_format($dueBefore, 2) }} TK
+          {{ number_format($payment->due_before_transaction, 2) }} TK
         </span>
 
       </div>
@@ -197,7 +158,7 @@ break;
         </span>
 
         <span class="i-value" style="color: var(--danger-color); font-weight:700;">
-          {{ number_format($dueAfter, 2) }} TK
+          {{ number_format($payment->due_after_transaction, 2) }} TK
         </span>
 
       </div>

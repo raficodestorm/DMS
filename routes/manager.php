@@ -49,6 +49,8 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/orders/show/{order}', [OrderManagerController::class, 'showForManager'])->name('order.show');
   Route::get('/orders/edit/{order}', [OrderController::class, 'edit'])->name('order.edit');
   Route::put('/orders/update/{order}', [OrderController::class, 'update'])->name('order.update');
+  Route::get('/products/search', [OrderController::class, 'searchProducts'])->name('products.search');
+  Route::get('/customers/search', [OrderController::class, 'searchCustomers'])->name('customers.search');
   Route::patch('/orders/sendToAdmin/{order}', [OrderManagerController::class, 'sendToAdmin'])->name('order.sendToAdmin');
 
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
@@ -60,8 +62,12 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/return/create', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'create'])->name('return.create');
   Route::post('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'store'])->name('return.store');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'show'])->name('return.show');
+  Route::get('/return/{id}/edit', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'edit'])->name('return.edit');
+  Route::put('/return/{id}', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'update'])->name('return.update');
   Route::post('/return/{id}/forward', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'forwardToAdmin'])->name('return.forward');
   Route::post('/return/{id}/reject', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'reject'])->name('return.reject');
+  Route::delete('/return/{id}', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'destroy'])->name('return.destroy');
+
   Route::get('/orders/allcustomer', [OrderManagerController::class, 'allCustomerOrders'])->name('order.all.customers');
   Route::get('order/specific/{id}', [OrderManagerController::class, 'specificSrOrders'])->name('order.specific.sr');
   Route::get('/specific/{id}', [OrderManagerController::class, 'specificCustomerOrders'])->name('order.specific.customer');

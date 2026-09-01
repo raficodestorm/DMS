@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->decimal('total_amount', 15, 2)->default(0);
             $table->text('reason')->nullable();
-            $table->enum('status', ['pending_manager', 'pending_admin', 'approved', 'rejected'])->default('pending_manager');
+            $table->string('status')->default('pending_sr');
+            // 'pending_sr', 'pending_manager', 'approved', 'rejected'
             $table->timestamps();
         });
     }

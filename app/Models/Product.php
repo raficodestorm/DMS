@@ -19,6 +19,7 @@ class Product extends Model
         'description',
         'status',
         'image',
+        'is_featured',
     ];
     public function supplier()
     {

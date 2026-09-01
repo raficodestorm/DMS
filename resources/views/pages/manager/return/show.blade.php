@@ -23,9 +23,9 @@
                 <p class="text-muted">SR: {{ $return->sr->fullname }} | Date: {{ $return->created_at->format('d M Y, h:i A') }}</p>
             </div>
             <div>
-                @if($return->status == 'pending_manager')
-                    <span class="badge bg-warning text-dark status-badge">Pending Your Review</span>
-                @elseif($return->status == 'pending_admin')
+                @if($return->status == 'pending_sr')
+                    <span class="badge bg-warning text-dark status-badge">Pending SR</span>
+                @elseif($return->status == 'pending_manager')
                     <span class="badge bg-info text-white status-badge">Forwarded to Admin</span>
                 @elseif($return->status == 'approved')
                     <span class="badge bg-success status-badge">Approved</span>
@@ -84,7 +84,7 @@
                 <i class="fas fa-arrow-left me-1"></i> Back to List
             </a>
             
-            @if($return->status == 'pending_manager')
+            @if($return->status == 'pending_sr')
                 <div class="d-flex gap-2">
                     <form action="{{ route('manager.return.reject', $return->id) }}" method="POST" onsubmit="return confirm('Reject this return request?')">
                         @csrf
@@ -92,13 +92,41 @@
                             <i class="fas fa-times me-1"></i> Reject
                         </button>
                     </form>
+                    <a href="{{ route('manager.return.edit', $return->id) }}" class="btn-smart btn-purple">
+                        <i class="fas fa-edit me-1"></i> Edit Request
+                    </a>
                     <form action="{{ route('manager.return.forward', $return->id) }}" method="POST" onsubmit="return confirm('Forward to Admin for final approval?')">
                         @csrf
                         <button type="submit" class="btn-smart btn-green">
                             <i class="fas fa-arrow-right me-1"></i> Forward to Admin
                         </button>
                     </form>
+
+                    <form action="{{ route('manager.return.destroy', $return->id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-smart btn-red" onclick="return confirm('Delete this record permanently?')">
+                        <i class="fas fa-trash"></i> Delete Request
+                    </button>
+                </form>
                 </div>
+            @elseif($return->status == 'pending_manager')
+                <a href="{{ route('manager.return.edit', $return->id) }}" class="btn-smart btn-purple">
+                    <i class="fas fa-edit me-1"></i> Edit Request
+                </a>
+
+                <form action="{{ route('manager.return.destroy', $return->id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-smart btn-red" onclick="return confirm('Delete this record permanently?')">
+                        <i class="fas fa-trash"></i> Delete Request
+                    </button>
+                </form>
+            @elseif($return->status !== 'approved')
+                <form action="{{ route('manager.return.destroy', $return->id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-smart btn-red" onclick="return confirm('Delete this record permanently?')">
+                        <i class="fas fa-trash"></i> Delete Request
+                    </button>
+                </form>
             @endif
         </div>
     </div>

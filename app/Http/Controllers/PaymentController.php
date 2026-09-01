@@ -174,78 +174,163 @@ class PaymentController extends Controller
 
   public function create()
   {
-    $customers = Customer::where('branch_id', auth()->user()->branch_id)->orderBy('shop_name', 'asc')->get();
+    $customers = Customer::where('branch_id', auth()->user()->branch_id)
+        ->where('due', '>', 0)
+        ->orderBy('shop_name', 'asc')
+        ->get();
     return view('pages.' . auth()->user()->role . '.payment.create', compact('customers'));
   }
 
-  /**
-   * 5. Store: Payment pending obosthay save hobe ebong manager-ke notify korbe
-   */
+  
+
+
+
+
+
   public function store(Request $request)
-  {
+{
     $validated = $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'amount'      => 'required|numeric|min:1',
-      'note'        => 'nullable|string',
+        'customer_id' => ['required', 'exists:customers,id'],
+        'amount'      => ['required', 'numeric', 'min:0.01'],
+        'note'        => ['nullable', 'string', 'max:1000'],
+        'payment_method' => ['required', 'string', 'max:50'],
     ]);
 
-    // Transaction-er baire user fetch kora safe
     $user = auth()->user();
     $branchId = $user->branch_id;
 
     try {
-      // Transaction shudhu DB record create ebong notification triggering-er jonno
-      $payment = DB::transaction(function () use ($validated, $user, $branchId) {
 
-        $customer = Customer::lockForUpdate()->findOrFail($validated['customer_id']);
-        $payment = Transaction::create([
-          'customer_id' => $customer->id,
-          'sr_id'       => $user->id,
-          'type'        => 'pay',
-          'amount'      => $validated['amount'],
-          'due'         => $customer->due,
-          'status'      => 'pending',
-          'note'        => $validated['note'] ?? null,
-        ]);
+        DB::transaction(function () use ($validated, $user, $branchId) {
 
-        // Branch wise managers fetch
-        $managers = User::where('role', 'manager')
-          ->where('branch_id', $branchId)
-          ->get();
+            /*
+             * ---------------------------------------------------------
+             * 1. Get customer with row lock
+             * ---------------------------------------------------------
+             */
+            $customer = Customer::query()
+                ->whereKey($validated['customer_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // Notification data preparation
-        $notificationData = [
-          'title'   => 'New Payment Request',
-          'message' => [
-            'text' => 'A new payment request has been submitted by',
-            'from' => $user->username
-          ],
-          'url'     => route('manager.payments.show', $payment->id),
-          'type'    => 'new_payment'
-        ];
+            /*
+             * ---------------------------------------------------------
+             * 2. Current due snapshot
+             *
+             * Payment is still pending, so customer due is NOT
+             * changed here.
+             * ---------------------------------------------------------
+             */
+            $dueBeforeTransaction = round(
+                (float) ($customer->due ?? 0),
+                2
+            );
 
-        // Notification send (Manager thakle notify hobe)
-        foreach ($managers as $manager) {
-          $manager->notify(
-            new SystemNotification($notificationData)
-          );
-        }
+            $paymentAmount = round(
+                (float) $validated['amount'],
+                2
+            );
 
-        return $payment;
-      });
+            /*
+             * ---------------------------------------------------------
+             * 3. Prevent payment request greater than customer due
+             * ---------------------------------------------------------
+             */
+            if ($paymentAmount > $dueBeforeTransaction) {
+                throw new \RuntimeException(
+                    'Payment amount cannot be greater than customer due.'
+                );
+            }
 
-      // Success message and redirect (Transaction-er baire)
-      return redirect()
-        ->route('sr.payments.index')
-        ->with('success', 'Payment request sent to manager for approval.');
-    } catch (\Exception $e) {
-      // Validation data return korar jonno withInput() dorkar
-      return back()->withInput()->with(
-        'error',
-        'Something went wrong! ' . $e->getMessage()
-      );
+            /*
+             * ---------------------------------------------------------
+             * 4. Since payment is pending, due_after_transaction
+             * is the expected due after approval.
+             * ---------------------------------------------------------
+             */
+            $dueAfterTransaction = round(
+                $dueBeforeTransaction - $paymentAmount,
+                2
+            );
+
+            /*
+             * ---------------------------------------------------------
+             * 5. Create payment transaction
+             * ---------------------------------------------------------
+             */
+            $payment = Transaction::create([
+                'customer_id'            => $customer->id,
+                'order_id'               => null,
+                'sr_id'                  => $user->id,
+                'branch_id'              => $branchId,
+
+                'type'                   => 'pay',
+                'amount'                 => $paymentAmount,
+
+                'due_before_transaction' => $dueBeforeTransaction,
+                'due_after_transaction'  => $dueAfterTransaction,
+                'payment_method'         => $validated['payment_method'],
+                'status'                 => 'pending',
+                'note'                   => $validated['note'] ?? null,
+            ]);
+
+            /*
+             * ---------------------------------------------------------
+             * 6. Get branch managers
+             * ---------------------------------------------------------
+             */
+            $managers = User::query()
+                ->where('role', 'manager')
+                ->where('branch_id', $branchId)
+                ->get();
+
+            /*
+             * ---------------------------------------------------------
+             * 7. Notification
+             * ---------------------------------------------------------
+             */
+            $notificationData = [
+                'title'   => 'New Payment Request',
+
+                'message' => [
+                    'text' => 'A new payment request has been submitted by',
+                    'from' => $user->username,
+                ],
+
+                'url' => route(
+                    'manager.payments.show',
+                    $payment->id
+                ),
+
+                'type' => 'new_payment',
+            ];
+
+            foreach ($managers as $manager) {
+                $manager->notify(
+                    new SystemNotification($notificationData)
+                );
+            }
+        });
+
+        return redirect()
+            ->route('sr.payments.index')
+            ->with(
+                'success',
+                'Payment request sent to manager for approval.'
+            );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Something went wrong while submitting the payment request.'
+            );
     }
-  }
+}
 
 
 
@@ -253,167 +338,422 @@ class PaymentController extends Controller
 
 
 
-  public function managerStore(Request $request)
-  {
+public function managerStore(Request $request)
+{
     $validated = $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'amount'      => 'required|numeric|min:1',
-      'note'        => 'nullable|string|max:500',
+        'customer_id' => [
+            'required',
+            'exists:customers,id',
+        ],
+
+        'amount' => [
+            'required',
+            'numeric',
+            'min:0.01',
+        ],
+
+        'payment_method' => ['required', 'string', 'max:50'],
+
+        'note' => [
+            'nullable',
+            'string',
+            'max:500',
+        ],
     ]);
 
     try {
-      DB::transaction(function () use ($validated) {
 
-        $customer = Customer::lockForUpdate()->findOrFail($validated['customer_id']);
+        DB::transaction(function () use ($validated) {
 
-        $newDue = max(0, $customer->due - $validated['amount']);
+            $user = auth()->user();
 
-        $payment = Transaction::create([
-          'customer_id' => $customer->id,
-          'sr_id'       => auth()->id(),
-          'type'        => 'pay',
-          'amount'      => $validated['amount'],
-          'due'         => $newDue,
-          'status'      => 'complete',
-          'note'        => $validated['note'] ?? null,
-        ]);
+            /*
+             * ---------------------------------------------------------
+             * 1. Get customer with row lock
+             * ---------------------------------------------------------
+             */
+            $customer = Customer::query()
+                ->whereKey($validated['customer_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $customer->update([
-          'due' => $newDue
-        ]);
+            /*
+             * ---------------------------------------------------------
+             * 2. Calculate payment and due
+             * ---------------------------------------------------------
+             */
+            $paymentAmount = round(
+                (float) $validated['amount'],
+                2
+            );
 
-        $notificationData = [
-          'title'   => 'Payment Received',
-          'message' => [
-            'text' => 'আপনার ' . number_format($payment->amount, 2) . ' TK পেমেন্ট সফলভাবে গ্রহণ করা হয়েছে। বর্তমান ডিউ: ' . number_format($customer->due, 2) . ' TK',
-            'from' => auth()->user()->username
-          ],
-          'url'     => route('payments.slip', $payment->id),
-          'type'    => 'payment_completed'
-        ];
+            $dueBeforeTransaction = round(
+                (float) ($customer->due ?? 0),
+                2
+            );
 
-        $thecustomer = User::where('role', 'customer')
-          ->where('customer_id', $payment->customer_id)
-          ->first();
+            /*
+             * Payment cannot be greater than current customer due.
+             */
+            if ($paymentAmount > $dueBeforeTransaction) {
+                throw new \RuntimeException(
+                    'Payment amount of ৳' .
+                    number_format($paymentAmount, 2) .
+                    ' cannot be greater than customer due of ৳' .
+                    number_format($dueBeforeTransaction, 2) .
+                    '.'
+                );
+            }
 
-        if ($thecustomer) {
-          $thecustomer->notify(
-            new SystemNotification($notificationData)
-          );
-        }
+            /*
+             * Calculate remaining due.
+             */
+            $dueAfterTransaction = round(
+                $dueBeforeTransaction - $paymentAmount,
+                2
+            );
 
+            $dueAfterTransaction = max(
+                0,
+                $dueAfterTransaction
+            );
 
+            /*
+             * ---------------------------------------------------------
+             * 3. Create completed payment transaction
+             * ---------------------------------------------------------
+             */
+            $payment = Transaction::create([
+                'customer_id'            => $customer->id,
+                'order_id'               => null,
+                'sr_id'                  => $user->id,
+                'branch_id'              => $user->branch_id,
 
+                'type'                   => 'pay',
+                'amount'                 => $paymentAmount,
 
-        $admins = User::where('role', 'admin')->get();
+                'due_before_transaction' => $dueBeforeTransaction,
+                'due_after_transaction'  => $dueAfterTransaction,
+                'payment_method'         => $validated['payment_method'],
+                'status'                 => 'complete',
 
-        $adminNotification = [
-          'title' => 'Customer Payment Received',
-          'message' => [
-            'text' => $customer->shop_name .
-              ' paid ' .
-              number_format($payment->amount, 2) .
-              ' TK.   Remaining due: ' .
-              number_format($newDue, 2) . ' TK. ',
-            'from' => auth()->user()->branch->name
-          ],
-          'url'  => route('admin.payments.show', $payment->id),
-          'type' => 'customer_payment_received'
-        ];
+                'note'                   => $validated['note'] ?? null,
+            ]);
 
-        foreach ($admins as $admin) {
-          $admin->notify(
-            new SystemNotification($adminNotification)
-          );
-        }
-      });
+            /*
+             * ---------------------------------------------------------
+             * 4. Update customer's actual due
+             * ---------------------------------------------------------
+             */
+            $customer->update([
+                'due' => $dueAfterTransaction,
+            ]);
 
-      return redirect()
-        ->route('manager.payments.index')
-        ->with('success', 'Payment completed successfully.');
-    } catch (\Exception $e) {
-      return back()->withInput()->with('error', $e->getMessage());
+            /*
+             * ---------------------------------------------------------
+             * 5. Customer notification
+             * ---------------------------------------------------------
+             */
+            $notificationData = [
+                'title'   => 'Payment Received',
+
+                'message' => [
+                    'text' =>
+                        'আপনার ' .
+                        number_format($paymentAmount, 2) .
+                        ' TK পেমেন্ট সফলভাবে গ্রহণ করা হয়েছে। বর্তমান ডিউ: ' .
+                        number_format($dueAfterTransaction, 2) .
+                        ' TK',
+
+                    'from' => $user->username,
+                ],
+
+                'url' => route(
+                    'payments.slip',
+                    $payment->id
+                ),
+
+                'type' => 'payment_completed',
+            ];
+
+            $theCustomer = User::query()
+                ->where('role', 'customer')
+                ->where('customer_id', $customer->id)
+                ->first();
+
+            if ($theCustomer) {
+                $theCustomer->notify(
+                    new SystemNotification($notificationData)
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 6. Admin notification
+             * ---------------------------------------------------------
+             */
+            $admins = User::query()
+                ->where('role', 'admin')
+                ->get();
+
+            $branchName = $user->branch?->name ?? 'Branch';
+
+            $adminNotification = [
+                'title' => 'Customer Payment Received',
+
+                'message' => [
+                    'text' =>
+                        $customer->shop_name .
+                        ' paid ' .
+                        number_format($paymentAmount, 2) .
+                        ' TK. Remaining due: ' .
+                        number_format($dueAfterTransaction, 2) .
+                        ' TK.',
+
+                    'from' => $branchName,
+                ],
+
+                'url' => route(
+                    'admin.payments.show',
+                    $payment->id
+                ),
+
+                'type' => 'customer_payment_received',
+            ];
+
+            foreach ($admins as $admin) {
+                $admin->notify(
+                    new SystemNotification($adminNotification)
+                );
+            }
+        });
+
+        return redirect()
+            ->route('manager.payments.index')
+            ->with(
+                'success',
+                'Payment completed successfully.'
+            );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Payment processing failed: ' . $e->getMessage()
+            );
     }
-  }
+}
 
-  /**
-   * 6. Approve: Manager/Admin approve korle status complete hobe ebong Due kombe
-   */
+
+  
+
+
   public function approve(Transaction $payment)
-  {
-    if ($payment->status === 'complete') {
-      return back()->with('error', 'Already approved.');
-    }
-
+{
     try {
-      DB::transaction(function () use ($payment) {
 
-        $payment = Transaction::lockForUpdate()->findOrFail($payment->id);
+        DB::transaction(function () use ($payment) {
 
-        $customer = Customer::lockForUpdate()->findOrFail($payment->customer_id);
+            /*
+             * ---------------------------------------------------------
+             * 1. Lock payment transaction
+             * ---------------------------------------------------------
+             */
+            $payment = Transaction::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $newDue = max(0, $customer->due - $payment->amount);
+            /*
+             * Prevent double approval.
+             */
+            if ($payment->status === 'complete') {
+                throw new \RuntimeException(
+                    'Payment has already been approved.'
+                );
+            }
 
-        $payment->update([
-          'status' => 'complete',
-          'due'    => $newDue
-        ]);
+            
 
-        $customer->update([
-          'due' => $newDue
-        ]);
+            /*
+             * ---------------------------------------------------------
+             * 2. Lock customer
+             * ---------------------------------------------------------
+             */
+            $customer = Customer::query()
+                ->whereKey($payment->customer_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $notificationData = [
-          'title'   => 'Payment Approved',
-          'message' => [
-            'text' => 'আপনার ' . number_format($payment->amount, 2) . ' TK পেমেন্ট সফলভাবে গ্রহণ করা হয়েছে। বর্তমান ডিউ: ' . number_format($newDue, 2) . ' TK',
-            'from' => auth()->user()->username
-          ],
-          'url'     => route('payments.slip', $payment->id),
-          'type'    => 'payment_approved'
-        ];
+            /*
+             * ---------------------------------------------------------
+             * 3. Calculate actual due
+             * ---------------------------------------------------------
+             */
+            $dueBeforeTransaction = round(
+                (float) ($customer->due ?? 0),
+                2
+            );
 
-        $thecustomer = User::where('role', 'customer')
-          ->where('customer_id', $payment->customer_id)
-          ->first();
+            $paymentAmount = round(
+                (float) $payment->amount,
+                2
+            );
 
-        if ($thecustomer) {
-          $thecustomer->notify(
-            new SystemNotification($notificationData)
-          );
-        }
+            /*
+             * A customer cannot pay more than current due.
+             */
+            if ($paymentAmount > $dueBeforeTransaction) {
+                throw new \RuntimeException(
+                    'Payment amount of ৳' .
+                    number_format($paymentAmount, 2) .
+                    ' is greater than the customer current due of ৳' .
+                    number_format($dueBeforeTransaction, 2) .
+                    '.'
+                );
+            }
 
+            /*
+             * ---------------------------------------------------------
+             * 4. Calculate new due
+             * ---------------------------------------------------------
+             */
+            $dueAfterTransaction = round(
+                $dueBeforeTransaction - $paymentAmount,
+                2
+            );
 
+            /*
+             * Safety guard against negative floating-point values.
+             */
+            $dueAfterTransaction = max(
+                0,
+                $dueAfterTransaction
+            );
 
+            /*
+             * ---------------------------------------------------------
+             * 5. Update Customer Due
+             * ---------------------------------------------------------
+             */
+            $customer->update([
+                'due' => $dueAfterTransaction,
+            ]);
 
-        $admins = User::where('role', 'admin')->get();
+            /*
+             * ---------------------------------------------------------
+             * 6. Complete Payment Transaction
+             * ---------------------------------------------------------
+             */
+            $payment->update([
+                'status'                 => 'complete',
+                'branch_id'              => $payment->branch_id
+                    ?? $customer->branch_id
+                    ?? auth()->user()->branch_id,
 
-        $adminNotification = [
-          'title' => 'Customer Payment Received',
-          'message' => [
-            'text' => $customer->shop_name .
-              ' paid ' .
-              number_format($payment->amount, 2) .
-              ' TK.   Remaining due: ' .
-              number_format($newDue, 2) . ' TK. ',
-            'from' => auth()->user()->branch->name
-          ],
-          'url'  => route('admin.payments.show', $payment->id),
-          'type' => 'customer_payment_received'
-        ];
+                'due_before_transaction' => $dueBeforeTransaction,
+                'due_after_transaction'  => $dueAfterTransaction,
+            ]);
 
-        foreach ($admins as $admin) {
-          $admin->notify(
-            new SystemNotification($adminNotification)
-          );
-        }
-      });
+            /*
+             * ---------------------------------------------------------
+             * 7. Customer notification
+             * ---------------------------------------------------------
+             */
+            $notificationData = [
+                'title'   => 'Payment Approved',
 
-      return back()->with('success', 'Payment approved successfully.');
-    } catch (\Exception $e) {
-      return back()->with('error', $e->getMessage());
+                'message' => [
+                    'text' =>
+                        'আপনার ' .
+                        number_format($paymentAmount, 2) .
+                        ' TK পেমেন্ট সফলভাবে গ্রহণ করা হয়েছে। বর্তমান ডিউ: ' .
+                        number_format($dueAfterTransaction, 2) .
+                        ' TK',
+
+                    'from' => auth()->user()->username,
+                ],
+
+                'url' => route(
+                    'payments.slip',
+                    $payment->id
+                ),
+
+                'type' => 'payment_approved',
+            ];
+
+            $theCustomer = User::query()
+                ->where('role', 'customer')
+                ->where('customer_id', $customer->id)
+                ->first();
+
+            if ($theCustomer) {
+                $theCustomer->notify(
+                    new SystemNotification($notificationData)
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 8. Admin notification
+             * ---------------------------------------------------------
+             */
+            $admins = User::query()
+                ->where('role', 'admin')
+                ->get();
+
+            $branchName = auth()->user()->branch?->name
+                ?? 'Branch';
+
+            $adminNotification = [
+                'title' => 'Customer Payment Received',
+
+                'message' => [
+                    'text' =>
+                        $customer->shop_name .
+                        ' paid ' .
+                        number_format($paymentAmount, 2) .
+                        ' TK. Remaining due: ' .
+                        number_format($dueAfterTransaction, 2) .
+                        ' TK.',
+
+                    'from' => $branchName,
+                ],
+
+                'url' => route(
+                    'admin.payments.show',
+                    $payment->id
+                ),
+
+                'type' => 'customer_payment_received',
+            ];
+
+            foreach ($admins as $admin) {
+                $admin->notify(
+                    new SystemNotification($adminNotification)
+                );
+            }
+        });
+
+        return back()->with(
+            'success',
+            'Payment approved successfully.'
+        );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()->with(
+            'error',
+            'Payment approval failed: ' . $e->getMessage()
+        );
     }
-  }
+}
 
 
   public function show(Transaction $payment)
@@ -443,7 +783,16 @@ class PaymentController extends Controller
       return back()->with('error', 'Completed payment cannot edit.');
     }
 
-    $customers = Customer::orderBy('shop_name')->get();
+    $branchId = auth()->user()->branch_id;
+
+    // Include the current payment's customer even if their due is now 0
+    $customers = Customer::where('branch_id', $branchId)
+        ->where(function($q) use ($payment) {
+            $q->where('due', '>', 0)
+              ->orWhere('id', $payment->customer_id);
+        })
+        ->orderBy('shop_name')
+        ->get();
 
     return view('pages.sr.payment.edit', compact('payment', 'customers'));
   }
@@ -452,23 +801,162 @@ class PaymentController extends Controller
    * 9. Update: Payment details update kora
    */
   public function update(Request $request, Transaction $payment)
-  {
-    if ($payment->status === 'complete') {
-      return back()->with('error', 'Completed payment cannot update.');
+{
+    /*
+     * ---------------------------------------------------------
+     * 1. Only pending payment can be edited
+     * ---------------------------------------------------------
+     */
+    if ($payment->status !== 'pending') {
+        return back()->with(
+            'error',
+            'Only pending payment requests can be updated.'
+        );
     }
 
+    /*
+     * ---------------------------------------------------------
+     * 2. Authorization
+     *
+     * SR can edit only his own payment request.
+     * ---------------------------------------------------------
+     */
+    if ($payment->sr_id !== auth()->id()) {
+        return back()->with(
+            'error',
+            'Unauthorized access.'
+        );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 3. Validate
+     * ---------------------------------------------------------
+     */
     $validated = $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'amount'      => 'required|numeric|min:1',
-      'note'        => 'nullable|string',
+        'customer_id' => [
+            'required',
+            'exists:customers,id',
+        ],
+
+        'amount' => [
+            'required',
+            'numeric',
+            'min:0.01',
+        ],
+
+        'payment_method' => [ 'required', 'string', 'max:50', ],
+
+        'note' => [
+            'nullable',
+            'string',
+            'max:1000',
+        ],
     ]);
 
-    $payment->update($validated);
+    try {
 
-    return redirect()
-      ->route('sr.payments.index')
-      ->with('success', 'Payment updated successfully.');
-  }
+        DB::transaction(function () use (
+            $validated,
+            $payment
+        ) {
+
+            /*
+             * Lock payment row.
+             */
+            $payment = Transaction::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            /*
+             * Prevent editing if it was approved
+             * while this request was being processed.
+             */
+            if ($payment->status !== 'pending') {
+                throw new \RuntimeException(
+                    'Payment is no longer pending and cannot be updated.'
+                );
+            }
+
+            /*
+             * -----------------------------------------------------
+             * Customer
+             * -----------------------------------------------------
+             */
+            $customer = Customer::query()
+                ->whereKey($validated['customer_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            /*
+             * -----------------------------------------------------
+             * Payment amount
+             * -----------------------------------------------------
+             */
+            $amount = round(
+                (float) $validated['amount'],
+                2
+            );
+
+            $currentDue = round(
+                (float) ($customer->due ?? 0),
+                2
+            );
+
+            /*
+             * A payment request cannot exceed current customer due.
+             */
+            if ($amount > $currentDue) {
+                throw new \RuntimeException(
+                    'Payment amount cannot be greater than customer due.'
+                );
+            }
+
+            /*
+             * -----------------------------------------------------
+             * Update payment
+             * -----------------------------------------------------
+             *
+             * Since this is still pending, we don't change
+             * customer's actual due here.
+             *
+             * Due snapshot is recalculated for the edited request.
+             */
+            $dueAfterTransaction = round(
+                $currentDue - $amount,
+                2
+            );
+
+            $payment->update([
+                'customer_id'            => $customer->id,
+                'amount'                 => $amount,
+                'payment_method'         => $validated['payment_method'],
+                'due_before_transaction' => $currentDue,
+                'due_after_transaction'  => $dueAfterTransaction,
+                'note'                   => $validated['note'] ?? null,
+            ]);
+        });
+
+        return redirect()
+            ->route('sr.payments.index')
+            ->with(
+                'success',
+                'Payment updated successfully.'
+            );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Something went wrong while updating the payment.'
+            );
+    }
+}
 
 
   public function viewSlip(Transaction $payment)
@@ -485,36 +973,93 @@ class PaymentController extends Controller
   }
 
 
-  public function destroy(Transaction $payment)
-  {
+
+
+
+public function destroy(Transaction $payment)
+{
     try {
 
-      DB::transaction(function () use ($payment) {
+        DB::transaction(function () use ($payment) {
 
-        $customer = Customer::lockForUpdate()
-          ->findOrFail($payment->customer_id);
+            
+            $payment = Transaction::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (
-          $payment->type === 'pay' &&
-          $payment->status === 'complete'
-        ) {
-          $customer->increment('due', $payment->amount);
-        }
+            
 
-        $payment->delete();
-      });
+            /*
+             * ---------------------------------------------------------
+             * 3. Pending payment
+             *
+             * Pending payment has not changed customer due,
+             * so simply deleting it is safe.
+             * ---------------------------------------------------------
+             */
+            if (
+                $payment->type === 'pay' &&
+                $payment->status === 'pending'
+            ) {
+                $payment->delete();
 
-      return redirect()
-        ->route(auth()->user()->role . '.payments.index')->with(
-          'success',
-          'Transaction deleted successfully.'
+                return;
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 4. Completed payment
+             *
+             * A completed payment already reduced customer due.
+             * Therefore, deleting it must restore that amount.
+             * ---------------------------------------------------------
+             */
+            if (
+                $payment->type === 'pay' &&
+                $payment->status === 'complete'
+            ) {
+
+                $customer = Customer::query()
+                    ->whereKey($payment->customer_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $amount = round(
+                    (float) $payment->amount,
+                    2
+                );
+
+                $customer->increment('due', $amount);
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * 5. Delete transaction
+             * ---------------------------------------------------------
+             */
+            $payment->delete();
+        });
+
+        return redirect()
+            ->route(
+                auth()->user()->role . '.payments.index'
+            )
+            ->with(
+                'success',
+                'Transaction deleted successfully.'
+            );
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()->with(
+            'error',
+            'Unable to delete this transaction: ' . $e->getMessage()
         );
-    } catch (\Exception $e) {
-
-      return back()->with(
-        'error',
-        'Something went wrong!'
-      );
     }
-  }
+}
+
+
 }

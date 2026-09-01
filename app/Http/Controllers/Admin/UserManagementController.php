@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\User;
 use App\Traits\UploadHelper;
@@ -114,8 +115,9 @@ class UserManagementController extends Controller
   public function edit(User $user)
   {
     $branches = Branch::orderBy('name', 'asc')->get();
-    $employees = Employee::orderBy('name', 'asc')->get();
-    return view('pages.admin.users.edit', compact('user', 'branches', 'employees'));
+    $employees = Employee::orderBy('id', 'desc')->get();
+    $customers = Customer::orderBy('id', 'desc')->get();
+    return view('pages.admin.users.edit', compact('user', 'branches', 'employees', 'customers'));
   }
 
   public function update(Request $request, User $user)
@@ -128,6 +130,7 @@ class UserManagementController extends Controller
       'role' => ['required', 'in:user,customer,sr,manager,admin'],
       'branch_id' => ['nullable', 'integer'],
       'employee_id' => ['nullable', 'integer'],
+      'customer_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
       'status' => ['required', 'in:active,inactive'],
     ]);
@@ -146,6 +149,7 @@ class UserManagementController extends Controller
     $user->role = $request->role;
     $user->branch_id = $request->branch_id;
     $user->employee_id = $request->employee_id;
+    $user->customer_id = $request->customer_id;
     $user->status = $request->status;
 
     $user->save();

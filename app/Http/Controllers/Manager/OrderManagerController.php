@@ -192,12 +192,22 @@ class OrderManagerController extends Controller
     try {
       $customerData = DB::transaction(function () use ($order) {
 
-        $branchId = auth()->user()->branch_id;
+        $branchId = $order->branch_id;
 
-        $order->load(['items.product.category', 'customer', 'sr']);
+        $order = Order::query()
+            ->whereKey($order->id)
+            ->lockForUpdate()
+            ->with([
+                'items.product.category',
+                'customer',
+                'sr',
+            ])
+            ->firstOrFail();
 
         if ($order->status === 'complete') {
-          throw new \Exception('Order already completed.');
+            throw new \RuntimeException(
+                'Order already completed.'
+            );
         }
 
         foreach ($order->items as $item) {
@@ -218,22 +228,41 @@ class OrderManagerController extends Controller
           $stock->decrement('quantity', $item->quantity);
         }
 
-        $customer = Customer::lockForUpdate()->findOrFail($order->customer_id);
+        $customer = Customer::query()
+            ->whereKey($order->customer_id)
+            ->lockForUpdate()
+            ->firstOrFail();
 
-        $previous_due = $customer->due;
+        $dueBeforeTransaction = round(
+            (float) ($customer->due ?? 0),
+            2
+        );
 
-        $customer->increment('due', $order->net_total);
-        $customer->refresh();
+        $orderAmount = round(
+            (float) $order->net_total,
+            2
+        );
+
+        $dueAfterTransaction = round(
+            $dueBeforeTransaction + $orderAmount,
+            2
+        );
+
+        $customer->update([
+            'due' => $dueAfterTransaction,
+        ]);
 
         Transaction::create([
           'customer_id' => $customer->id,
           'order_id'    => $order->id,
           'sr_id'    => $order->sr_id,
+          'branch_id'   => $branchId,
           'type'        => 'buy',
           'amount'      => $order->net_total,
-          'due'         => $customer->due,
+          'due_before_transaction' => $dueBeforeTransaction,
+          'due_after_transaction'  => $dueAfterTransaction,
           'status'      => "complete",
-          'note'        => 'Order confirmed #' . $order->id,
+          'note'        => 'Order confirmed BRS' . $order->id,
         ]);
 
         $order->update([
@@ -242,8 +271,8 @@ class OrderManagerController extends Controller
 
         return [
           'details' => $customer,
-          'previous_due' => $previous_due,
-          'current_due' => $customer->due
+          'previous_due' => $dueBeforeTransaction,
+          'current_due' => $dueAfterTransaction,
         ];
       });
 

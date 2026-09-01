@@ -30,17 +30,20 @@
 
       <div class="info-group">
         <span class="i-label">
-          {{ in_array($user->role, ['manager', 'sr']) ? 'Employee ID' : 'Customer ID' }}
+            {{ in_array($user->role, ['manager', 'sr']) ? 'Employee ID' : 'Customer ID' }}
         </span>
 
         <span class="i-value">
-          @if(in_array($user->role, ['manager', 'sr']))
-          BRE100{{ $user->employee_id ?? '_' }}
-          @elseif($user->role === 'customer')
-          BRC200{{ $user->customer_id ?? '_' }}
-          @endif
+            @if(in_array($user->role, ['manager', 'sr']))
+                {{ $user->employee_id ? 'BRE100' . $user->employee_id : '--' }}
+
+            @elseif($user->role === 'customer')
+                {{ $user->customer_id ? 'BRC200' . $user->customer_id : '--' }}
+            @else
+                N/A
+            @endif
         </span>
-      </div>
+    </div>
 
       <div class="info-group">
         <span class="i-label">Created at</span>

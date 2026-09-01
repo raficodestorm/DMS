@@ -199,7 +199,7 @@
         <div>
           <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60x;">
         </div>
-        <p>Double Mooring, Chattogram, Bangladesh</p>
+        <p>Double Mooring, Chattogram, Bangladesh  |  Contact: 01871923000</p>
 
       </div>
 
@@ -208,7 +208,7 @@
         <div class="fixed-col-6">
           <div class="info-card">
             <b>Customer Details:</b><br>
-            Customer: unknown<br>
+            Customer: Retail<br>
             Address: unknown<br>
             Phone: unknown
           </div>

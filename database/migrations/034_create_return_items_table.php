@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('price', 15, 2);
             $table->decimal('subtotal', 15, 2);
+            $table->decimal('profit', 15, 2)->default(0); //---new_colum
             $table->timestamps();
         });
     }

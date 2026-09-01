@@ -20,6 +20,10 @@
         <span class="i-value">{{ $user->username }}</span>
       </div>
       <div class="info-group">
+        <span class="i-label">Customer ID</span>
+        <span class="i-value">{{ $user->customer_id ? 'BRC200' . $user->customer_id : '--' }}</span>
+      </div>
+      <div class="info-group">
         <span class="i-label">Email</span>
         <span class="i-value">{{ $user->email }}</span>
       </div>

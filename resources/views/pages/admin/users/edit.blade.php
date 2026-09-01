@@ -51,7 +51,7 @@
 
         </select>
       </div>
-
+      @if($user->role !== 'customer')
       <div class="col-md-6">
         <label>Employee ID</label>
         <select class="input-form" name="employee_id">
@@ -66,6 +66,22 @@
 
         </select>
       </div>
+      @else
+      <div class="col-md-6">
+        <label>Customer ID</label>
+        <select class="input-form" name="customer_id">
+          <option value="">--Select Customer ID--</option>
+
+          @foreach($customers as $customer)
+          <option value="{{ $customer->id }}" {{ old('customer_id', $user->customer_id) == $customer->id ? 'selected' :
+            '' }}>
+            BRC00{{$customer->id}} ({{$customer->shop_name}})
+          </option>
+          @endforeach
+
+        </select>
+      </div>
+      @endif
 
       <div class="col-md-6">
         <label>Status</label>

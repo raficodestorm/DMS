@@ -199,8 +199,7 @@
         <div>
           <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60x;">
         </div>
-        <p>Double Mooring, Chattogram, Bangladesh</p>
-
+        <p>Double Mooring, Chattogram, Bangladesh  |  Contact: 01871923000</p>
       </div>
 
 
@@ -295,7 +294,7 @@
 
             <div>
               Current Total Due:
-              <strong>{{ number_format($customerData['current_due'],2) }} ৳</strong>
+              <strong>{{ number_format($customerData['current_due'],2)  }} ৳</strong>
             </div>
             
           </div>
@@ -335,7 +334,7 @@
 
 
       <div class="footer-note">
-        www.relectric.com </br>
+        www.relectricbd.com </br>
         Software Developed & Maintained by S A Rafi | Contact: 01877100096
       </div>
 

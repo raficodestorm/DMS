@@ -23,9 +23,9 @@
                 <p class="text-muted">Branch: {{ $return->branch->name ?? 'N/A' }} | SR: {{ $return->sr->fullname }}</p>
             </div>
             <div>
-                @if($return->status == 'pending_manager')
-                    <span class="badge bg-warning text-dark status-badge">Pending Manager</span>
-                @elseif($return->status == 'pending_admin')
+                @if($return->status == 'pending_sr')
+                    <span class="badge bg-warning text-dark status-badge">Pending SR</span>
+                @elseif($return->status == 'pending_manager')
                     <span class="badge bg-info text-white status-badge">Awaiting Your Approval</span>
                 @elseif($return->status == 'approved')
                     <span class="badge bg-success status-badge">Approved</span>
@@ -94,7 +94,7 @@
                 </form>
             </div>
             
-            @if($return->status == 'pending_admin')
+            @if($return->status == 'pending_manager')
                 <form action="{{ route('admin.return.approve', $return->id) }}" method="POST" onsubmit="return confirm('APPROVE this return? Stocks, Orders and Customer Balance will be adjusted immediately.')">
                     @csrf
                     <button type="submit" class="btn-smart btn-green px-5">

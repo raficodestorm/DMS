@@ -47,7 +47,7 @@ class UserManagementController extends Controller
   public function create()
   {
     // form to create customer 
-    $customers = Customer::orderBy('id', 'asc')->get();
+    $customers = Customer::orderBy('id', 'desc')->get();
     return view('pages.sr.users.create', compact('customers'));
   }
 

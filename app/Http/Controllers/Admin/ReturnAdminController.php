@@ -7,6 +7,8 @@ use App\Models\OrderItem;
 use App\Models\ProductReturn;
 use App\Models\Stock;
 use App\Models\Transaction;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +55,7 @@ class ReturnAdminController extends Controller
     {
         $return = ProductReturn::with(['items', 'customer', 'order'])->findOrFail($id);
 
-        if ($return->status != 'pending_admin') {
+        if ($return->status != 'pending_manager') {
             return back()->with('error', 'Invalid status for approval.');
         }
 
@@ -78,8 +80,10 @@ class ReturnAdminController extends Controller
 
                     // 2. Adjust Order Items
                     if ($return->order_id) {
-                        $orderItem = OrderItem::where('order_id', $return->order_id)
+                        $orderItem = OrderItem::query()
+                            ->where('order_id', $return->order_id)
                             ->where('product_id', $item->product_id)
+                            ->lockForUpdate()
                             ->first();
                         
                         if ($orderItem) {
@@ -94,26 +98,90 @@ class ReturnAdminController extends Controller
                     $return->order->decrement('net_total', $return->total_amount);
                 }
 
-                // 4. Update Customer Due
-                $customer = $return->customer;
-                $customer->decrement('due', $return->total_amount);
-                $customer->refresh();
+                // 4. Update Customer Due & Calculate Refund / Note
+                $customer = Customer::query()
+                    ->whereKey($return->customer_id)
+                    ->lockForUpdate()
+                    ->first();
 
-                // 5. Create Transaction (Type: return decreases due)
+                if (!$customer) {
+                    throw new \RuntimeException('Customer not found.');
+                }
+
+                $currentDue = round((float) ($customer->due ?? 0), 2);
+                $returnAmount = round((float) $return->total_amount, 2);
+
+                $dueBeforeTransaction = $currentDue;
+
+                $orderCode = $return->order_id
+                    ? 'BRS' . $return->order_id
+                    : 'N/A';
+
+                $returnCode = 'BRET' . $return->id;
+
+
+                if ($currentDue <= 0) {
+                    // Scenario 1: Customer due is 0 -> full amount is cash refund, due stays 0
+                    $newDue = 0.00;
+                    $customer->update(['due' => $newDue]);
+
+                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের কোনো বকেয়া না থাকায় মোট রিটার্ন ৳" . number_format($returnAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
+                } elseif ($currentDue < $returnAmount) {
+                    // Scenario 2: Customer due is less than return amount -> cut due to 0, remaining is cash refund
+                    $refundAmount = $returnAmount - $currentDue;
+                    $adjustedDue = $currentDue;
+                    $newDue = 0.00;
+                    $customer->update(['due' => $newDue]);
+
+                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। মোট ৳" . number_format($returnAmount, 2) . " এর মধ্যে আগের বকেয়া ৳" . number_format($adjustedDue, 2) . " সমন্বয় করা হলো এবং অবশিষ্ট ৳" . number_format($refundAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
+                } else {
+                    // Scenario 3: Customer due is greater than or equal to return amount -> decrement due
+                    $newDue = round($currentDue - $returnAmount, 2);
+                    $customer->update(['due' => $newDue]);
+
+                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের বকেয়া থেকে মোট ৳" . number_format($returnAmount, 2) . " কেটে সমন্বয় করা হলো (বর্তমান বকেয়া: ৳" . number_format($newDue, 2) . ")।";
+                }
+
+                // 5. Create Transaction (Type: return)
                 Transaction::create([
                     'customer_id' => $customer->id,
                     'order_id' => $return->order_id,
                     'sr_id' => $return->sr_id,
+                    'branch_id' => $return->branch_id,
                     'type' => 'return',
-                    'amount' => $return->total_amount,
-                    'due' => $customer->due,
+                    'amount' => $returnAmount,
+                    'due_before_transaction' => $dueBeforeTransaction,
+                    'due_after_transaction'  => $newDue,
                     'status' => 'complete',
-                    'note' => 'Return Approved for Order BRS' . ($return->order_id ?? 'N/A') . ' (Return ID: #' . $return->id . ')'
+                    'note' => $note
                 ]);
 
                 $return->update(['status' => 'approved']);
 
-                return back()->with('success', 'Return approved successfully. Stocks and Accounts updated.');
+                if ($return->order) {
+                    $return->order->update([
+                        'is_returned' => true,
+                    ]);
+                }
+
+                // 6. Notify all managers of this branch
+                $managers = User::where('role', 'manager')
+                    ->where('branch_id', $return->branch_id)
+                    ->get();
+
+                foreach ($managers as $manager) {
+                    $manager->notify(new SystemNotification([
+                        'title'   => 'Return Approved & Refund Notice',
+                        'message' => [
+                            'text' => "Return {$returnCode} (Order {$orderCode}) has been approved.",
+                            'from' => 'Admin'
+                        ],
+                        'url'     => route('notice.return', $return->id),
+                        'type'    => 'return_approved'
+                    ]));
+                }
+
+                return back()->with('success', 'Return approved successfully. Stocks, Customer Due, and Accounts updated.');
             });
         } catch (\Exception $e) {
             return back()->with('error', 'Approval failed: ' . $e->getMessage());
@@ -164,6 +232,29 @@ class ReturnAdminController extends Controller
                         ->where('amount', $return->total_amount)
                         ->where('note', 'like', "%Return ID: #{$return->id}%")
                         ->delete();
+                }
+
+                /*
+                * ---------------------------------------------------------
+                * Update Order Return Flag
+                *
+                * If another approved return exists for this order,
+                * keep is_returned = true.
+                *
+                * Otherwise set it to false.
+                * ---------------------------------------------------------
+                */
+                if ($return->order_id) {
+
+                    $hasOtherApprovedReturn = ProductReturn::query()
+                        ->where('order_id', $return->order_id)
+                        ->where('status', 'approved')
+                        ->where('id', '!=', $return->id)
+                        ->exists();
+
+                    $return->order->update([
+                        'is_returned' => $hasOtherApprovedReturn,
+                    ]);
                 }
 
                 $return->items()->delete();

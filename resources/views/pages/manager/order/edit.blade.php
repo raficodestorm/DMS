@@ -193,6 +193,102 @@
       text-transform: uppercase;
     }
   }
+
+  /* ── Product Live Search ───────────────────────────────────────── */
+  .pls-container { position: relative; margin-top: 1rem; margin-bottom: 1rem; z-index: 99999; }
+  .pls-input-wrap {
+    display: flex; align-items: center;
+    background: var(--section-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px; padding: 0 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .pls-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(49,49,255,.12);
+  }
+  .pls-search-icon { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
+  .pls-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    padding: 12px 0; font-size: 15px; color: var(--text-main);
+  }
+  .pls-input::placeholder { color: var(--text-muted); }
+  .pls-spinner { color: var(--primary); font-size: 14px; margin-left: 8px; }
+  .pls-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--section-bg, #fff);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    max-height: 280px; overflow-y: auto; z-index: 999999;
+  }
+  .pls-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .15s;
+  }
+  .pls-item:last-child { border-bottom: none; }
+  .pls-item:hover, .pls-item:active { background: var(--primary-soft, #eef2ff); }
+  .pls-item-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
+  .pls-item-stock {
+    font-size: 12px; color: var(--text-muted);
+    background: var(--background); padding: 2px 8px;
+    border-radius: 20px; white-space: nowrap; margin-left: 8px;
+  }
+  .pls-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
+  @media (max-width: 576px) { .pls-input { font-size: 16px; } }
+
+  /* ── Customer Live Search ──────────────────────────────────────── */
+  .cls-container { position: relative; z-index: 99999; }
+  .cls-input-wrap {
+    display: flex; align-items: center;
+    background: var(--section-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px; padding: 0 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .cls-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(49,49,255,.12);
+  }
+  .cls-search-icon { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
+  .cls-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    padding: 12px 0; font-size: 15px; color: var(--text-main);
+  }
+  .cls-input::placeholder { color: var(--text-muted); }
+  .cls-spinner { color: var(--primary); font-size: 14px; margin-left: 8px; }
+  .cls-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--section-bg, #fff);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    max-height: 280px; overflow-y: auto; z-index: 999999;
+  }
+  .cls-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .15s;
+  }
+  .cls-item:last-child { border-bottom: none; }
+  .cls-item:hover, .cls-item:active { background: var(--primary-soft, #eef2ff); }
+  .cls-item-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
+  .cls-item-due {
+    font-size: 12px; color: #d97706; font-weight: 700;
+    background: rgba(245,158,11,.1); padding: 3px 10px;
+    border-radius: 20px; white-space: nowrap; margin-left: 8px;
+  }
+  .cls-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
+  .cls-selected-box {
+    background: var(--section-bg);
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
 </style>
 
 <div class="container py-4">
@@ -210,7 +306,7 @@
       $standard = $deductionSettings->customer_deduction ?? 0;
       $total = $order->applied_deduction_percent ?? 0;
 
-      if ($total > $standard) {
+      if ($total >= $standard) {
       $checked = true;
       $custom = $total - $standard;
       } else {
@@ -252,13 +348,37 @@
 
       <div class="customer-section mb-4">
         <label class="form-label fw-bold">Select Shop / Customer</label>
-        <select name="customer_id" class="input-form @error('customer_id') is-invalid @enderror" required>
-          @foreach($customers as $c)
-          <option value="{{ $c->id }}" {{ $order->customer_id == $c->id ? 'selected' : '' }}>
-            {{ $c->shop_name }} (Due: {{ $c->due ?: 0 }} TK)
-          </option>
-          @endforeach
-        </select>
+        
+        <input type="hidden" name="customer_id" id="selected_customer_id" value="{{ old('customer_id', $order->customer_id) }}" required>
+        
+        <div id="cls-selected-box" class="cls-selected-box mb-2">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <i class="fas fa-store text-primary fs-5"></i>
+            <strong id="cls-selected-name" class="fs-6 text-dark">{{ $order->customer?->shop_name }}</strong>
+            <span class="cls-item-due" id="cls-selected-due">Due: {{ $order->customer?->due ?: 0 }} TK</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-danger" id="cls-clear-btn">
+            <i class="fas fa-times me-1"></i> Change
+          </button>
+        </div>
+
+        <div class="cls-container" id="cls-container" style="display: none;">
+          <div class="cls-input-wrap">
+            <span class="cls-search-icon"><i class="fas fa-user-check"></i></span>
+            <input
+              type="text"
+              id="cls-input"
+              class="cls-input"
+              placeholder="Type shop name to search customer or 2 spaces for all..."
+              autocomplete="off"
+              inputmode="search">
+            <span class="cls-spinner" id="cls-spinner" style="display:none">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </span>
+          </div>
+          <div id="cls-dropdown" class="cls-dropdown" style="display:none"></div>
+        </div>
+
         @error('customer_id') <div class="error-msg">{{ $message }}</div> @enderror
       </div>
 
@@ -321,17 +441,22 @@
         @endforeach
       </div>
 
-      <div class="mb-3">
-        <select id="product-search" class="input-form text-center" onchange="addProductCard(this)">
-          <option value="">+ Click to Add Product</option>
-          @foreach($products as $p)
-          @php $p = (object)$p; @endphp
-          <option value="{{ $p->id }}" data-name="{{ $p->name }}" data-stock="{{ $p->available_qty }}"
-            data-image-name="{{ $p->image }}">
-            {{ $p->name }} (Stock: {{ $p->available_qty }})
-          </option>
-          @endforeach
-        </select>
+      <div class="pls-container mb-4" id="pls-container">
+        <label class="form-label fw-bold">Add Product</label>
+        <div class="pls-input-wrap">
+          <span class="pls-search-icon"><i class="fas fa-search"></i></span>
+          <input
+            type="text"
+            id="pls-input"
+            class="pls-input"
+            placeholder="Type product name to search or 2 spaces for all..."
+            autocomplete="off"
+            inputmode="search">
+          <span class="pls-spinner" id="pls-spinner" style="display:none">
+            <i class="fas fa-circle-notch fa-spin"></i>
+          </span>
+        </div>
+        <div id="pls-dropdown" class="pls-dropdown" style="display:none"></div>
       </div>
 
       <div class="p-summary-card">
@@ -394,26 +519,34 @@
   }
 
 
-  function addProductCard(el) {
-    let productId = $(el).val();
+  function addProductCard(productId, name, stock, imageName) {
+    if (typeof productId === 'object') {
+      let el = productId;
+      productId = $(el).val();
+      if (!productId) return;
+      let option = $(el).find(':selected');
+      name = option.attr('data-name');
+      stock = option.attr('data-stock');
+      imageName = option.attr('data-image-name');
+      $(el).val('');
+    }
+
     if (!productId) return;
 
     if ($(`.product-card[data-id="${productId}"]`).length > 0) {
       alert('প্রোডাক্টটি অলরেডি লিস্টে আছে!');
-      $(el).val('');
       return;
     }
 
-    let option = $(el).find(':selected');
-    let name = option.attr('data-name');
-    let stock = option.attr('data-stock');
-    let imageName = option.attr('data-image-name');
+    name      = name      || '';
+    stock     = parseInt(stock)  || 0;
+    imageName = imageName || '';
 
     let finalImgPath = (imageName && imageName.trim() !== "" && imageName !== "null") ?
       (imageName.startsWith('uploads/') ? '/' + imageName : '/uploads/' + imageName) :
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3131ff&color=fff`;
 
-    $.get(`/sr/get-product-data/${productId}`, function(data) {
+    $.get(`/manager/get-product-data/${productId}`, function(data) {
       let disc = data.discount_type === 'percentage' ? (data.price * data.discount / 100) : data.discount;
       let showDisc = data.discount_type === 'percentage' ? data.discount + '%' : data.discount + 'TK';
 
@@ -468,7 +601,6 @@
 
       $('#product-wrapper').append(cardHtml);
       index++;
-      $(el).val('');
 
       let lastInput = $('#product-wrapper .product-card').last().find('.qty-input');
       calculateCard(lastInput);
@@ -576,5 +708,152 @@
     $('#netTotalInput').val(finalNetTotal.toFixed(2));
     $('#totalDiscountInput').val(totalPromotionalDiscount.toFixed(2));
   }
+
+  // Initialize Live Product Search & Customer Live Search
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  $(document).ready(function () {
+    // ── Live Product Search ──────────────────────────────────────
+    var plsTimer;
+    function performPlsSearch() {
+      clearTimeout(plsTimer);
+      var $input = $('#pls-input');
+      if (!$input.length) return;
+      var raw = $input.val();
+      var q = raw.trim();
+
+      plsTimer = setTimeout(function () {
+        $('#pls-spinner').show();
+        let userRole = "{{ auth()->user()->role ?? 'manager' }}";
+        var url = '/' + userRole + '/products/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '');
+
+        $.ajax({
+          url: url,
+          type: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          success: function (products) {
+            $('#pls-spinner').hide();
+            if (!products || !products.length) {
+              $('#pls-dropdown').html('<div class="pls-empty"><i class="fas fa-box-open me-1"></i> No products found</div>').show();
+              return;
+            }
+            var html = '';
+            products.forEach(function (p) {
+              html += '<div class="pls-item"'
+                + ' data-id="'    + p.id                   + '"'
+                + ' data-name="'  + esc(p.name)            + '"'
+                + ' data-stock="' + (p.available_qty || 0) + '"'
+                + ' data-image="' + esc(p.image || '')     + '">'
+                + '<span class="pls-item-name">'  + esc(p.name) + '</span>'
+                + '<span class="pls-item-stock">Stock: ' + (p.available_qty || 0) + '</span>'
+                + '</div>';
+            });
+            $('#pls-dropdown').html(html).show();
+          },
+          error: function (xhr, status, err) {
+            console.error('[PLS] error - status:', xhr.status, 'resp:', xhr.responseText);
+            $('#pls-spinner').hide();
+            $('#pls-dropdown').html('<div class="pls-empty">Unable to load products (' + xhr.status + ')</div>').show();
+          }
+        });
+      }, 200);
+    }
+
+    $(document).on('input', '#pls-input', performPlsSearch);
+    $(document).on('focus', '#pls-input', function () {
+      if ($('#pls-dropdown').children().length > 0) {
+        $('#pls-dropdown').show();
+      } else {
+        performPlsSearch();
+      }
+    });
+
+    $(document).on('click', '.pls-item', function (e) {
+      e.stopPropagation();
+      var $item = $(this);
+      addProductCard($item.attr('data-id'), $item.attr('data-name'), $item.attr('data-stock'), $item.attr('data-image'));
+      $('#pls-input').val('');
+      $('#pls-dropdown').hide().empty();
+      $('#pls-input').focus();
+    });
+
+    // ── Live Customer Search ─────────────────────────────────────
+    var clsTimer;
+    $(document).on('input', '#cls-input', function () {
+      clearTimeout(clsTimer);
+      var raw = $(this).val();
+      var q = raw.trim();
+      if (raw.length < 2 || (q.length > 0 && q.length < 2)) {
+        $('#cls-dropdown').hide().empty();
+        return;
+      }
+      clsTimer = setTimeout(function () {
+        $('#cls-spinner').show();
+        var url = '/manager/customers/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '');
+        $.ajax({
+          url: url,
+          type: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          success: function (customers) {
+            $('#cls-spinner').hide();
+            if (!customers || !customers.length) {
+              $('#cls-dropdown').html('<div class="cls-empty"><i class="fas fa-users-slash me-1"></i> No customer found</div>').show();
+              return;
+            }
+            var html = '';
+            customers.forEach(function (c) {
+              html += '<div class="cls-item"'
+                + ' data-id="'    + c.id             + '"'
+                + ' data-name="'  + esc(c.shop_name) + '"'
+                + ' data-due="'   + c.due            + '">'
+                + '<span class="cls-item-name">' + esc(c.shop_name) + '</span>'
+                + '<span class="cls-item-due">Due: ' + c.due + ' TK</span>'
+                + '</div>';
+            });
+            $('#cls-dropdown').html(html).show();
+          },
+          error: function (xhr, status, err) {
+            console.error('[CLS] error - status:', xhr.status);
+            $('#cls-spinner').hide();
+          }
+        });
+      }, 300);
+    });
+
+    $(document).on('click', '.cls-item', function (e) {
+      e.stopPropagation();
+      var $item = $(this);
+      $('#selected_customer_id').val($item.attr('data-id'));
+      $('#cls-selected-name').text($item.attr('data-name'));
+      $('#cls-selected-due').text('Due: ' + $item.attr('data-due') + ' TK');
+
+      $('#cls-input').val('');
+      $('#cls-dropdown').hide().empty();
+      $('#cls-container').hide();
+      $('#cls-selected-box').css('display', 'flex');
+    });
+
+    $(document).on('click', '#cls-clear-btn', function (e) {
+      e.preventDefault();
+      $('#selected_customer_id').val('');
+      $('#cls-selected-box').hide();
+      $('#cls-container').show();
+      $('#cls-input').focus();
+    });
+
+    // Close dropdowns on outside click
+    $(document).on('click', function (e) {
+      if (!$(e.target).closest('#pls-container, .pls-dropdown').length) {
+        $('#pls-dropdown').hide();
+      }
+      if (!$(e.target).closest('#cls-container, #cls-selected-box, .cls-dropdown').length) {
+        $('#cls-dropdown').hide();
+      }
+    });
+  });
 </script>
 @endpush

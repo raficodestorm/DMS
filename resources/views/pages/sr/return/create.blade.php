@@ -21,6 +21,57 @@
         background: var(--primary-soft);
         box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
+
+    /* ── Order Live Search (OLS) ──────────────────────────────────────── */
+    .ols-container { position: relative; }
+    .ols-input-wrap {
+        display: flex; align-items: center;
+        background: var(--section-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 10px; padding: 0 14px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .ols-input-wrap:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(49,49,255,.12);
+    }
+    .ols-search-icon { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
+    .ols-input {
+        flex: 1; border: none; outline: none; background: transparent;
+        padding: 12px 0; font-size: 15px; color: var(--text-main);
+    }
+    .ols-input::placeholder { color: var(--text-muted); }
+    .ols-dropdown {
+        position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+        background: var(--section-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.13);
+        max-height: 280px; overflow-y: auto; z-index: 9999;
+    }
+    .ols-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 14px; cursor: pointer;
+        border-bottom: 1px solid var(--border-color);
+        transition: background .15s;
+    }
+    .ols-item:last-child { border-bottom: none; }
+    .ols-item:hover, .ols-item:active { background: var(--primary-soft, #eef2ff); }
+    .ols-item-code { font-weight: 700; font-size: 14px; color: var(--primary); }
+    .ols-item-shop { font-weight: 600; font-size: 14px; color: var(--text-main); }
+    .ols-item-date {
+        font-size: 12px; color: var(--text-muted);
+        background: var(--background); padding: 3px 10px;
+        border-radius: 20px; white-space: nowrap; margin-left: 8px;
+    }
+    .ols-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
+    .ols-selected-box {
+        background: var(--section-bg);
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
 </style>
 
 <div class="container py-4">
@@ -34,18 +85,43 @@
 
         @include('components.alert')
 
-        <form action="{{ route('sr.return.create') }}" method="GET" class="mb-4">
+        {{-- Step 1: Order Selection with Smart Live Search --}}
+        <form action="{{ route('sr.return.create') }}" method="GET" class="mb-4" id="orderSelectForm">
             <label class="form-label fw-bold">1. Select Order</label>
-            <div class="input-group">
-                <select name="order_id" class="input-form" onchange="this.form.submit()">
-                    <option value="">-- Choose Delivered Order --</option>
-                    @foreach($orders as $order)
-                        <option value="{{ $order->id }}" {{ request('order_id') == $order->id ? 'selected' : '' }}>
-                            BRS{{ $order->id }} - {{ $order->customer->shop_name }} ({{ $order->created_at->format('d M Y') }})
-                        </option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn-smart btn-blue">Load Items</button>
+            <input type="hidden" name="order_id" id="selected_order_id" value="{{ request('order_id') }}">
+
+            {{-- Selected Order Display Box --}}
+            <div id="ols-selected-box" class="ols-selected-box mb-2" style="{{ $selectedOrder ? 'display: flex;' : 'display: none;' }}">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <i class="fas fa-file-invoice text-primary fs-5"></i>
+                    <strong id="ols-selected-code" class="fs-6 text-primary">
+                        {{ $selectedOrder ? 'BRS' . $selectedOrder->id : '' }}
+                    </strong>
+                    <span class="text-dark fw-bold" id="ols-selected-shop">
+                        {{ $selectedOrder?->customer?->shop_name }}
+                    </span>
+                    <span class="ols-item-date" id="ols-selected-date">
+                        {{ $selectedOrder?->created_at ? $selectedOrder->created_at->format('d M Y') : '' }}
+                    </span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" id="ols-clear-btn">
+                    <i class="fas fa-times me-1"></i> Change Order
+                </button>
+            </div>
+
+            {{-- Smart Live Search Input Container --}}
+            <div class="ols-container" id="ols-container" style="{{ $selectedOrder ? 'display: none;' : 'display: block;' }}">
+                <div class="ols-input-wrap">
+                    <span class="ols-search-icon"><i class="fas fa-search"></i></span>
+                    <input
+                        type="text"
+                        id="ols-input"
+                        class="ols-input"
+                        placeholder="Type Order ID (e.g. BRS12 or 12) or Shop Name (or 2 spaces for all orders)..."
+                        autocomplete="off"
+                        inputmode="search">
+                </div>
+                <div id="ols-dropdown" class="ols-dropdown" style="display:none"></div>
             </div>
         </form>
 
@@ -102,13 +178,11 @@
                             <p class="mb-0 text-muted">Total Return Amount</p>
                             <h3 class="mb-0 text-primary" id="total-display">0.00 ৳</h3>
                         </div>
-                        
                     </div>
-                    
                 </div>
                 <button type="submit" class="btn-smart btn-green py-2 px-4">
-                            Submit Return Request <i class="fas fa-paper-plane ms-1"></i>
-                        </button>
+                    Submit Return Request <i class="fas fa-paper-plane ms-1"></i>
+                </button>
             </form>
         @elseif(request('order_id'))
             <div class="alert alert-info">
@@ -117,8 +191,18 @@
         @endif
     </div>
 </div>
-
 @endsection
+
+@php
+    $ordersJson = $orders->map(function($o) {
+        return [
+            'id' => $o->id,
+            'code' => 'BRS' . $o->id,
+            'shop_name' => $o->customer->shop_name ?? 'N/A',
+            'date' => $o->created_at ? $o->created_at->format('d M Y') : '',
+        ];
+    })->values();
+@endphp
 
 @push('scripts')
 <script>
@@ -141,5 +225,98 @@
         });
         document.getElementById('total-display').innerText = total.toFixed(2) + ' ৳';
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Pre-loaded orders data for smart live searching
+        var allOrders = {!! json_encode($ordersJson) !!};
+
+        var olsInput        = document.getElementById('ols-input');
+        var olsDropdown     = document.getElementById('ols-dropdown');
+        var olsClearBtn     = document.getElementById('ols-clear-btn');
+        var selectedOrderId  = document.getElementById('selected_order_id');
+        var orderSelectForm  = document.getElementById('orderSelectForm');
+
+        function esc(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        if (olsInput) {
+            olsInput.addEventListener('input', function () {
+                var raw = this.value;
+                var q = raw.trim().toLowerCase();
+
+                // Rule: 2 or more spaces shows ALL orders; 2+ characters shows matched orders
+                var isShowAll = raw.length >= 2 && raw.trim() === '';
+                var isSearchMatch = q.length >= 2;
+
+                if (!isShowAll && !isSearchMatch) {
+                    olsDropdown.style.display = 'none';
+                    olsDropdown.innerHTML = '';
+                    return;
+                }
+
+                var filtered = [];
+                if (isShowAll) {
+                    filtered = allOrders;
+                } else {
+                    filtered = allOrders.filter(function (o) {
+                        var idStr = String(o.id).toLowerCase();
+                        var codeStr = String(o.code).toLowerCase();
+                        var shopStr = String(o.shop_name).toLowerCase();
+
+                        return idStr.includes(q) || codeStr.includes(q) || shopStr.includes(q);
+                    });
+                }
+
+                if (!filtered.length) {
+                    olsDropdown.innerHTML = '<div class="ols-empty"><i class="fas fa-box-open me-1"></i> No delivered orders found</div>';
+                    olsDropdown.style.display = 'block';
+                    return;
+                }
+
+                var html = '';
+                filtered.forEach(function (o) {
+                    html += '<div class="ols-item"'
+                        + ' data-id="' + o.id + '"'
+                        + ' data-code="' + esc(o.code) + '"'
+                        + ' data-shop="' + esc(o.shop_name) + '"'
+                        + ' data-date="' + esc(o.date) + '">'
+                        + '<div>'
+                        + '<span class="ols-item-code me-2">' + esc(o.code) + '</span>'
+                        + '<span class="ols-item-shop">' + esc(o.shop_name) + '</span>'
+                        + '</div>'
+                        + '<span class="ols-item-date">' + esc(o.date) + '</span>'
+                        + '</div>';
+                });
+
+                olsDropdown.innerHTML = html;
+                olsDropdown.style.display = 'block';
+            });
+
+            olsDropdown.addEventListener('click', function (e) {
+                var item = e.target.closest('.ols-item');
+                if (!item) return;
+
+                var id = item.dataset.id;
+                selectedOrderId.value = id;
+                orderSelectForm.submit();
+            });
+
+            if (olsClearBtn) {
+                olsClearBtn.addEventListener('click', function () {
+                    selectedOrderId.value = '';
+                    window.location.href = "{{ route('sr.return.create') }}";
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#ols-container')) {
+                    olsDropdown.style.display = 'none';
+                }
+            });
+        }
+    });
 </script>
 @endpush

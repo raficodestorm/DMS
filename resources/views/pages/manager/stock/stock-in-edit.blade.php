@@ -105,8 +105,17 @@
 @push('scripts')
 <style>
   /* ── Live Product Search Dropdown ─────────────────────────────── */
+  .product-row {
+    position: relative;
+    z-index: 1;
+  }
+  .product-row:focus-within,
+  .product-row.active-row {
+    z-index: 99999 !important;
+  }
   .product-search-wrapper {
     position: relative;
+    z-index: 2;
   }
   .product-search-input {
     width: 100%;
@@ -239,10 +248,17 @@
       fetchProducts($(this).val(), true);
     });
 
+    /* Focus & input listener to elevate active row */
+    $(document).on('focus input', '.product-search-input', function () {
+      $('.product-row').removeClass('active-row').css('z-index', '');
+      $(this).closest('.product-row').addClass('active-row').css('z-index', 99999);
+    });
+
     // Global click: close any open dropdowns
     $(document).on('click', function (e) {
       if (!$(e.target).closest('.product-search-wrapper').length) {
         $('.product-search-dropdown').removeClass('open');
+        $('.product-row').removeClass('active-row').css('z-index', '');
       }
     });
   });

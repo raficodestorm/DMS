@@ -35,6 +35,10 @@
           <span class="value">BRT00{{ $payment->id }}</span>
         </div>
         <div class="receipt-row">
+          <span class="label">Payment Method</span>
+          <span class="value">{{ ucfirst($payment->payment_method) ?? 'N/A' }}</span>
+        </div>
+        <div class="receipt-row">
           <span class="label">Date</span>
           <span class="value">{{ $payment->created_at->format('d M Y, h:i A') }}</span>
         </div>
@@ -52,12 +56,11 @@
 
       <div class="receipt-row">
         <span class="label">Due before payment</span>
-        {{-- Note: This logic assumes current due + paid amount = old due --}}
-        <span class="value">{{ number_format($payment->due + $payment->amount, 2) }} TK</span>
+        <span class="value">{{ number_format($payment->due_before_transaction, 2) }} TK</span>
       </div>
       <div class="receipt-row text-success">
         <span class="label">Due after payment</span>
-        <span class="value"><strong>{{ number_format($payment->due, 2) }} TK</strong></span>
+        <span class="value"><strong>{{ number_format($payment->due_after_transaction, 2) }} TK</strong></span>
       </div>
     </div>
 

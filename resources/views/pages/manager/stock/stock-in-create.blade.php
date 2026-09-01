@@ -68,8 +68,17 @@
 @push('scripts')
 <style>
   /* ── Live Product Search Dropdown ─────────────────────────────── */
+  .product-row {
+    position: relative;
+    z-index: 1;
+  }
+  .product-row:focus-within,
+  .product-row.active-row {
+    z-index: 99999 !important;
+  }
   .product-search-wrapper {
     position: relative;
+    z-index: 2;
   }
   .product-search-input {
     width: 100%;
@@ -87,7 +96,7 @@
     border: 1.5px solid var(--border-color, #e0e0e0);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0,0,0,.12);
-    z-index: 9999;
+    z-index: 99999;
     padding: 4px 0;
     animation: dropIn .15s ease;
   }
@@ -233,10 +242,17 @@
       }
     });
 
+    /* ── Focus & input listener to elevate active row ─────── */
+    $(document).on('focus input', '.product-search-input', function () {
+      $('.product-row').removeClass('active-row').css('z-index', '');
+      $(this).closest('.product-row').addClass('active-row').css('z-index', 99999);
+    });
+
     /* ── Global click: close any open dropdowns ──────── */
     $(document).on('click', function (e) {
       if (!$(e.target).closest('.product-search-wrapper').length) {
         $('.product-search-dropdown').removeClass('open');
+        $('.product-row').removeClass('active-row').css('z-index', '');
       }
     });
   });

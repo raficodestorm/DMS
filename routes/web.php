@@ -44,6 +44,8 @@ Route::get('/payments/proof/{payment}', [PaymentController::class, 'publicShow']
 // dashboards (protected)
 Route::middleware(['auth'])->group(function () {
 
+    Route::get('/notice/return/{id}', [\App\Http\Controllers\NoticeController::class, 'showReturnNotice'])->name('notice.return');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboards');
 
     Route::get('/dashboard/user', [DashboardController::class, 'index'])->name('dashboard.user')->middleware('role:user');

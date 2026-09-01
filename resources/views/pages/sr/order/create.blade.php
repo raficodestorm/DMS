@@ -242,6 +242,58 @@
   }
   .pls-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
   @media (max-width: 576px) { .pls-input { font-size: 16px; } }
+
+  /* ── Customer Live Search ──────────────────────────────────────── */
+  .cls-container { position: relative; }
+  .cls-input-wrap {
+    display: flex; align-items: center;
+    background: var(--section-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px; padding: 0 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .cls-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(49,49,255,.12);
+  }
+  .cls-search-icon { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
+  .cls-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    padding: 12px 0; font-size: 15px; color: var(--text-main);
+  }
+  .cls-input::placeholder { color: var(--text-muted); }
+  .cls-spinner { color: var(--primary); font-size: 14px; margin-left: 8px; }
+  .cls-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.13);
+    max-height: 280px; overflow-y: auto; z-index: 9999;
+  }
+  .cls-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .15s;
+  }
+  .cls-item:last-child { border-bottom: none; }
+  .cls-item:hover, .cls-item:active { background: var(--primary-soft, #eef2ff); }
+  .cls-item-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
+  .cls-item-sub { font-size: 12px; color: var(--text-muted); }
+  .cls-item-due {
+    font-size: 12px; color: #d97706; font-weight: 700;
+    background: rgba(245,158,11,.1); padding: 3px 10px;
+    border-radius: 20px; white-space: nowrap; margin-left: 8px;
+  }
+  .cls-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 14px; }
+  .cls-selected-box {
+    background: var(--section-bg);
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
 </style>
 <div class="container py-4">
   <div class="form-card">
@@ -259,7 +311,7 @@
           <div class="col-md-6 mb-2 mb-md-0">
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" name="apply_global" id="applyGlobalDeduction"
-                data-percentage="{{ $deductionSettings->customer_deduction ?? 0 }}">
+                data-percentage="{{ $deductionSettings->customer_deduction ?? 0 }}" checked>
               <label class="form-check-label fw-bold" for="applyGlobalDeduction">
                 Apply Standard Deduction ({{ $deductionSettings->customer_deduction ?? 0 }}%)
               </label>
@@ -277,14 +329,37 @@
 
       <div class="customer-section mb-4">
         <label class="form-label fw-bold">Select Shop / Customer</label>
-        <select name="customer_id" class="input-form @error('customer_id') is-invalid @enderror" required>
-          <option value="">-- Choose Customer --</option>
-          @foreach($customers as $c)
-          <option value="{{ $c->id }}">
-            {{ $c->shop_name }} (Due: {{ $c->due ?: 0 }} TK)
-          </option>
-          @endforeach
-        </select>
+        
+        <input type="hidden" name="customer_id" id="selected_customer_id" value="{{ old('customer_id') }}" required>
+        
+        <div id="cls-selected-box" class="cls-selected-box mb-2" style="display: none;">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <i class="fas fa-store text-primary fs-5"></i>
+            <strong id="cls-selected-name" class="fs-6 text-dark"></strong>
+            <span class="cls-item-due" id="cls-selected-due"></span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-danger" id="cls-clear-btn">
+            <i class="fas fa-times me-1"></i> Change
+          </button>
+        </div>
+
+        <div class="cls-container" id="cls-container">
+          <div class="cls-input-wrap">
+            <span class="cls-search-icon"><i class="fas fa-user-check"></i></span>
+            <input
+              type="text"
+              id="cls-input"
+              class="cls-input"
+              placeholder="Type shop name to search customer or 2 spaces for all..."
+              autocomplete="off"
+              inputmode="search">
+            <span class="cls-spinner" id="cls-spinner" style="display:none">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </span>
+          </div>
+          <div id="cls-dropdown" class="cls-dropdown" style="display:none"></div>
+        </div>
+
         @error('customer_id') <div class="error-msg">{{ $message }}</div> @enderror
       </div>
 
@@ -563,15 +638,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   plsInput.addEventListener('input', function () {
     clearTimeout(timer);
-    var q = this.value.trim();
-    if (q.length < 2) {
+    var raw = this.value;
+    var q = raw.trim();
+    if (raw.length < 2 || (q.length > 0 && q.length < 2)) {
       plsDropdown.style.display = 'none';
       plsDropdown.innerHTML     = '';
       return;
     }
     timer = setTimeout(function () {
       plsSpinner.style.display = 'inline';
-      fetch('/sr/products/search?search=' + encodeURIComponent(q), {
+      var url = '/sr/products/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '');
+      fetch(url, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       })
       .then(function (r) { return r.json(); })
@@ -618,6 +695,104 @@ document.addEventListener('DOMContentLoaded', function () {
       plsDropdown.style.display = 'none';
     }
   });
+
+  // Initialize Live Customer Search
+  var clsTimer;
+  var clsInput        = document.getElementById('cls-input');
+  var clsDropdown     = document.getElementById('cls-dropdown');
+  var clsSpinner      = document.getElementById('cls-spinner');
+  var clsSelectedBox  = document.getElementById('cls-selected-box');
+  var clsSelectedName = document.getElementById('cls-selected-name');
+  var clsSelectedDue  = document.getElementById('cls-selected-due');
+  var clsClearBtn     = document.getElementById('cls-clear-btn');
+  var selectedCustId  = document.getElementById('selected_customer_id');
+
+  if (clsInput) {
+    clsInput.addEventListener('input', function () {
+      clearTimeout(clsTimer);
+      var raw = this.value;
+      var q = raw.trim();
+      if (raw.length < 2 || (q.length > 0 && q.length < 2)) {
+        clsDropdown.style.display = 'none';
+        clsDropdown.innerHTML     = '';
+        return;
+      }
+      clsTimer = setTimeout(function () {
+        clsSpinner.style.display = 'inline';
+        var url = '/sr/customers/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '');
+        fetch(url, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (customers) {
+          clsSpinner.style.display = 'none';
+          if (!customers.length) {
+            clsDropdown.innerHTML     = '<div class="cls-empty"><i class="fas fa-users-slash me-1"></i> No customer found</div>';
+            clsDropdown.style.display = 'block';
+            return;
+          }
+          var html = '';
+          customers.forEach(function (c) {
+            html += '<div class="cls-item"'
+              + ' data-id="'    + c.id             + '"'
+              + ' data-name="'  + esc(c.shop_name) + '"'
+              + ' data-due="'   + c.due            + '">'
+              + '<span class="cls-item-name">' + esc(c.shop_name) + '</span>'
+              + '<span class="cls-item-due">Due: ' + c.due + ' TK</span>'
+              + '</div>';
+          });
+          clsDropdown.innerHTML     = html;
+          clsDropdown.style.display = 'block';
+        })
+        .catch(function (err) {
+          console.error('Customer search error:', err);
+          clsSpinner.style.display = 'none';
+        });
+      }, 300);
+    });
+
+    clsDropdown.addEventListener('click', function (e) {
+      var item = e.target.closest('.cls-item');
+      if (!item) return;
+      
+      selectedCustId.value        = item.dataset.id;
+      clsSelectedName.textContent = item.dataset.name;
+      clsSelectedDue.textContent  = 'Due: ' + item.dataset.due + ' TK';
+
+      clsInput.value            = '';
+      clsDropdown.style.display = 'none';
+      clsDropdown.innerHTML     = '';
+      document.getElementById('cls-container').style.display = 'none';
+      clsSelectedBox.style.display                           = 'flex';
+    });
+
+    if (clsClearBtn) {
+      clsClearBtn.addEventListener('click', function () {
+        selectedCustId.value                                   = '';
+        clsSelectedBox.style.display                           = 'none';
+        document.getElementById('cls-container').style.display = 'block';
+        clsInput.focus();
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#cls-container')) {
+        clsDropdown.style.display = 'none';
+      }
+    });
+
+    @if(old('customer_id'))
+      var oldId = "{{ old('customer_id') }}";
+      var oldCust = @json($customers).find(c => c.id == oldId);
+      if (oldCust) {
+        selectedCustId.value        = oldCust.id;
+        clsSelectedName.textContent = oldCust.shop_name;
+        clsSelectedDue.textContent  = 'Due: ' + (oldCust.due || 0) + ' TK';
+        document.getElementById('cls-container').style.display = 'none';
+        clsSelectedBox.style.display                           = 'flex';
+      }
+    @endif
+  }
 });
 
 </script>

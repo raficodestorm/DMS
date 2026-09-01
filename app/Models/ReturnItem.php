@@ -14,6 +14,7 @@ class ReturnItem extends Model
         'quantity',
         'price',
         'subtotal',
+        'profit',
     ];
 
     public function product()

@@ -27,7 +27,7 @@
           <td scope="row">{{ $customers->firstItem() ? $customers->firstItem() + $loop->index : $loop->iteration }}</td>
           <td class="name">{{ $customer->fullname }}</td>
           <td>{{ $customer->username }}</td>
-          <td>BRC200{{ $customer->customer_id }}</td>
+          <td>{{ $customer->customer_id ? 'BRC200' . $customer->customer_id : '--' }}</td>
 
           <td class="action-icons">
             <a href="{{ route('sr.users.show', $customer) }}" class="icon-btn view-icon">
@@ -58,7 +58,7 @@
           <p>{{ $customer->username }}</p>
         </div>
         <div><span>Customer ID</span>
-          <p>BRC200{{ $customer->customer_id }}</p>
+          <p>{{ $customer->customer_id ? 'BRC200' . $customer->customer_id : '--' }}</p>
         </div>
       </div>
 

@@ -7,8 +7,8 @@
     <div><span>Return ID</span>
       <p>BRET{{ $return->id }}</p>
     </div>
-    <div><span>Order ID</span>
-      <p>BRS{{ $return->order_id }}</p>
+    <div><span>SR Name</span>
+      <p>{{ $return->sr->username ?? 'N/A' }}</p>
     </div>
     <div><span>Customer</span>
       <p>{{ $return->customer->shop_name ?? 'N/A' }}</p>
@@ -35,13 +35,13 @@
   </div>
 
   <div class="card-actions">
-    <a href="{{ route('sr.return.show', $return->id) }}" class="icon-btn view-icon" title="View">
+    <a href="{{ route('manager.return.show', $return->id) }}" class="icon-btn view-icon" title="View">
       <i class="fa-solid fa-eye"></i>
     </a>
     @if($return->status == 'pending_manager' || $return->status == 'pending_sr')
-      <a href="{{ route('sr.return.edit', $return->id) }}" class="icon-btn edit-icon" title="Edit">
-        <i class="fa-solid fa-pen-to-square"></i>
-      </a>
+        <a href="{{ route('manager.return.edit', $return->id) }}" class="icon-btn edit-icon" title="Edit">
+            <i class="fas fa-edit"></i>
+        </a>
     @endif
   </div>
 </div>

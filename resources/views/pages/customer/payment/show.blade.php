@@ -4,34 +4,19 @@
 
 @php
 $isPayment = $payment->type == 'pay';
+$isPurchase = $payment->type == 'buy';
+$isReturn = $payment->type == 'return';
 
-if ($isPayment) {
-
-// PAYMENT
-if ($payment->status == 'complete') {
-$dueBefore = $payment->due + $payment->amount;
-$dueAfter = $payment->due;
-} else {
-$dueBefore = $payment->due;
-$dueAfter = max(0, $payment->due - $payment->amount);
-}
-
-} else {
-
-// PURCHASE / BUY
-if ($payment->status == 'complete') {
-$dueBefore = $payment->due - $payment->amount;
-$dueAfter = $payment->due;
-} else {
-$dueBefore = $payment->due;
-$dueAfter = $payment->due + $payment->amount;
-}
-
-}
 @endphp
 
 <p class="show-head">
-  {{ $isPayment ? 'Payment Details' : 'Purchase Details' }}
+  @if($isPayment)
+  Payment Details
+  @elseif($isReturn)
+  Return Details
+  @else
+  Purchase Details
+  @endif
 </p>
 
 <div class="show-card">
@@ -71,13 +56,28 @@ $dueAfter = $payment->due + $payment->amount;
 
       <div class="info-group">
         <span class="i-label">
-          {{ $isPayment ? 'Payment Amount' : 'Purchase Amount' }}
+          @if($isPayment)
+          Payment Amount
+          @elseif($isReturn)
+          Return Amount
+          @else
+          Purchase Amount
+          @endif
         </span>
 
         <span class="i-value" style="font-size:1rem; color: var(--primary);">
           <strong>{{ number_format($payment->amount, 2) }} TK</strong>
         </span>
       </div>
+
+      @if($isPayment)
+      <div class="info-group">
+        <span class="i-label">Payment Method</span>
+        <span class="i-value">
+          <strong>{{ ucfirst($payment->payment_method) }}</strong>
+        </span>
+      </div>
+      @endif
 
       <div class="info-group">
         <span class="i-label">Status</span>
@@ -106,22 +106,34 @@ $dueAfter = $payment->due + $payment->amount;
         <div class="info-group">
 
           <span class="i-label">
-            {{ $isPayment ? 'Due Before Payment' : 'Due Before Purchase' }}
+            @if($isPayment)
+          Due Before Payment
+          @elseif($isReturn)
+          Due Before Return
+          @else
+          Due Before Purchase
+          @endif
           </span>
 
           <span class="i-value" style="color: var(--text-main); font-weight:700;">
-            {{ number_format($dueBefore, 2) }} TK
+            {{ number_format($payment->due_before_transaction, 2) }} TK
           </span>
 
         </div>
         <div class="info-group">
 
           <span class="i-label">
-            {{ $isPayment ? 'Due After Payment' : 'Due After Purchase' }}
+             @if($isPayment)
+          Due After Payment
+          @elseif($isReturn)
+          Due After Return
+          @else
+          Due After Purchase
+          @endif
           </span>
 
           <span class="i-value" style="color: var(--danger-color); font-weight:700;">
-            {{ number_format($dueAfter, 2) }} TK
+            {{ number_format($payment->due_after_transaction, 2) }} TK
           </span>
 
         </div>
@@ -130,70 +142,83 @@ $dueAfter = $payment->due + $payment->amount;
     </div>
 
     {{-- Dynamic Statement --}}
-    <div class="statement">
-      <p class="statement-text">
 
-        @if($isPayment)
+<div class="statement">
+  <p class="statement-text">
 
-        @if($payment->status == 'pending')
+@if($isPayment)
 
-        <strong style="color:#f59e0b;">Pending Notice:</strong>
-        Your payment request has been received successfully and is under verification.
-        Once approved by branch management, your due balance will be updated automatically.
+  @if($payment->status == 'pending')
 
-        @elseif($payment->status == 'complete')
+    <strong style="color:#f59e0b;">Pending Notice:</strong>
+    Your payment request has been received successfully and is under verification.
+    Once approved by branch management, your due balance will be updated automatically.
 
-        <strong style="color:#16a34a;">Payment Confirmed:</strong>
-        Thank you for your payment. Your transaction has been verified successfully.
-        Your latest due balance has been updated in your account.
+  @elseif($payment->status == 'complete')
 
-        @else
+    <strong style="color:#16a34a;">Payment Confirmed:</strong>
+    Thank you for your payment. Your transaction has been verified successfully.
+    Your latest due balance has been updated in your account.
 
-        <strong>Transaction Update:</strong>
-        Please review the current payment status shown above.
+  @else
 
-        @endif
+    <strong>Transaction Update:</strong>
+    Please review the current payment status shown above.
 
-        @else
+  @endif
 
-        @if($payment->status == 'pending')
+@elseif($isReturn)
 
-        <strong style="color:#f59e0b;">Purchase Pending:</strong>
-        Your purchase transaction has been created successfully and is awaiting confirmation.
+  @if($payment->status == 'pending')
 
-        @elseif($payment->status == 'complete')
+    <strong style="color:#f59e0b;">Return Pending:</strong>
+    Your return request has been received successfully and is currently under verification.
+    Once approved by branch management, the returned amount will be adjusted against your outstanding due balance.
 
-        <strong style="color:#16a34a;">Purchase Confirmed:</strong>
-        Your purchase has been processed successfully.
-        The amount has been added to your outstanding balance.
+  @elseif($payment->status == 'complete')
 
-        @else
+    <strong style="color:#16a34a;">Return Confirmed:</strong>
+    Your return has been approved successfully.
+    The returned amount has been adjusted against your outstanding due balance.
 
-        <strong>Purchase Update:</strong>
-        Please review the latest purchase status shown above.
+  @else
 
-        @endif
+    <strong>Return Update:</strong>
+    Please review the current return status shown above.
 
-        @endif
+  @endif
 
-      </p>
-    </div>
+@elseif($isPurchase)
 
-    <div class="info-list">
-      <div class="info-group">
+  @if($payment->status == 'pending')
 
-        <span class="i-label">
-          {{ $isPayment ? 'Due after payment' : 'Due after purchase' }}
-        </span>
+    <strong style="color:#f59e0b;">Purchase Pending:</strong>
+    Your purchase transaction has been created successfully and is awaiting confirmation.
 
-        <span class="i-value" style="color: var(--danger-color); font-weight:700;">
+  @elseif($payment->status == 'complete')
 
-          {{ number_format($payment->due, 2) }} TK
+    <strong style="color:#16a34a;">Purchase Confirmed:</strong>
+    Your purchase has been processed successfully.
+    The amount has been added to your outstanding balance.
 
-        </span>
+  @else
 
-      </div>
-    </div>
+    <strong>Purchase Update:</strong>
+    Please review the latest purchase status shown above.
+
+  @endif
+
+@else
+
+  <strong>Transaction Update:</strong>
+  Please review the current transaction status shown above.
+
+@endif
+
+  </p>
+</div>
+
+
 
   </div>
 

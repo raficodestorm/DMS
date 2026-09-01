@@ -33,6 +33,10 @@
         </table>
     </div>
 
+    <div class="manage-mobile-cards" id="mobileTable">
+        @include('pages.manager.return.mtable')
+    </div>
+
 </div>
 
 <div class="mt-3">
@@ -52,6 +56,9 @@
         .then(res => res.json())
         .then(data => {
             document.getElementById('desktopTable').innerHTML = data.table;
+            if (data.mobile) {
+                document.getElementById('mobileTable').innerHTML = data.mobile;
+            }
         });
     });
 </script>

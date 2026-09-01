@@ -115,6 +115,7 @@ class RetailOrderController extends Controller
           'net_total'                 => $request->net_total,
           'applied_deduction_percent' => $totalDeductionPercent,
           'note'                      => $request->note,
+          'order_type'                => 'retail'
         ]);
         $branchId = auth()->user()->branch_id;
         foreach ($request->products as $item) {

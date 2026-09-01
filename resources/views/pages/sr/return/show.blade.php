@@ -23,10 +23,10 @@
                 <p class="text-muted">Order Ref: BRS{{ $return->order_id }} | Date: {{ $return->created_at->format('d M Y, h:i A') }}</p>
             </div>
             <div>
-                @if($return->status == 'pending_manager')
-                    <span class="badge bg-warning text-dark status-badge">Pending Manager</span>
-                @elseif($return->status == 'pending_admin')
-                    <span class="badge bg-info text-white status-badge">Pending Admin</span>
+                @if($return->status == 'pending_sr')
+                    <span class="badge bg-warning text-dark status-badge">Pending SR</span>
+                @elseif($return->status == 'pending_manager')
+                    <span class="badge bg-info text-white status-badge">Pending Manager</span>
                 @elseif($return->status == 'approved')
                     <span class="badge bg-success status-badge">Approved</span>
                 @else
@@ -81,10 +81,17 @@
             <a href="{{ route('sr.return.index') }}" class="btn-smart btn-blue">
                 <i class="fas fa-arrow-left me-1"></i> Back to List
             </a>
-            @if($return->status == 'pending_manager')
-                <a href="{{ route('sr.return.edit', $return->id) }}" class="btn-smart btn-green">
+            @if($return->status == 'pending_sr')
+                <a href="{{ route('sr.return.edit', $return->id) }}" class="btn-smart btn-purple">
                     <i class="fas fa-edit me-1"></i> Edit Request
                 </a>
+
+                <form action="{{ route('sr.return.destroy', $return->id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-smart btn-red" onclick="return confirm('Delete this record permanently?')">
+                        <i class="fas fa-trash"></i> Delete Request
+                    </button>
+                </form>
             @endif
         </div>
     </div>

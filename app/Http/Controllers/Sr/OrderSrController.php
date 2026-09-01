@@ -64,7 +64,7 @@ class OrderSrController extends Controller
       $orders = Order::with(['customer', 'sr'])
           ->where('customer_id', $user->customer_id)
           ->latest()
-          ->paginate(10);
+          ->paginate(15);
 
       return view('pages.customer.order.index', compact('orders'));
   }
@@ -148,30 +148,94 @@ class OrderSrController extends Controller
 
   public function searchProducts(Request $request)
   {
-    $search = trim($request->search ?? '');
+    $rawSearch = $_GET['search'] ?? $request->search ?? '';
+    $search = trim($rawSearch);
+    $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
 
-    if (strlen($search) < 2) {
-      return response()->json([]);
+    if (!$isAll) {
+      if (strlen($rawSearch) < 2 || strlen($search) < 2) {
+        return response()->json([]);
+      }
+    }
+
+    $branchId = auth()->user()?->branch_id;
+
+    $query = Stock::with('product')
+      ->whereHas('product');
+
+    if ($branchId) {
+      $query->where('branch_id', $branchId);
+    }
+
+    if (!$isAll && $search !== '') {
+      $query->whereHas('product', function ($q) use ($search) {
+        $q->where('name', 'like', "%{$search}%");
+      });
+    }
+
+    $stocks = $query->limit(20)->get();
+
+    if ($stocks->count() > 0) {
+      $products = $stocks->map(fn($s) => [
+        'id'            => $s->product_id,
+        'name'          => $s->product?->name ?? '',
+        'image'         => $s->product?->image,
+        'available_qty' => $s->quantity ?? 0,
+      ]);
+      return response()->json($products);
+    }
+
+    $prodQuery = Product::query();
+    if (!$isAll && $search !== '') {
+      $prodQuery->where('name', 'like', "%{$search}%");
+    }
+
+    $products = $prodQuery->limit(20)->get()->map(fn($p) => [
+      'id'            => $p->id,
+      'name'          => $p->name ?? '',
+      'image'         => $p->image,
+      'available_qty' => 0,
+    ]);
+
+    return response()->json($products);
+  }
+
+  public function searchCustomers(Request $request)
+  {
+    $rawSearch = $_GET['search'] ?? $request->search ?? '';
+    $search = trim($rawSearch);
+    $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
+
+    if (!$isAll) {
+      if (strlen($rawSearch) < 2 || strlen($search) < 2) {
+        return response()->json([]);
+      }
     }
 
     $branchId = auth()->user()->branch_id;
 
-    $products = Stock::with('product')
-      ->where('branch_id', $branchId)
-      ->where('quantity', '>', 0)
-      ->whereHas('product', function ($q) use ($search) {
-        $q->where('name', 'like', "%{$search}%");
-      })
-      ->limit(20)
+    $query = Customer::where('branch_id', $branchId);
+
+    if (!$isAll && $search !== '') {
+      $query->where(function ($q) use ($search) {
+        $q->where('shop_name', 'like', "%{$search}%")
+          ->orWhere('phone', 'like', "%{$search}%")
+          ->orWhere('manager', 'like', "%{$search}%");
+      });
+    }
+
+    $customers = $query->orderBy('shop_name', 'asc')
+      ->limit(50)
       ->get()
-      ->map(fn($s) => [
-        'id'            => $s->product_id,
-        'name'          => $s->product?->name ?? '',
-        'image'         => $s->product?->image,
-        'available_qty' => $s->quantity,
+      ->map(fn($c) => [
+        'id'        => $c->id,
+        'shop_name' => $c->shop_name,
+        'manager'   => $c->manager,
+        'phone'     => $c->phone,
+        'due'       => (float) ($c->due ?: 0),
       ]);
 
-    return response()->json($products);
+    return response()->json($customers);
   }
 
   // discount check
@@ -289,6 +353,7 @@ class OrderSrController extends Controller
                 'net_total'                   => $request->net_total,
                 'applied_deduction_percent'  => $totalDeductionPercent,
                 'note'                        => $request->note,
+                'order_type'                  => 'field_order'
             ]);
 
             /*
