@@ -62,14 +62,26 @@
 
       
 
-      <div class="col-md-6">
+      <div class="col-md-6" id="employee_id_box">
         <label>Employee ID</label>
         <select class="input-form" name="employee_id">
           <option value="">--Select Employee ID--</option>
           @foreach($employees as $employee)
-          <option value="{{$employee->id}}">BRE100{{$employee->id}} ({{$employee->name}})</option>
+          <option value="{{$employee->id}}" {{ old('employee_id') == $employee->id ? 'selected' : '' }}>BRE100{{$employee->id}} ({{$employee->name}})</option>
           @endforeach
         </select>
+        @error('employee_id')<div class="error-text">{{ $message }}</div>@enderror
+      </div>
+
+      <div class="col-md-6" id="customer_id_box" style="display: none;">
+        <label>Customer ID</label>
+        <select class="input-form" name="customer_id">
+          <option value="">--Select Customer ID--</option>
+          @foreach($customers as $customer)
+          <option value="{{$customer->id}}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>BRC200{{$customer->id}} ({{$customer->shop_name}})</option>
+          @endforeach
+        </select>
+        @error('customer_id')<div class="error-text">{{ $message }}</div>@enderror
       </div>
 
       <div class="photo-upload">
@@ -133,5 +145,26 @@ document.getElementById('photoInput').addEventListener('change', function (e) {
         reader.readAsDataURL(file);
     }
 });
+
+// Dynamic toggle between Employee ID and Customer ID based on selected role
+const roleSelect = document.querySelector('select[name="role"]');
+const employeeBox = document.getElementById('employee_id_box');
+const customerBox = document.getElementById('customer_id_box');
+
+function toggleRoleFields() {
+    if (!roleSelect || !employeeBox || !customerBox) return;
+    if (roleSelect.value === 'customer') {
+        employeeBox.style.display = 'none';
+        customerBox.style.display = 'block';
+    } else {
+        employeeBox.style.display = 'block';
+        customerBox.style.display = 'none';
+    }
+}
+
+if (roleSelect) {
+    roleSelect.addEventListener('change', toggleRoleFields);
+    toggleRoleFields();
+}
 </script>
 @endpush

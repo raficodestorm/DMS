@@ -92,12 +92,35 @@ class StockRequestController extends Controller
   }
 
   // for showing all pending requests
-  public function stockInRequestIndexForAdmin()
+  public function stockInRequestIndexForAdmin(Request $request)
   {
-    $requests = StockInRequest::with(['supplier', 'requestedBy'])
-      ->orderBy('created_at', 'desc')
-      ->get();
-    return view('pages.admin.stock.stock-in-requests-index', compact('requests'));
+    $query = StockInRequest::with(['supplier', 'requestedBy.branch'])
+      ->orderBy('created_at', 'desc');
+
+    // Branch filter — filter by the requesting user's branch
+    if ($request->filled('branch_id')) {
+      $query->whereHas('requestedBy', function ($q) use ($request) {
+        $q->where('branch_id', $request->branch_id);
+      });
+    }
+
+    // Status filter
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    // Date range filter
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $requests = $query->get();
+    $branches = \App\Models\Branch::orderBy('name', 'asc')->get();
+
+    return view('pages.admin.stock.stock-in-requests-index', compact('requests', 'branches'));
   }
 
   // for showing all pending requests
@@ -275,7 +298,7 @@ class StockRequestController extends Controller
         ]);
       });
 
-      return redirect()->route('dashboards')->with('success', 'Approved! Branch stock updated and purchase prices recalculated.');
+      return redirect()->back()->with('success', 'Approved! Branch stock updated and purchase prices recalculated.');
     } catch (\Exception $e) {
       return back()->with('error', $e->getMessage());
     }

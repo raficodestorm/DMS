@@ -14,8 +14,8 @@
     <div><span>Manager</span>
       <p>{{ $customer->manager }}</p>
     </div>
-    <div><span>Address</span>
-      <p>{{ $customer->address }}</p>
+    <div><span>Due</span>
+      <p>{{  number_format($customer->due ?? 0, 2)  }} TK</p>
     </div>
   </div>
 

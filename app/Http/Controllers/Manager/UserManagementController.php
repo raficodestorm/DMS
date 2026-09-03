@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\User;
 use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class UserManagementController extends Controller
@@ -20,35 +22,76 @@ class UserManagementController extends Controller
     $this->middleware(['auth', 'role:manager']);
   }
 
-  public function sr()
+  public function sr(Request $request)
   {
     $branchId = auth()->user()->branch_id;
+    $search = $request->get('search');
 
-    $srs = User::with('branch')
+    $query = User::with('branch')
       ->where('role', 'sr')
-      ->where('branch_id', $branchId)
-      ->latest() // cleaner than orderBy
-      ->paginate(20);
+      ->where('branch_id', $branchId);
+
+    if ($search) {
+      $cleanSearch = trim($search);
+      $query->where(function ($q) use ($cleanSearch) {
+        $q->where('fullname', 'like', "%{$cleanSearch}%")
+          ->orWhere('username', 'like', "%{$cleanSearch}%");
+      });
+    }
+
+    $srs = $query->latest()->paginate(20)->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'  => view('pages.manager.users.sr-table', compact('srs'))->render(),
+        'mobile' => view('pages.manager.users.sr-mtable', compact('srs'))->render(),
+      ]);
+    }
 
     return view('pages.manager.users.index-sr', [
       'srs' => $srs,
-      'roleTitle' => 'SR'
+      'roleTitle' => 'SR',
+      'search' => $search
     ]);
   }
 
-  public function customer()
+  public function customer(Request $request)
   {
     $branchId = auth()->user()->branch_id;
+    $search = $request->get('search');
 
-    $customers = User::with('branch')
+    $query = User::with('branch')
       ->where('role', 'customer')
-      ->where('branch_id', $branchId)
-      ->latest() // cleaner than orderBy
-      ->paginate(20);
+      ->where('branch_id', $branchId);
+
+    if ($search) {
+      $cleanSearch = trim($search);
+      $idSearch = preg_replace('/^brc(200)?/i', '', $cleanSearch);
+
+      $query->where(function ($q) use ($cleanSearch, $idSearch) {
+        $q->where('fullname', 'like', "%{$cleanSearch}%")
+          ->orWhere('username', 'like', "%{$cleanSearch}%")
+          ->orWhere('customer_id', 'like', "%{$cleanSearch}%");
+
+        if ($idSearch !== '' && is_numeric($idSearch)) {
+          $q->orWhere('customer_id', (int) $idSearch);
+        }
+      });
+    }
+
+    $customers = $query->latest()->paginate(20)->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'  => view('pages.manager.users.customer-table', compact('customers'))->render(),
+        'mobile' => view('pages.manager.users.customer-mtable', compact('customers'))->render(),
+      ]);
+    }
 
     return view('pages.manager.users.index-customer', [
       'customers' => $customers,
-      'roleTitle' => 'Customer'
+      'roleTitle' => 'Customer',
+      'search' => $search
     ]);
   }
 
@@ -60,8 +103,8 @@ class UserManagementController extends Controller
 
   public function create()
   {
-    $employees = Employee::select('id', 'name')->where('branch_id', auth()->user()->branch_id)->latest()->get();
-    return view('pages.manager.users.create', compact('employees'));
+    $customers = Customer::select('id', 'shop_name')->where('branch_id', auth()->user()->branch_id)->orderBy('id', 'desc')->get();
+    return view('pages.manager.users.create', compact('customers'));
   }
 
   public function store(Request $request)
@@ -71,7 +114,7 @@ class UserManagementController extends Controller
       'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username'],
       'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
-      'employee_id' => ['nullable', 'integer'],
+      'customer_id' => ['required', 'integer', Rule::unique('users', 'customer_id')],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
     ]);
 
@@ -87,19 +130,18 @@ class UserManagementController extends Controller
       'password' => Hash::make($request->password),
       'role' => 'customer',
       'branch_id' => auth()->user()->branch_id,
-      'employee_id' => $request->employee_id,
+      'customer_id' => $request->customer_id,
       'profile_photo_path' => $profilePath,
     ]);
 
-    // return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     return redirect()->route('manager.index.customers')->with('success', 'User created successfully.');
   }
 
   public function edit(User $user)
   {
-    $employees = Employee::select('id', 'name')->where('branch_id', auth()->user()->branch_id)->latest()->get();
+    $customers = Customer::select('id', 'shop_name')->where('branch_id', auth()->user()->branch_id)->orderBy('id', 'desc')->get();
     $branches = Branch::orderBy('name', 'asc')->get();
-    return view('pages.manager.users.edit', compact('user', 'branches', 'employees'));
+    return view('pages.manager.users.edit', compact('user', 'branches', 'customers'));
   }
 
   public function update(Request $request, User $user)
@@ -108,7 +150,7 @@ class UserManagementController extends Controller
       'fullname' => ['required', 'string', 'max:255'],
       'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
       'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-      'employee_id' => ['nullable', 'integer'],
+      'customer_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
       'status' => ['required', 'in:active,inactive'],
     ]);
@@ -121,7 +163,7 @@ class UserManagementController extends Controller
     $user->fullname = $request->fullname;
     $user->username = $request->username;
     $user->email = $request->email;
-    $user->employee_id = $request->employee_id;
+    $user->customer_id = $request->customer_id;
     $user->status = $request->status;
 
     $user->save();

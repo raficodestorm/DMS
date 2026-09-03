@@ -171,7 +171,7 @@ class RetailOrderController extends Controller
         }
 
         return redirect()
-          ->route('manager.retail.index')
+          ->route('manager.order.view_retail_invoice', $order->id)
           ->with('success', "Retail Order #BRS{$order->id} created successfully!");
       });
     } catch (\Exception $e) {

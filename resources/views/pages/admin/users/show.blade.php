@@ -30,17 +30,19 @@
 
       <div class="info-group">
         <span class="i-label">
-            {{ in_array($user->role, ['manager', 'sr']) ? 'Employee ID' : 'Customer ID' }}
+            @if($user->role !== 'customer')
+                Employee ID
+            @else
+                Customer ID
+            @endif
         </span>
 
         <span class="i-value">
-            @if(in_array($user->role, ['manager', 'sr']))
+            
+            @if($user->role !== 'customer')
                 {{ $user->employee_id ? 'BRE100' . $user->employee_id : '--' }}
-
-            @elseif($user->role === 'customer')
-                {{ $user->customer_id ? 'BRC200' . $user->customer_id : '--' }}
             @else
-                N/A
+                {{ $user->customer_id ? 'BRC200' . $user->customer_id : '--' }}
             @endif
         </span>
     </div>
@@ -78,7 +80,7 @@
   </div>
 
 </div>
-<a href="{{ route('dashboard.admin') }}" class="back-btn">
+<a href="{{ route('admin.index.users') }}" class="back-btn">
   ← Back
 </a>
 

@@ -30,24 +30,16 @@ class OrderAdminController extends Controller
 
   public function indexForAllAdmin(Request $request)
   {
-    $query = Order::with(['customer', 'sr'])
+    $query = Order::with(['customer', 'sr.branch', 'manager.branch'])
       ->latest();
 
     if ($request->filled('search')) {
-
       $search = trim($request->search);
-
       $query->where(function ($q) use ($search) {
-
-        if (str_starts_with('BRS', strtoupper($search))) {
-          return;
-        }
-
         if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
           $q->where('id', $match[1]);
           return;
         }
-
         $q->where('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
             $customer->where('shop_name', 'like', "%{$search}%");
@@ -55,16 +47,44 @@ class OrderAdminController extends Controller
       });
     }
 
-    $orders = $query->paginate(15);
+    if ($request->filled('branch_id')) {
+      $branchId = $request->branch_id;
+      $query->where(function ($q) use ($branchId) {
+        $q->where('branch_id', $branchId)
+          ->orWhereHas('sr', function ($srQ) use ($branchId) {
+            $srQ->where('branch_id', $branchId);
+          })
+          ->orWhereHas('manager', function ($mgrQ) use ($branchId) {
+            $mgrQ->where('branch_id', $branchId);
+          });
+      });
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $orders = $query->paginate(15)->withQueryString();
+    $branches = Branch::orderBy('name', 'asc')->get();
 
     if ($request->ajax()) {
       return response()->json([
-        'table'  => view('pages.admin.orders.table', compact('orders'))->render(),
-        'mobile' => view('pages.admin.orders.mtable', compact('orders'))->render(),
+        'table'      => view('pages.admin.orders.table', compact('orders'))->render(),
+        'mobile'     => view('pages.admin.orders.mtable', compact('orders'))->render(),
+        'total'      => $orders->total(),
+        'pagination' => (string) $orders->links(),
       ]);
     }
 
-    return view('pages.admin.orders.index', compact('orders'));
+    return view('pages.admin.orders.index', compact('orders', 'branches'));
   }
 
 
@@ -111,86 +131,135 @@ class OrderAdminController extends Controller
 
 
   public function allBranchOrders()
-  {
-    $branches = Branch::with(['users' => function ($query) {
-      $query->where('role', 'sr')
-        ->with(['srOrders' => function ($order) {
-          $order->where('status', '!=', 'rejected');
-        }]);
-    }])->get();
+{
+    $branches = Branch::with([
+        'orders' => function ($query) {
+            $query->where('status', 'delivered');
+        }
+    ])->get();
 
     foreach ($branches as $branch) {
 
-      $totalOrders = 0;
-      $totalAmount = 0;
+        $branch->total_orders = $branch->orders->count();
 
-      foreach ($branch->users as $sr) {
-
-        $totalOrders += $sr->srOrders
-          ->where('status', 'delivered')
-          ->count();
-
-        $totalAmount += $sr->srOrders
-          ->where('status', 'delivered')
-          ->sum('net_total');
-      }
-
-      $branch->total_orders = $totalOrders;
-      $branch->total_order_amount = $totalAmount;
+        $branch->total_order_amount = $branch->orders->sum('net_total');
     }
 
     return view(
-      'pages.admin.orders.branch-based-orders',
-      compact('branches')
+        'pages.admin.orders.branch-based-orders',
+        compact('branches')
     );
+}
+
+
+  private function applySpecificOrderFilters(Request $request, $query)
+  {
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
+          $q->where('id', $match[1]);
+          return;
+        }
+        $q->where('id', $search)
+          ->orWhereHas('customer', function ($customer) use ($search) {
+            $customer->where('shop_name', 'like', "%{$search}%");
+          })
+          ->orWhereHas('sr', function ($sr) use ($search) {
+            $sr->where('fullname', 'like', "%{$search}%");
+          });
+      });
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    return $query;
   }
 
-
-  public function specificSrOrders($id)
+  public function specificSrOrders(Request $request, $id)
   {
     $sr = User::where('role', 'sr')->findOrFail($id);
 
-    $orders = Order::where('sr_id', $id)
-      ->where('status', '!=', 'rejected')
-      ->latest()
-      ->paginate(15);
+    $query = Order::with(['customer', 'sr'])
+      ->where('sr_id', $id)
+      ->latest();
 
-    return view(
-      'pages.admin.orders.specific-index',
-      compact('sr', 'orders')
-    );
+    $query = $this->applySpecificOrderFilters($request, $query);
+    $orders = $query->paginate(15)->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'      => view('pages.admin.orders.specific-table', compact('orders'))->render(),
+        'mobile'     => view('pages.admin.orders.specific-mtable', compact('orders'))->render(),
+        'total'      => $orders->total(),
+        'pagination' => (string) $orders->links(),
+      ]);
+    }
+
+    return view('pages.admin.orders.specific-index', compact('sr', 'orders'));
   }
 
 
-  public function specificCustomerOrders($id)
+  public function specificCustomerOrders(Request $request, $id)
   {
     $customer = Customer::findOrFail($id);
 
-    $orders = Order::where('customer_id', $id)
-      ->where('status', '!=', 'rejected')
-      ->latest()
-      ->paginate(15);
+    $query = Order::with(['customer', 'sr'])
+      ->where('customer_id', $id)
+      ->latest();
+
+    $query = $this->applySpecificOrderFilters($request, $query);
+    $orders = $query->paginate(15)->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'      => view('pages.admin.orders.specific-table', compact('orders'))->render(),
+        'mobile'     => view('pages.admin.orders.specific-mtable', compact('orders'))->render(),
+        'total'      => $orders->total(),
+        'pagination' => (string) $orders->links(),
+      ]);
+    }
 
     return view('pages.admin.orders.specific-index', compact('customer', 'orders'));
   }
 
 
-  public function specificBranchOrders($id)
+  public function specificBranchOrders(Request $request, $id)
   {
     $branch = Branch::findOrFail($id);
 
-    $orders = Order::with(['customer', 'sr'])
-      ->whereHas('sr', function ($query) use ($id) {
-        $query->where('branch_id', $id);
+    $query = Order::with(['customer', 'sr'])
+      ->where(function ($q) use ($id) {
+        $q->where('branch_id', $id)
+          ->orWhereHas('sr', function ($srQ) use ($id) {
+            $srQ->where('branch_id', $id);
+          });
       })
-      ->where('status', '!=', 'rejected')
-      ->latest()
-      ->paginate(15);
+      ->latest();
 
-    return view(
-      'pages.admin.orders.specific-index',
-      compact('branch', 'orders')
-    );
+    $query = $this->applySpecificOrderFilters($request, $query);
+    $orders = $query->paginate(15)->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'      => view('pages.admin.orders.specific-table', compact('orders'))->render(),
+        'mobile'     => view('pages.admin.orders.specific-mtable', compact('orders'))->render(),
+        'total'      => $orders->total(),
+        'pagination' => (string) $orders->links(),
+      ]);
+    }
+
+    return view('pages.admin.orders.specific-index', compact('branch', 'orders'));
   }
 
 

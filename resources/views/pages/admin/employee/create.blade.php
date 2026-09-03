@@ -10,14 +10,34 @@
         <form class="adduser-form" method="POST" action="{{ route('admin.employees.store') }}"
             enctype="multipart/form-data">
             @csrf
-
-            <div>
+            <div class="row">
+            <div class="col-md-6">
                 <label>Full name</label>
                 <input class="input-form" name="name" required>
                 @error('name')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            <div>
+           
+
+            <div class="col-md-6">
+                <label>Father name</label>
+                <input class="input-form" name="father">
+                @error('father')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="col-md-6">
+                <label>Phone</label>
+                <input class="input-form" name="phone" required>
+                @error('phone')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="col-md-6">
+                <label>Email</label>
+                <input class="input-form" name="email" type="email">
+                @error('email')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+             <div class="col-md-6">
                 <label>Rank</label>
                 <select class="input-form" name="rank">
                     <option value="">--Select Rank--</option>
@@ -30,25 +50,7 @@
                 @error('rank')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            <div>
-                <label>Father name</label>
-                <input class="input-form" name="father">
-                @error('father')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div>
-                <label>Phone</label>
-                <input class="input-form" name="phone" required>
-                @error('phone')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div>
-                <label>Email</label>
-                <input class="input-form" name="email" type="email">
-                @error('email')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div>
+            <div class="col-md-6">
                 <label>Branch</label>
                 <select class="input-form" name="branch_id">
                     <option value="">--Select Branch--</option>
@@ -59,7 +61,7 @@
             </div>
 
 
-            <div class="photo-upload">
+            <div class="photo-upload col-12">
                 <div class="upload-left">
                     <label>Profile Picture</label>
                     <input class="input-form" type="file" name="photo" id="photoInput">
@@ -74,11 +76,13 @@
                 </div>
             </div>
 
-            <div>
+            <div class="col-12">
                 <label>Address</label>
                 <textarea class="input-form" name="address"></textarea>
                 @error('address')<div class="error-text">{{ $message }}</div>@enderror
             </div>
+
+            </div> <!--/row-->
 
             <div>
                 <button class="btn-submit" type="submit">Save</button>

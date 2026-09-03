@@ -79,7 +79,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="m-0"><i class="fas fa-undo text-primary"></i> Create Return Request</h2>
             <a href="{{ route('manager.return.index') }}" class="btn-smart btn-blue">
-                <i class="fas fa-list me-1"></i> My Returns
+                <i class="fas fa-list me-1"></i> All Returns
             </a>
         </div>
 
@@ -105,7 +105,7 @@
                     </span>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-danger" id="ols-clear-btn">
-                    <i class="fas fa-times me-1"></i> Change Order
+                    <i class="fas fa-times me-1"></i> Change
                 </button>
             </div>
 
@@ -132,6 +132,30 @@
 
                 <div class="mb-4">
                     <label class="form-label fw-bold">2. Select Items to Return</label>
+
+                    {{-- Bangla Instruction Notice --}}
+                    <div style="
+                        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+                        border: 1px solid #f59e0b;
+                        border-left: 4px solid #f59e0b;
+                        border-radius: 10px;
+                        padding: 12px 16px;
+                        margin-bottom: 16px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-info-circle" style="color: #d97706; font-size: 18px; margin-top: 2px; flex-shrink: 0;"></i>
+                        <div>
+                            <p style="margin: 0; font-weight: 700; color: #92400e; font-size: 14px;">📝 নির্দেশনা</p>
+                            <p style="margin: 4px 0 0; color: #78350f; font-size: 13.5px; line-height: 1.6;">
+                                শুধুমাত্র <strong>যে পণ্যটি রিটার্ন করতে চান</strong> সেটির পরিমাণ (Qty) দিন।
+                                যে পণ্য রিটার্ন করতে চান না, তার Qty বক্স <strong>0 (শূন্য)</strong> রাখুন।
+                                <br><span style="color: #b45309;">⚠️ সব পণ্যে Qty দেওয়ার প্রয়োজন নেই।</span>
+                            </p>
+                        </div>
+                    </div>
+
                     <div id="items-wrapper">
                         @foreach($selectedOrder->items as $item)
                             @if($item->available_to_return > 0)
@@ -198,7 +222,7 @@
         return [
             'id' => $o->id,
             'code' => 'BRS' . $o->id,
-            'shop_name' => $o->customer->shop_name ?? 'N/A',
+            'shop_name' => $o->customer->shop_name ?? 'Retail/No Shop',
             'date' => $o->created_at ? $o->created_at->format('d M Y') : '',
         ];
     })->values();

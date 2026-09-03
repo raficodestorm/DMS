@@ -21,49 +21,38 @@ class UserManagementController extends Controller
     $this->middleware(['auth', 'role:admin']);
   }
 
-  public function admins()
+  public function users(Request $request)
   {
-    $admins = User::where('role', 'admin')->orderBy('created_at', 'desc')->paginate(10);
-    return view('pages.admin.users.index-admin', [
-      'admins' => $admins,
-      'roleTitle' => 'Admins'
-    ]);
-  }
+    $query = User::with('branch');
 
-  public function managers()
-  {
-    $managers = User::with('branch')->where('role', 'manager')->orderBy('created_at', 'desc')->paginate(10);
-    return view('pages.admin.users.index-managers', [
-      'managers' => $managers,
-      'roleTitle' => 'Branch Managers'
-    ]);
-  }
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        $q->where('fullname', 'like', "%{$search}%")
+          ->orWhere('username', 'like', "%{$search}%");
+      });
+    }
 
-  public function sr()
-  {
-    $srs = User::with('branch')->where('role', 'sr')->orderBy('created_at', 'desc')->paginate(10);
-    return view('pages.admin.users.index-sr', [
-      'srs' => $srs,
-      'roleTitle' => 'sr'
-    ]);
-  }
+    if ($request->filled('role')) {
+      $query->where('role', $request->role);
+    }
 
-  public function customer()
-  {
-    $customers = User::with('branch')->where('role', 'customer')->orderBy('created_at', 'desc')->paginate(10);
-    return view('pages.admin.users.index-customer', [
-      'customers' => $customers,
-      'roleTitle' => 'customers'
-    ]);
-  }
+    if ($request->filled('branch_id')) {
+      $query->where('branch_id', $request->branch_id);
+    }
 
-  public function normalUsers()
-  {
-    $users = User::where('role', 'user')->orderBy('created_at', 'desc')->paginate(10);
-    return view('pages.admin.users.index-users', [
-      'users' => $users,
-      'roleTitle' => 'Users'
-    ]);
+    $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+    $branches = Branch::orderBy('name', 'asc')->get();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'  => view('pages.admin.users.table', compact('users'))->render(),
+        'mobile' => view('pages.admin.users.mtable', compact('users'))->render(),
+        'total'  => $users->total(),
+      ]);
+    }
+
+    return view('pages.admin.users.index', compact('users', 'branches'));
   }
 
   public function show(User $user)
@@ -76,7 +65,8 @@ class UserManagementController extends Controller
   {
     $branches = Branch::select('id', 'name')->orderBy('name')->get();
     $employees = Employee::select('id', 'name')->latest()->get();
-    return view('pages.admin.users.create', compact('branches', 'employees'));
+    $customers = Customer::select('id', 'shop_name')->orderBy('id', 'desc')->get();
+    return view('pages.admin.users.create', compact('branches', 'employees', 'customers'));
   }
 
   public function store(Request $request)
@@ -89,6 +79,7 @@ class UserManagementController extends Controller
       'role' => ['required', 'in:admin,manager,sr,customer,user'],
       'branch_id' => ['nullable', 'integer'],
       'employee_id' => ['nullable', 'integer'],
+      'customer_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
     ]);
 
@@ -104,11 +95,12 @@ class UserManagementController extends Controller
       'password' => Hash::make($request->password),
       'role' => $request->role,
       'branch_id' => $request->branch_id,
-      'employee_id' => $request->employee_id,
+      'employee_id' => $request->role === 'customer' ? null : $request->employee_id,
+      'customer_id' => $request->role === 'customer' ? $request->customer_id : null,
       'profile_photo_path' => $profilePath,
     ]);
 
-    return redirect()->route('dashboards')->with('success', 'User created successfully.');
+    return redirect()->route('admin.index.users')->with('success', 'User created successfully.');
     
   }
 
@@ -148,20 +140,20 @@ class UserManagementController extends Controller
     }
     $user->role = $request->role;
     $user->branch_id = $request->branch_id;
-    $user->employee_id = $request->employee_id;
-    $user->customer_id = $request->customer_id;
+    $user->employee_id = $request->role === 'customer' ? null : $request->employee_id;
+    $user->customer_id = $request->role === 'customer' ? $request->customer_id : null;
     $user->status = $request->status;
 
     $user->save();
 
-    return redirect()->route('dashboards')->with('success', 'User updated.');
+    return redirect()->route('admin.index.users')->with('success', 'User updated.');
   }
 
   public function destroy(User $user)
 {
     if ($user->hasRelatedRecords()) {
         return redirect()
-            ->route('dashboards')
+            ->back()
             ->with(
                 'error',
                 'This user cannot be deleted because related records exist.'
@@ -175,7 +167,7 @@ class UserManagementController extends Controller
     $this->deleteFile($profilePhoto);
 
     return redirect()
-        ->route('dashboards')
+        ->route('admin.index.users')
         ->with('success', 'User deleted successfully');
 }
 }

@@ -117,22 +117,8 @@ class DashboardController extends Controller
         ->whereYear('created_at', $currentYear)
         ->sum('net_total');
 
-      // 3. Branch Monthly Profit (completed orders for this manager)
-      $orderItemsProfit = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
-        ->join('products', 'order_items.product_id', '=', 'products.id')
-        ->where('orders.manager_id', $user->id)
-        ->whereIn('orders.status', $completedStatuses)
-        ->whereMonth('orders.created_at', $currentMonth)
-        ->whereYear('orders.created_at', $currentYear)
-        ->sum(DB::raw('order_items.quantity * ((order_items.selling_rate - order_items.discount_amount) - products.purchase_price)'));
-
-      $specialDiscounts = Order::where('manager_id', $user->id)
-        ->whereIn('status', $completedStatuses)
-        ->whereMonth('created_at', $currentMonth)
-        ->whereYear('created_at', $currentYear)
-        ->sum('special_discount');
-
-      $data['currentMonthProfit'] = $orderItemsProfit - $specialDiscounts;
+      // 3. Branch Total Customer Due
+      $data['branchTotalDue'] = Customer::where('branch_id', $branchId)->sum('due');
 
       // 4. Branch Monthly Cost
       $data['currentMonthCost'] = BranchCost::where('branch_id', $branchId)

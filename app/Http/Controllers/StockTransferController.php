@@ -41,6 +41,11 @@ class StockTransferController extends Controller
             }
         }
 
+        // From Branch filter
+        if ($request->filled('from_branch_id')) {
+            $query->where('from_branch_id', $request->from_branch_id);
+        }
+
         // Date range filter
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
@@ -73,9 +78,10 @@ class StockTransferController extends Controller
         }
 
         $transfers = $query->latest()->paginate(15)->appends($request->query());
-        
+        $branches = Branch::orderBy('name', 'asc')->get();
+
         $viewPath = $user->role === 'admin' ? 'pages.admin.stock-transfer.index' : 'pages.manager.stock-transfer.index';
-        return view($viewPath, compact('transfers'));
+        return view($viewPath, compact('transfers', 'branches'));
     }
 
     /**

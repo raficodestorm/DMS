@@ -17,6 +17,9 @@
     <div><span>Address</span>
       <p>{{ $customer->address }}</p>
     </div>
+    <div><span>Area Branch</span>
+      <p>{{ $customer->branch->name ?? 'N/A' }}</p>
+    </div>
   </div>
 
   <div class="card-actions">

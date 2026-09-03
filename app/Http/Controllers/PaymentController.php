@@ -49,7 +49,19 @@ class PaymentController extends Controller
       });
     }
 
-    $payments = $query->paginate(15);
+    if ($request->filled('type')) {
+      $query->where('type', $request->type);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $payments = $query->paginate(15)->withQueryString();
 
     if ($request->ajax()) {
       return response()->json([
@@ -98,7 +110,19 @@ class PaymentController extends Controller
       });
     }
 
-    $payments = $query->paginate(15);
+    if ($request->filled('type')) {
+      $query->where('type', $request->type);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $payments = $query->paginate(15)->withQueryString();
 
     if ($request->ajax()) {
       return response()->json([

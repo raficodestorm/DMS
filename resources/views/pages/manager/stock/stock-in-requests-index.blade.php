@@ -4,7 +4,7 @@
 <div class="manage-card">
 
   <div class="card-header">
-    <h2>Stock-In Requests</h2>
+    <h2>Stock-In History</h2>
     <p>Your all Stock-In Requests</p>
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>

@@ -62,27 +62,17 @@
 
           <li>
             <a href="{{ route('admin.users.create') }}" class="sub-link {{ isActive('admin.users.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Add User
+              <i class="fas fa-user-plus me-1"></i> Add User Account
             </a>
           </li>
 
           <li>
-            <a href="{{ route('admin.index.managers') }}" class="sub-link {{ isActive('admin.index.managers') }}">
-              <i class="fas fa-user-gear me-1"></i> Manage Managers
+            <a href="{{ route('admin.index.users') }}" class="sub-link {{ isActive('admin.index.users') }}">
+              <i class="fas fa-user-gear me-1"></i> All User Accounts
             </a>
           </li>
 
-          <li>
-            <a href="{{ route('admin.index.srs') }}" class="sub-link {{ isActive('admin.index.srs') }}">
-              <i class="fas fa-user-gear me-1"></i> Manage SRs
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('admin.index.customers') }}" class="sub-link {{ isActive('admin.index.customers') }}">
-              <i class="fas fa-user-gear me-1"></i> Manage Customers
-            </a>
-          </li>
+      
 
         </ul>
       </li>
@@ -135,7 +125,7 @@
       </li>
 
       <li class="nav-item">
-        <a href="{{ route('admin.customers.index') }}" class="nav-link {{ isActive('admin.customer.index') }}">
+        <a href="{{ route('admin.customers.index') }}" class="nav-link {{ isActive('admin.customers.*') }}">
           <i class="fas fa-handshake"></i> Manage Customers
         </a>
       </li>
@@ -517,6 +507,11 @@
             </div>
             @endforelse
           </div>
+          <div class="notif-footer" style="padding: 8px 12px; text-align: center; border-top: 1px solid var(--border-color, #e2e8f0); background: var(--section-bg, #fff);">
+            <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="deleteAllNotifications(event)" style="font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 6px; padding: 6px 12px;">
+              <i class="fa-solid fa-trash-can"></i> Clear All Notifications
+            </button>
+          </div>
         </div>
       </div>
 
@@ -832,6 +827,72 @@ function toggleTheme() {
     if (window.userId) {
       pollNotifications();
       setInterval(pollNotifications, 30000);
+    }
+
+    function deleteAllNotifications(event) {
+      if (event) event.stopPropagation();
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Delete All Notifications?',
+          text: 'Are you sure you want to delete all your notifications?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc2626',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, Delete All',
+          cancelButtonText: 'Cancel'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            performDeleteAllNotifs();
+          }
+        });
+      } else if (confirm('Are you sure you want to delete all notifications?')) {
+        performDeleteAllNotifs();
+      }
+    }
+
+    function performDeleteAllNotifs() {
+      fetch("{{ route('notifications.clearAll') }}", {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const countBadge = document.querySelector('.notif-count');
+          if (countBadge) countBadge.remove();
+
+          const notifBody = document.querySelector('.notif-body');
+          if (notifBody) {
+            notifBody.innerHTML = `
+              <div class="no-notif">
+                <i class="fa-solid fa-bell-slash"></i>
+                <p>No new notifications</p>
+              </div>
+            `;
+          }
+          if (typeof displayedNotifIds !== 'undefined') {
+            displayedNotifIds.clear();
+          }
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'All notifications deleted',
+              showConfirmButton: false,
+              timer: 2500
+            });
+          }
+        }
+      })
+      .catch(err => console.error('Error clearing notifications:', err));
     }
   </script>
   <x-calculator />

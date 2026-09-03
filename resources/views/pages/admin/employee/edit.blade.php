@@ -12,13 +12,32 @@
             enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <div>
+            <div class="row">
+            <div class="col-md-6">
                 <label>Full name</label>
                 <input class="input-form" name="name" value="{{ old('name', $employee->name) }}" required>
                 @error('name')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            <div>
+            <div class="col-md-6">
+                <label>Father name</label>
+                <input class="input-form" name="father" value="{{ old('father', $employee->father) }}">
+                @error('father')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="col-md-6">
+                <label>Phone</label>
+                <input class="input-form" name="phone" value="{{ old('phone', $employee->phone) }}" required>
+                @error('phone')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="col-md-6">
+                <label>Email</label>
+                <input class="input-form" name="email" type="email" value="{{ old('email', $employee->email) }}">
+                @error('email')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="col-md-6">
                 <label>Rank</label>
                 <select class="input-form" name="rank">
                     <option value="SR" {{ old('rank', $employee->rank) == 'SR' ? 'selected' : '' }}>SR</option>
@@ -32,7 +51,7 @@
                 @error('rank')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
-            <div>
+            <div class="col-md-6">
                 <label>Branch</label>
                 <select class="input-form" name="branch_id">
                     @foreach($branches as $branch)
@@ -44,25 +63,7 @@
                 </select>
             </div>
 
-            <div>
-                <label>Father name</label>
-                <input class="input-form" name="father" value="{{ old('father', $employee->father) }}">
-                @error('father')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div>
-                <label>Phone</label>
-                <input class="input-form" name="phone" value="{{ old('phone', $employee->phone) }}" required>
-                @error('phone')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div>
-                <label>Email</label>
-                <input class="input-form" name="email" type="email" value="{{ old('email', $employee->email) }}">
-                @error('email')<div class="error-text">{{ $message }}</div>@enderror
-            </div>
-
-            <div class="photo-upload">
+            <div class="photo-upload col-12">
                 <div class="upload-left">
                     <label>Profile Picture</label>
                     <input class="input-form" type="file" name="photo" id="photoInput">
@@ -85,11 +86,13 @@
                 </div>
             </div>
 
-            <div>
+            <div class="col-12">
                 <label>Address</label>
                 <textarea class="input-form" name="address">{{ old('address', $employee->address) }}</textarea>
                 @error('address')<div class="error-text">{{ $message }}</div>@enderror
             </div>
+
+            </div> 
 
             <div>
                 <button class="btn-submit" type="submit">Update</button>

@@ -3,7 +3,7 @@
     <td>{{ $returns->firstItem() ? $returns->firstItem() + $loop->index : $loop->iteration }}</td>
     <td>BRET{{ $return->id }}</td>
     <td>{{ $return->sr->username ?? 'N/A' }}</td>
-    <td>{{ $return->customer->shop_name ?? 'N/A' }}</td>
+    <td>{{ $return->customer->shop_name ?? 'Retail/Not found' }}</td>
     <td>{{ number_format($return->total_amount, 2) }} ৳</td>
     <td>
         @if($return->status == 'pending_sr')

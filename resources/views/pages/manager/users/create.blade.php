@@ -37,11 +37,11 @@
       </div>
 
       <div class="col-md-6">
-        <label>Employee ID</label>
-        <select class="input-form" name="employee_id">
-          <option value="">--Select Employee ID--</option>
-          @foreach($employees as $employee)
-          <option value="{{$employee->id}}">BRE100{{$employee->id}} ({{$employee->name}})</option>
+        <label>Customer ID</label>
+        <select class="input-form" name="customer_id">
+          <option value="">--Select Customer ID--</option>
+          @foreach($customers as $customer)
+          <option value="{{$customer->id}}">BRC200{{$customer->id}} ({{$customer->shop_name}})</option>
           @endforeach
         </select>
       </div>

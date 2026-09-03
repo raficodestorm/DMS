@@ -310,7 +310,7 @@
         <input type="hidden" name="total_discount" id="totalDiscountInput">
       </div>
 
-      <button type="submit" class="btn-submit w-100 mt-4 py-3 shadow-lg">
+      <button type="button" class="btn-submit w-100 mt-4 py-3 shadow-lg" onclick="confirmRetailSubmit()">
         Confirm & Submit Retail Order <i class="fas fa-check-circle ms-2"></i>
       </button>
     </form>
@@ -560,5 +560,48 @@
     $('#netTotalInput').val(finalNet.toFixed(2));
     $('#totalDiscountInput').val(totalDisc.toFixed(2));
   };
+</script>
+
+<script>
+  function confirmRetailSubmit() {
+    let totalAmount = $('#netTotalDisplay').text().trim() || '0.00';
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: '⚠️ নিশ্চিত করুন',
+        html: `
+          <div style="text-align: left; font-size: 14px; line-height: 1.8;">
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; text-align: center; margin-bottom: 15px;">
+              <span style="font-size: 13px; color: #166534; font-weight: 600; display: block;">কাস্টমারের কাছ থেকে নগদ গ্রহণ করুন:</span>
+              <span style="font-size: 26px; color: #15803d; font-weight: 800;">৳ ${totalAmount}</span>
+            </div>
+            <p style="font-weight: 700; color: #dc2626; margin-bottom: 8px;">Retail Order সম্পর্কে গুরুত্বপূর্ণ তথ্য:</p>
+            <ul style="padding-left: 18px; color: #374151; margin-bottom: 0;">
+              <li>এই Retail Order <strong>স্বয়ংক্রিয়ভাবে Delivered</strong> হিসেবে মার্ক হবে।</li>
+              <li>Payment স্বয়ংক্রিয়ভাবে <strong>Paid</strong> হিসেবে মার্ক হবে।</li>
+              <li>কাস্টমারের কাছ থেকে <strong>সাথে সাথে টাকা নিতে হবে।</strong></li>
+              <li style="color: #dc2626; font-weight: 600;">⛔ Due রাখার কোনো সুযোগ নেই।</li>
+            </ul>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '✅ নিশ্চিত, Submit করুন',
+        cancelButtonText: '← ফিরে যান',
+        reverseButtons: true,
+        width: 480,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById('orderForm').submit();
+        }
+      });
+    } else {
+      if (confirm(`Total Payable Amount: ৳ ${totalAmount}\n\nThis Retail Order will be auto-delivered and payment auto-marked as Paid. Collect payment immediately — no due allowed. Confirm?`)) {
+        document.getElementById('orderForm').submit();
+      }
+    }
+  }
 </script>
 @endpush

@@ -40,9 +40,9 @@
         <div class="row mb-5">
             <div class="col-md-6">
                 <h5 class="fw-bold mb-3">Customer Information</h5>
-                <p class="mb-1"><strong>{{ $return->customer->shop_name }}</strong></p>
-                <p class="mb-1">{{ $return->customer->address }}</p>
-                <p class="mb-1">Current Due: <strong>{{ number_format($return->customer->due, 2) }} ৳</strong></p>
+                <p class="mb-1"><strong>{{ $return->customer->shop_name ?? 'Retail/No Shop' }}</strong></p>
+                <p class="mb-1">{{ $return->customer->address ?? 'N/A' }}</p>
+                <p class="mb-1">Current Due: <strong>{{ number_format($return->customer->due ?? 0, 2) }} ৳</strong></p>
             </div>
             <div class="col-md-6 text-md-end">
                 <h5 class="fw-bold mb-3">Return Context</h5>

@@ -28,10 +28,8 @@ class OrderSrController extends Controller
       ->latest();
 
     if ($request->filled('search')) {
-
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-
         if (str_starts_with($search, 'BRS')) {
           $id = str_replace('BRS', '', $search);
           $q->where('id', $id);
@@ -44,7 +42,19 @@ class OrderSrController extends Controller
       });
     }
 
-    $orders = $query->paginate(20);
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $orders = $query->paginate(20)->withQueryString();
 
     if ($request->ajax()) {
       return response()->json([

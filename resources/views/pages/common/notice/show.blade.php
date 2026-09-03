@@ -96,7 +96,7 @@
                         <i class="fas fa-check-circle me-1"></i> Return Approved Notice
                     </span>
                     <h2 class="mb-0 text-dark fw-bold">BRS{{ $return->order_id }} (BRET{{ $return->id }})</h2>
-                    <p class="text-muted mb-0 small">Customer: <strong>{{ $return->customer->shop_name }}</strong></p>
+                    <p class="text-muted mb-0 small">Customer: <strong>{{ $return->customer->shop_name ?? 'Retail / Cash Customer' }}</strong></p>
                 </div>
                 <a href="{{ url()->previous() ?: route('dashboards') }}" class="btn-smart btn-blue">
                     <i class="fas fa-arrow-left me-1"></i> Back

@@ -28,43 +28,55 @@ class NoticeController extends Controller
             abort(403, 'Unauthorized access to this notice.');
         }
 
-        // Fetch matching transaction record created during approval
-        $transaction = Transaction::where('order_id', $return->order_id)
-            ->where('customer_id', $return->customer_id)
-            ->where('type', 'return')
-            ->where('note', 'like', "%BRET{$return->id}%")
-            ->latest()
-            ->first();
-
         $totalReturn = (float) $return->total_amount;
-        $currentDue = $transaction ? (float) $transaction->due : (float) $return->customer->due;
-        $note = $transaction ? $transaction->note : 'Return approved successfully.';
 
-        $adjustedDue = 0.00;
-        $cashRefund = 0.00;
-        $previousDue = 0.00;
+        if ($return->customer_id && $return->customer) {
+            // Fetch matching transaction record created during approval
+            $transaction = Transaction::where('order_id', $return->order_id)
+                ->where('customer_id', $return->customer_id)
+                ->where('type', 'return')
+                ->where('note', 'like', "%BRET{$return->id}%")
+                ->latest()
+                ->first();
 
-        if (str_contains($note, 'ক্যাশ রিফান্ড')) {
-            if (str_contains($note, 'আগের বকেয়া')) {
-                // Partial due adjustment + cash refund
-                if (preg_match('/আগের বকেয়া ৳([\d,.]+)/u', $note, $matches)) {
-                    $adjustedDue = (float) str_replace(',', '', $matches[1]);
+            $currentDue = $transaction ? (float) ($transaction->due_after_transaction ?? $transaction->due ?? 0) : (float) ($return->customer->due ?? 0);
+            $note = $transaction ? $transaction->note : 'Return approved successfully.';
+
+            $adjustedDue = 0.00;
+            $cashRefund = 0.00;
+            $previousDue = 0.00;
+
+            if (str_contains($note, 'ক্যাশ রিফান্ড')) {
+                if (str_contains($note, 'আগের বকেয়া')) {
+                    // Partial due adjustment + cash refund
+                    if (preg_match('/আগের বকেয়া ৳([\d,.]+)/u', $note, $matches)) {
+                        $adjustedDue = (float) str_replace(',', '', $matches[1]);
+                    } else {
+                        $adjustedDue = 0.00;
+                    }
+                    $cashRefund = max(0, $totalReturn - $adjustedDue);
+                    $previousDue = $adjustedDue;
                 } else {
+                    // Full cash refund
+                    $cashRefund = $totalReturn;
                     $adjustedDue = 0.00;
+                    $previousDue = 0.00;
                 }
-                $cashRefund = max(0, $totalReturn - $adjustedDue);
-                $previousDue = $adjustedDue;
             } else {
-                // Full cash refund
-                $cashRefund = $totalReturn;
-                $adjustedDue = 0.00;
-                $previousDue = 0.00;
+                // Full due cut / reduction
+                $adjustedDue = $totalReturn;
+                $cashRefund = 0.00;
+                $previousDue = $currentDue + $totalReturn;
             }
         } else {
-            // Full due cut / reduction
-            $adjustedDue = $totalReturn;
-            $cashRefund = 0.00;
-            $previousDue = $currentDue + $totalReturn;
+            // Retail order return (No customer_id)
+            $transaction = null;
+            $currentDue = 0.00;
+            $adjustedDue = 0.00;
+            $previousDue = 0.00;
+            $cashRefund = $totalReturn;
+            $orderCode = $return->order_id ? 'BRS' . $return->order_id : 'N/A';
+            $note = "অর্ডার #{$orderCode} এর রিটার্ন (BRET{$return->id}) অনুমোদিত হয়েছে। খুচরা (Retail) অর্ডার হওয়ায় মোট ৳" . number_format($totalReturn, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
         }
 
         return view('pages.common.notice.show', compact(

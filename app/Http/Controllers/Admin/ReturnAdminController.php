@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\OrderItem;
 use App\Models\ProductReturn;
 use App\Models\Stock;
@@ -98,63 +99,62 @@ class ReturnAdminController extends Controller
                     $return->order->decrement('net_total', $return->total_amount);
                 }
 
-                // 4. Update Customer Due & Calculate Refund / Note
-                $customer = Customer::query()
-                    ->whereKey($return->customer_id)
-                    ->lockForUpdate()
-                    ->first();
-
-                if (!$customer) {
-                    throw new \RuntimeException('Customer not found.');
-                }
-
-                $currentDue = round((float) ($customer->due ?? 0), 2);
-                $returnAmount = round((float) $return->total_amount, 2);
-
-                $dueBeforeTransaction = $currentDue;
-
+                // 4. Update Customer Due & Calculate Refund / Note (if customer exists)
                 $orderCode = $return->order_id
                     ? 'BRS' . $return->order_id
                     : 'N/A';
 
                 $returnCode = 'BRET' . $return->id;
 
+                if ($return->customer_id) {
+                    $customer = Customer::query()
+                        ->whereKey($return->customer_id)
+                        ->lockForUpdate()
+                        ->first();
 
-                if ($currentDue <= 0) {
-                    // Scenario 1: Customer due is 0 -> full amount is cash refund, due stays 0
-                    $newDue = 0.00;
-                    $customer->update(['due' => $newDue]);
+                    if ($customer) {
+                        $currentDue = round((float) ($customer->due ?? 0), 2);
+                        $returnAmount = round((float) $return->total_amount, 2);
 
-                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের কোনো বকেয়া না থাকায় মোট রিটার্ন ৳" . number_format($returnAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
-                } elseif ($currentDue < $returnAmount) {
-                    // Scenario 2: Customer due is less than return amount -> cut due to 0, remaining is cash refund
-                    $refundAmount = $returnAmount - $currentDue;
-                    $adjustedDue = $currentDue;
-                    $newDue = 0.00;
-                    $customer->update(['due' => $newDue]);
+                        $dueBeforeTransaction = $currentDue;
 
-                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। মোট ৳" . number_format($returnAmount, 2) . " এর মধ্যে আগের বকেয়া ৳" . number_format($adjustedDue, 2) . " সমন্বয় করা হলো এবং অবশিষ্ট ৳" . number_format($refundAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
-                } else {
-                    // Scenario 3: Customer due is greater than or equal to return amount -> decrement due
-                    $newDue = round($currentDue - $returnAmount, 2);
-                    $customer->update(['due' => $newDue]);
+                        if ($currentDue <= 0) {
+                            // Scenario 1: Customer due is 0 -> full amount is cash refund, due stays 0
+                            $newDue = 0.00;
+                            $customer->update(['due' => $newDue]);
 
-                    $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের বকেয়া থেকে মোট ৳" . number_format($returnAmount, 2) . " কেটে সমন্বয় করা হলো (বর্তমান বকেয়া: ৳" . number_format($newDue, 2) . ")।";
+                            $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের কোনো বকেয়া না থাকায় মোট রিটার্ন ৳" . number_format($returnAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
+                        } elseif ($currentDue < $returnAmount) {
+                            // Scenario 2: Customer due is less than return amount -> cut due to 0, remaining is cash refund
+                            $refundAmount = $returnAmount - $currentDue;
+                            $adjustedDue = $currentDue;
+                            $newDue = 0.00;
+                            $customer->update(['due' => $newDue]);
+
+                            $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। মোট ৳" . number_format($returnAmount, 2) . " এর মধ্যে আগের বকেয়া ৳" . number_format($adjustedDue, 2) . " সমন্বয় করা হলো এবং অবশিষ্ট ৳" . number_format($refundAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
+                        } else {
+                            // Scenario 3: Customer due is greater than or equal to return amount -> decrement due
+                            $newDue = round($currentDue - $returnAmount, 2);
+                            $customer->update(['due' => $newDue]);
+
+                            $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের বকেয়া থেকে মোট ৳" . number_format($returnAmount, 2) . " কেটে সমন্বয় করা হলো (বর্তমান বকেয়া: ৳" . number_format($newDue, 2) . ")।";
+                        }
+
+                        // 5. Create Transaction (Type: return)
+                        Transaction::create([
+                            'customer_id' => $customer->id,
+                            'order_id' => $return->order_id,
+                            'sr_id' => $return->sr_id,
+                            'branch_id' => $return->branch_id,
+                            'type' => 'return',
+                            'amount' => $returnAmount,
+                            'due_before_transaction' => $dueBeforeTransaction,
+                            'due_after_transaction'  => $newDue,
+                            'status' => 'complete',
+                            'note' => $note
+                        ]);
+                    }
                 }
-
-                // 5. Create Transaction (Type: return)
-                Transaction::create([
-                    'customer_id' => $customer->id,
-                    'order_id' => $return->order_id,
-                    'sr_id' => $return->sr_id,
-                    'branch_id' => $return->branch_id,
-                    'type' => 'return',
-                    'amount' => $returnAmount,
-                    'due_before_transaction' => $dueBeforeTransaction,
-                    'due_after_transaction'  => $newDue,
-                    'status' => 'complete',
-                    'note' => $note
-                ]);
 
                 $return->update(['status' => 'approved']);
 
@@ -222,9 +222,10 @@ class ReturnAdminController extends Controller
                         $return->order->increment('net_total', $return->total_amount);
                     }
 
-                    // Rollback Customer Due
-                    $customer = $return->customer;
-                    $customer->increment('due', $return->total_amount);
+                    // Rollback Customer Due (if customer exists)
+                    if ($return->customer) {
+                        $return->customer->increment('due', $return->total_amount);
+                    }
 
                     // Remove Transaction
                     Transaction::where('order_id', $return->order_id)

@@ -35,6 +35,11 @@
             </div>
 
             <div class="info-group">
+                <span class="i-label">Due</span>
+                <span class="i-value">{{ number_format($customer->due ?? 0, 2) }} TK</span>
+            </div>
+
+            <div class="info-group">
                 <span class="i-label">Created at</span>
                 <span class="i-value">{{ $customer->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i
                     A') }}</span>

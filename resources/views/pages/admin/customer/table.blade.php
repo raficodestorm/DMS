@@ -6,6 +6,7 @@
   <td class="name">{{ $customer->shop_name }}</td>
   <td>{{ $customer->manager }}</td>
   <td>{{ $customer->address }}</td>
+  <td>{{ $customer->branch->name ?? 'N/A' }}</td>
 
   <td class="action-icons">
     <a href="{{ route('admin.customers.show', $customer) }}" class="icon-btn view-icon">

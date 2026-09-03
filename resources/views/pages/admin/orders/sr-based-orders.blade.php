@@ -18,7 +18,6 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    /* Column-er height fill korar jonno */
     min-height: 200px;
   }
 
@@ -47,7 +46,6 @@
     filter: blur(25px);
     z-index: 1;
     pointer-events: none;
-
   }
 
   .branch-card:hover {
@@ -64,7 +62,6 @@
     z-index: 1;
   }
 
-  /* Title logic adjustment */
   .customer-meta {
     display: flex;
     align-items: center;
@@ -99,14 +96,28 @@
 </style>
 
 <div class="container-fluid">
-  <div class="card-header mb-4">
-    <h2 style="color: var(--text-main);">Srs Orders</h2>
-    <p style="color: var(--text-muted);">Select sr to view order history</p>
+  <div class="card-header mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 style="color: var(--text-main); margin-bottom: 0;">SR Orders</h2>
+      <p style="color: var(--text-muted); margin-bottom: 0;">Select SR to view order history</p>
+    </div>
   </div>
 
-  <div class="row g-4">
-    @foreach($srs as $sr)
-    <div class="col-12 col-sm-6 col-md-4 animate__animated animate__fadeIn">
+  {{-- Search Box --}}
+  <div style="margin-bottom: 25px; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+    <div style="position: relative; max-width: 500px;">
+      <input type="text" 
+             id="srSearch" 
+             class="input-form" 
+             placeholder="Search by SR Name or Phone..." 
+             style="margin-bottom: 0; padding-left: 38px; height: 42px; width: 100%;">
+      <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+    </div>
+  </div>
+
+  <div class="row g-4" id="srCardContainer">
+    @forelse($srs as $sr)
+    <div class="col-12 col-sm-6 col-md-4 sr-card-item animate__animated animate__fadeIn" data-sr-search="{{ strtolower($sr->fullname . ' ' . $sr->phone . ' ' . $sr->username) }}">
       <div class="branch-card" onclick="location.href='{{ route('admin.order.specific.sr', $sr->id) }}'">
 
         <div class="customer-meta">
@@ -126,7 +137,7 @@
           </div>
           <div class="info-row">
             <span class="label">Total Sales:</span>
-            <span>
+            <span class="value">
               {{ number_format($sr->total_order_amount, 2) }} TK
             </span>
           </div>
@@ -134,7 +145,48 @@
 
       </div>
     </div>
-    @endforeach
+    @empty
+    <div class="col-12 text-center text-muted py-4">
+      No SRs found.
+    </div>
+    @endforelse
+  </div>
+
+  {{-- No Search Results Message --}}
+  <div id="noResultsMsg" style="display: none;" class="text-center text-muted py-5">
+    <i class="fas fa-user-slash fa-2x mb-2" style="color: var(--text-muted);"></i>
+    <p>No matching SRs found for your search.</p>
   </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('srSearch');
+    const cards = document.querySelectorAll('.sr-card-item');
+    const noResultsMsg = document.getElementById('noResultsMsg');
+
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            const query = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach(function (card) {
+                const searchData = card.getAttribute('data-sr-search') || '';
+                if (searchData.includes(query)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (noResultsMsg) {
+                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

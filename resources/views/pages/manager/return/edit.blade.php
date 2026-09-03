@@ -40,7 +40,7 @@
 
             <div class="mb-4 p-3 bg-light rounded border">
                 <strong>Order: BRS{{ $return->order_id }}</strong><br>
-                <small class="text-muted">Customer: {{ $return->customer->shop_name }}</p>
+                <small class="text-muted">Customer: {{ $return->customer->shop_name ?? 'Retail/Not Found'}}</p>
             </div>
 
             <div class="mb-4">

@@ -5,7 +5,7 @@
   <td>BRC200{{ $customer->id }}</td>
   <td class="name">{{ $customer->shop_name }}</td>
   <td>{{ $customer->manager }}</td>
-  <td>{{ $customer->address }}</td>
+  <td>{{  number_format($customer->due ?? 0, 2)  }} TK</td>
 
   <td class="action-icons">
     <a href="{{ route('customers.show', $customer) }}" class="icon-btn view-icon">

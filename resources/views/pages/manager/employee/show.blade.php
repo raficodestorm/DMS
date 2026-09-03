@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <div class="card-footer-actions">
+    <!-- <div class="card-footer-actions">
 
         <a href="{{ route('manager.employees.edit', $employee) }}" class="icon-btn edit-icon">
             <i class="fa-solid fa-pen"></i>
@@ -70,7 +70,7 @@
                 <i class="fa-solid fa-trash"></i>
             </button>
         </form>
-    </div>
+    </div> -->
 
 </div>
 <a href="{{ route('manager.employees.index') }}" class="back-btn">

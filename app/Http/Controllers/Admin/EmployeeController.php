@@ -15,15 +15,12 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        $query = Employee::orderBy('branch_id', 'asc');
+        $query = Employee::with('branch')->orderBy('branch_id', 'asc');
 
         if ($request->filled('search')) {
             $search = $request->search;
-
-
             if (str_starts_with($search, 'BRE100')) {
                 $id = str_replace('BRE100', '', $search);
-
                 $query->where('id', $id);
             } else {
                 $query->where(function ($q) use ($search) {
@@ -33,16 +30,26 @@ class EmployeeController extends Controller
             }
         }
 
+        if ($request->filled('rank')) {
+            $query->where('rank', $request->rank);
+        }
+
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
         $employees = $query->get();
+        $branches  = Branch::orderBy('name', 'asc')->get();
 
         if ($request->ajax()) {
             return response()->json([
-                'table' => view('pages.admin.employee.table', compact('employees'))->render(),
+                'table'  => view('pages.admin.employee.table', compact('employees'))->render(),
                 'mobile' => view('pages.admin.employee.mtable', compact('employees'))->render(),
+                'total'  => $employees->count(),
             ]);
         }
 
-        return view('pages.admin.employee.index', compact('employees'));
+        return view('pages.admin.employee.index', compact('employees', 'branches'));
     }
 
 

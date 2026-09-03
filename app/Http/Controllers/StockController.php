@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\Product;
 use App\Models\Stock;
 use Illuminate\Http\Request;
@@ -71,23 +72,85 @@ class StockController extends Controller
   }
 
   // স্পেসিফিক ব্রাঞ্চের ডিটেইল
-  public function specificStock($branch_id = null)
+  public function specificStock(Request $request, $branch_id = null)
   {
-    $query = \App\Models\Stock::with(['product.supplier', 'branch']);
+    $branches = Branch::orderBy('name', 'asc')->get();
+    $hasJoined = false;
 
     if ($branch_id) {
       // নির্দিষ্ট ব্রাঞ্চের স্টক
-      $stocks = $query->where('branch_id', $branch_id)->get();
-      $title = \App\Models\Branch::find($branch_id)->name . " Stock";
+      $query = Stock::with(['product.supplier', 'branch'])
+        ->select('stocks.*')
+        ->where('stocks.branch_id', $branch_id);
+
+      if ($request->filled('search')) {
+        $search = trim($request->search);
+        $query->join('products', 'stocks.product_id', '=', 'products.id')
+              ->leftJoin('suppliers', 'products.supplier_id', '=', 'suppliers.id')
+              ->where(function ($q) use ($search) {
+                  $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('suppliers.company_name', 'like', "%{$search}%");
+              });
+        $hasJoined = true;
+      }
+
+      if ($request->filled('status')) {
+        if (!$hasJoined) {
+          $query->join('products', 'stocks.product_id', '=', 'products.id');
+          $hasJoined = true;
+        }
+        if ($request->status === 'low_stock') {
+          $query->whereColumn('stocks.quantity', '<=', 'products.stock_alert');
+        } elseif ($request->status === 'available') {
+          $query->whereColumn('stocks.quantity', '>', 'products.stock_alert');
+        }
+      }
+
+      $stocks = $query->get();
+      $title = Branch::find($branch_id)->name . " Stock";
     } else {
-      // পুরো কোম্পানির স্টক (প্রোডাক্ট অনুযায়ী গ্রুপ করে সামারি)
-      $stocks = \App\Models\Stock::with(['product.supplier'])
-        ->select('product_id', \DB::raw('SUM(quantity) as quantity'))
-        ->groupBy('product_id')
-        ->get();
-      $title = "Company Total Stock";
+      // পুরো কোম্পানির স্টক — branch_id filter support করে
+      $filterBranchId = $request->filled('branch_id') ? $request->branch_id : null;
+
+      if ($filterBranchId) {
+        // নির্দিষ্ট ব্রাঞ্চ ফিল্টার করা হলে সরাসরি সেই ব্রাঞ্চের স্টক দেখাও
+        $query = Stock::with(['product.supplier'])
+          ->select('stocks.*')
+          ->where('stocks.branch_id', $filterBranchId);
+      } else {
+        $query = Stock::with(['product.supplier'])
+          ->select('product_id', DB::raw('SUM(quantity) as quantity'))
+          ->groupBy('product_id');
+      }
+
+      if ($request->filled('search')) {
+        $search = trim($request->search);
+        $query->join('products', 'stocks.product_id', '=', 'products.id')
+              ->leftJoin('suppliers', 'products.supplier_id', '=', 'suppliers.id')
+              ->where(function ($q) use ($search) {
+                  $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('suppliers.company_name', 'like', "%{$search}%");
+              });
+        $hasJoined = true;
+      }
+
+      if ($request->filled('status')) {
+        if (!$hasJoined) {
+          $query->join('products', 'stocks.product_id', '=', 'products.id');
+        }
+        if ($request->status === 'low_stock') {
+          $query->whereColumn('stocks.quantity', '<=', 'products.stock_alert');
+        } elseif ($request->status === 'available') {
+          $query->whereColumn('stocks.quantity', '>', 'products.stock_alert');
+        }
+      }
+
+      $stocks = $query->get();
+      $title = $filterBranchId
+        ? (Branch::find($filterBranchId)->name ?? 'Branch') . ' Stock'
+        : 'Company Total Stock';
     }
 
-    return view('pages.admin.stock.specific-stock', compact('stocks', 'title', 'branch_id'));
+    return view('pages.admin.stock.specific-stock', compact('stocks', 'title', 'branch_id', 'branches'));
   }
 }

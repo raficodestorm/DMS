@@ -14,6 +14,33 @@
       </ul>
     </div>
     @endif
+
+    @if($user->role !== 'customer')
+
+    <div 
+    style="
+        padding: 20px;
+        background: #fff8e1;
+        border: 1px solid #f6c343;
+        color: #7a5b00;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 20px;
+    "
+>
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+
+<strong>শুধুমাত্র Customer Account এডিট করা যাবে</strong>
+
+<p style="margin: 8px 0 0;">
+    এই পেজ থেকে শুধুমাত্র Customer Account এডিট করা যাবে।
+    অন্যান্য Account শুধুমাত্র Admin এডিট করতে পারবেন।
+</p>
+
+</div>
+
+
+@else
     
     <form class="adduser-form" method="POST" action="{{ route('manager.users.update', $user->id) }}"
       enctype="multipart/form-data">
@@ -38,14 +65,14 @@
 
 
 <div class="col-md-6">
-        <label>Employee ID</label>
-        <select class="input-form" name="employee_id">
-          <option value="">--Select Employee ID--</option>
+        <label>Customer ID</label>
+        <select class="input-form" name="customer_id">
+          <option value="">--Select Customer ID--</option>
 
-          @foreach($employees as $employee)
-          <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' :
+          @foreach($customers as $customer)
+          <option value="{{ $customer->id }}" {{ old('customer_id', $user->customer_id) == $customer->id ? 'selected' :
             '' }}>
-            BRE100{{ $employee->id }} ({{$employee->name}})
+            BRC200{{ $customer->id }} ({{$customer->shop_name}})
           </option>
           @endforeach
 
@@ -91,6 +118,7 @@
       </div>
 
     </form>
+    @endif
   </div>
 </div>
 @endsection

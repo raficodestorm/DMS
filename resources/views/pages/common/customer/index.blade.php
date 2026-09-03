@@ -19,7 +19,7 @@
                     <th>Customer ID</th>
                     <th>Shop Name</th>
                     <th>Manager</th>
-                    <th>Address</th>
+                    <th>Due</th>
                     <th>Action</th>
                 </tr>
             </thead>

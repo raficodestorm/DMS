@@ -24,18 +24,13 @@ use App\Http\Controllers\Manager\RetailOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+  Route::get('/users/index', [UserManagementController::class, 'users'])->name('index.users');
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('users/show/{user}', [UserManagementController::class, 'show'])->name('users.show');
   Route::get('users/{user}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
   Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
   Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
-
-  Route::get('/admins', [UserManagementController::class, 'admins'])->name('index.admins');
-  Route::get('/manage-managers', [UserManagementController::class, 'managers'])->name('index.managers');
-  Route::get('/manage-srs', [UserManagementController::class, 'sr'])->name('index.srs');
-  Route::get('/manage-customers', [UserManagementController::class, 'customer'])->name('index.customers');
-  Route::get('/normal-users', [UserManagementController::class, 'normalUsers'])->name('index.normalUsers');
 
   Route::get('/employees/qrcode/{employee}', [EmployeeController::class, 'showqr'])->name('employees.qrcode');
   Route::get('/employees/{employee}/qr-download', [EmployeeController::class, 'downloadQR'])

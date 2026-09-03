@@ -101,7 +101,7 @@
     </div>
   </div>
 
-  <!-- Monthly Profit -->
+  <!-- Branch Total Customer Due -->
   <div class="col-xl-3 col-md-6">
     <div class="stat-card animate__animated animate__fadeInUp"
       style="border-top: 4px solid #36b9cc !important; animation-delay: 0.2s;">
@@ -110,12 +110,12 @@
           <div class="d-flex align-items-center gap-3">
             <div class="trend-icon"
               style="background: rgba(54, 185, 204, 0.1); color: #36b9cc; width: 48px; height: 48px; font-size: 22px;">
-              <i class="fas fa-coins"></i>
+              <i class="fas fa-user-clock"></i>
             </div>
             <div>
-              <h6 class="card-label mb-1">{{ $monthName }} Profit</h6>
+              <h6 class="card-label mb-1">Customer Due</h6>
               <p class="amount mb-0" style="color: var(--text-main); font-size: 15px; font-weight: 600;">৳ {{
-                number_format($currentMonthProfit, 2) }}</p>
+                number_format($branchTotalDue, 2) }}</p>
             </div>
           </div>
         </div>

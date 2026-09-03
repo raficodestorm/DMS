@@ -11,21 +11,21 @@
         @csrf
 
         <div class="col-md-6">
-            <label class="form-label fw-bold">Amount (৳) <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Amount (৳) <span class="text-danger" style="display: inline !important;">*</span></label>
             <input type="number" name="amount" step="0.01" class="input-form @error('amount') is-invalid @enderror" 
                    placeholder="0.00" value="{{ old('amount') }}" required>
             @error('amount') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
         </div>
 
         <div class="col-md-6">
-            <label class="form-label fw-bold">Cost Date <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Cost Date <span class="text-danger" style="display: inline !important;">*</span></label>
             <input type="date" name="cost_date" class="input-form @error('cost_date') is-invalid @enderror" 
                    value="{{ old('cost_date', date('Y-m-d')) }}" required>
             @error('cost_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
         </div>
 
         <div class="col-md-6">
-            <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Category <span class="text-danger" style="display: inline !important;">*</span></label>
             <select name="category" class="input-form @error('category') is-invalid @enderror" required>
                 <option value="">Select Category</option>
                 <option value="office" {{ old('category') == 'office' ? 'selected' : '' }}>Office Expenses</option>
@@ -41,7 +41,7 @@
         </div>
 
         <div class="col-md-6">
-            <label class="form-label fw-bold">Short Description <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Short Description <span class="text-danger" style="display: inline !important;">*</span></label>
             <input type="text" name="description" class="input-form @error('description') is-invalid @enderror" 
                    placeholder="e.g. Electricity bill for March" value="{{ old('description') }}" required>
             @error('description') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror

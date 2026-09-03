@@ -14,16 +14,22 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        $query = Employee::where('branch_id', auth()->user()->branch_id)
+        $branchId = auth()->user()->branch_id;
+
+        $ranks = Employee::where('branch_id', $branchId)
+            ->whereNotIn('rank', ['manager', 'admin'])
+            ->whereNotNull('rank')
+            ->distinct()
+            ->pluck('rank');
+
+        $query = Employee::where('branch_id', $branchId)
             ->whereNotIn('rank', ['manager', 'admin']);
 
         if ($request->filled('search')) {
-            $search = $request->search;
-
+            $search = trim($request->search);
 
             if (str_starts_with($search, 'BRE100')) {
                 $id = str_replace('BRE100', '', $search);
-
                 $query->where('id', $id);
             } else {
                 $query->where(function ($q) use ($search) {
@@ -33,16 +39,20 @@ class EmployeeController extends Controller
             }
         }
 
+        if ($request->filled('rank')) {
+            $query->where('rank', $request->rank);
+        }
+
         $employees = $query->get();
 
         if ($request->ajax()) {
             return response()->json([
-                'table' => view('pages.manager.employee.table', compact('employees'))->render(),
+                'table'  => view('pages.manager.employee.table', compact('employees'))->render(),
                 'mobile' => view('pages.manager.employee.mtable', compact('employees'))->render(),
             ]);
         }
 
-        return view('pages.manager.employee.index', compact('employees'));
+        return view('pages.manager.employee.index', compact('employees', 'ranks'));
     }
 
     public function create()

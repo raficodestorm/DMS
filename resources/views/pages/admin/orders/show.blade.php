@@ -346,8 +346,8 @@
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
-  <a href="{{ route('dashboards') }}" style="color: var(--text-muted); text-decoration: none;">
-    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  <a href="{{ route('admin.order.index') }}" style="color: var(--text-muted); text-decoration: none;">
+    <i class="fas fa-arrow-left"></i> Back to List
   </a>
 </div>
 @endsection

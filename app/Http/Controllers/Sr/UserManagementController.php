@@ -22,19 +22,45 @@ class UserManagementController extends Controller
   }
 
 
-  public function customer()
+  public function customer(Request $request)
   {
     $branchId = auth()->user()->branch_id;
+    $search = $request->get('search');
 
-    $customers = User::with('branch')
+    $query = User::with('branch')
       ->where('role', 'customer')
-      ->where('branch_id', $branchId)
-      ->latest()
-      ->paginate(20);
+      ->where('branch_id', $branchId);
+
+    if ($search) {
+      $cleanSearch = trim($search);
+      $idSearch = preg_replace('/^brc(200)?/i', '', $cleanSearch);
+
+      $query->where(function ($q) use ($cleanSearch, $idSearch) {
+        $q->where('fullname', 'like', "%{$cleanSearch}%")
+          ->orWhere('username', 'like', "%{$cleanSearch}%")
+          ->orWhere('customer_id', 'like', "%{$cleanSearch}%");
+
+        if ($idSearch !== '' && is_numeric($idSearch)) {
+          $q->orWhere('customer_id', (int) $idSearch);
+        }
+      });
+    }
+
+    $customers = $query->latest()
+      ->paginate(20)
+      ->withQueryString();
+
+    if ($request->ajax()) {
+      return response()->json([
+        'table'  => view('pages.sr.users.table', compact('customers'))->render(),
+        'mobile' => view('pages.sr.users.mtable', compact('customers'))->render(),
+      ]);
+    }
 
     return view('pages.sr.users.index-customer', [
       'customers' => $customers,
-      'roleTitle' => 'Customer'
+      'roleTitle' => 'Customer',
+      'search'    => $search
     ]);
   }
 

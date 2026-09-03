@@ -4,9 +4,13 @@
 <div class="manage-card">
 
   <div class="card-header">
+    <h2>All Customer Accounts</h2>
+    <p>Manage all registered Customer Accounts</p>
     @include('components.alert')
-    <h2>All Customers</h2>
-    <p>Manage all registered Customers</p>
+  </div>
+
+  <div style="margin: 15px 0;">
+    <input type="text" id="search" class="input-form" placeholder="Search by Full Name, Username or Customer ID (e.g. BRC2001)...">
   </div>
 
   <div class="table-wrapper">
@@ -20,64 +24,39 @@
           <th>Action</th>
         </tr>
       </thead>
-      <tbody class="desktop-table">
-        @forelse($customers as $customer)
-        <tr>
-          {{-- <td>{{ $manager->id }}</td> --}}
-          <td scope="row">{{ $customers->firstItem() ? $customers->firstItem() + $loop->index : $loop->iteration }}</td>
-          <td class="name">{{ $customer->fullname }}</td>
-          <td>{{ $customer->username }}</td>
-          <td>{{ $customer->customer_id ? 'BRC200' . $customer->customer_id : '--' }}</td>
 
-          <td class="action-icons">
-            <a href="{{ route('sr.users.show', $customer) }}" class="icon-btn view-icon">
-              <i class="fa-solid fa-eye"></i>
-            </a>
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="8" class="text-center text-muted">No records found.🚫</td>
-        </tr>
-        @endforelse
+      <tbody class="desktop-table" id="desktopTable">
+        @include('pages.sr.users.table')
       </tbody>
     </table>
   </div>
-  <div class="manage-mobile-cards">
-    @forelse($customers as $customer)
-    <div class="manage-card">
 
-      <div class="card-body">
-        <div><span>S. No</span>
-          <p>{{ $customers->firstItem() ? $customers->firstItem() + $loop->index : $loop->iteration }}</p>
-        </div>
-        <div><span>Full name</span>
-          <p>{{ $customer->fullname }}</p>
-        </div>
-        <div><span>Username</span>
-          <p>{{ $customer->username }}</p>
-        </div>
-        <div><span>Customer ID</span>
-          <p>{{ $customer->customer_id ? 'BRC200' . $customer->customer_id : '--' }}</p>
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <a href="{{ route('sr.users.show', $customer) }}" class="icon-btn view-icon">
-          <i class="fa-solid fa-eye"></i>
-        </a>
-      </div>
-
-    </div>
-    @empty
-    <p class="text-center text-muted">No records found.🚫</p>
-    @endforelse
+  {{-- Mobile Cards --}}
+  <div class="manage-mobile-cards" id="mobileTable">
+    @include('pages.sr.users.mtable')
   </div>
 
-
 </div>
-<div class="d-flex justify-content-center mt-3">
+
+<div class="mt-3">
   {{ $customers->links() }}
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+  document.getElementById('search').addEventListener('keyup', function () {
+    let query = this.value;
+
+    fetch(`{{ route('sr.index.customers') }}?search=${query}`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('desktopTable').innerHTML = data.table;
+      document.getElementById('mobileTable').innerHTML = data.mobile;
+    });
+  });
+</script>
+@endpush

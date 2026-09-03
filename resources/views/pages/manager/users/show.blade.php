@@ -59,10 +59,11 @@
   </div>
 
   <div class="card-footer-actions">
-
+    @if($user->role === 'customer')
     <a href="{{ route('manager.users.edit', $user) }}" class="icon-btn edit-icon">
       <i class="fa-solid fa-pen"></i>
     </a>
+    @endif
 
   </div>
 

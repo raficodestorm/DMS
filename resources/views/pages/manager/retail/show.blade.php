@@ -142,7 +142,7 @@
       <a href="{{ route('manager.retail.index') }}" class="action-btn btn-back">
         <i class="fas fa-arrow-left"></i> Back
       </a>
-      <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="action-btn" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+      <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="action-btn" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
         <i class="fas fa-print"></i> Invoice
       </a>
       @if(!in_array($order->status, ['complete','delivered']))

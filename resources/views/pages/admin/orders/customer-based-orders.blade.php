@@ -18,7 +18,6 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    /* Column-er height fill korar jonno */
     min-height: 200px;
   }
 
@@ -47,7 +46,6 @@
     filter: blur(25px);
     z-index: 1;
     pointer-events: none;
-
   }
 
   .branch-card:hover {
@@ -64,7 +62,6 @@
     z-index: 1;
   }
 
-  /* Title logic adjustment */
   .customer-meta {
     display: flex;
     align-items: center;
@@ -99,20 +96,34 @@
 </style>
 
 <div class="container-fluid">
-  <div class="card-header mb-4">
-    <h2 style="color: var(--text-main);">Customer Orders</h2>
-    <p style="color: var(--text-muted);">Select a customer to view order history</p>
+  <div class="card-header mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 style="color: var(--text-main); margin-bottom: 0;">Customer Orders</h2>
+      <p style="color: var(--text-muted); margin-bottom: 0;">Select a customer to view order history</p>
+    </div>
   </div>
 
-  <div class="row g-4">
-    @foreach($customers as $customer)
-    <div class="col-12 col-sm-6 col-md-4 animate__animated animate__fadeIn">
+  {{-- Search Box --}}
+  <div style="margin-bottom: 25px; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+    <div style="position: relative; max-width: 500px;">
+      <input type="text" 
+             id="customerSearch" 
+             class="input-form" 
+             placeholder="Search by Shop Name..." 
+             style="margin-bottom: 0; padding-left: 38px; height: 42px; width: 100%;">
+      <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+    </div>
+  </div>
+
+  <div class="row g-4" id="customerCardContainer">
+    @forelse($customers as $customer)
+    <div class="col-12 col-sm-6 col-md-4 customer-card-item animate__animated animate__fadeIn" data-shop-name="{{ strtolower($customer->shop_name) }}">
       <div class="branch-card" onclick="location.href='{{ route('admin.order.specific.customer', $customer->id) }}'">
 
         <div class="customer-meta">
           <i class="fa-solid fa-user-tie"></i>
           <div>
-            <h2>{{ $customer->shop_name }}</h2>
+            <h2 class="shop-title">{{ $customer->shop_name }}</h2>
             <p class="mb-0" style="font-size: 0.8rem; color: var(--text-muted);">
               {{ Str::limit($customer->address, 30) }}
             </p>
@@ -134,7 +145,48 @@
 
       </div>
     </div>
-    @endforeach
+    @empty
+    <div class="col-12 text-center text-muted py-4">
+      No customers found.
+    </div>
+    @endforelse
+  </div>
+
+  {{-- No Search Results Message --}}
+  <div id="noResultsMsg" style="display: none;" class="text-center text-muted py-5">
+    <i class="fas fa-store-slash fa-2x mb-2" style="color: var(--text-muted);"></i>
+    <p>No matching customers found for your search.</p>
   </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('customerSearch');
+    const cards = document.querySelectorAll('.customer-card-item');
+    const noResultsMsg = document.getElementById('noResultsMsg');
+
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            const query = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach(function (card) {
+                const shopName = card.getAttribute('data-shop-name') || '';
+                if (shopName.includes(query)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (noResultsMsg) {
+                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

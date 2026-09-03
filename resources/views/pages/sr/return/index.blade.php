@@ -3,17 +3,67 @@
 @section('content')
 <div class="manage-card">
 
-    <div class="card-header">
-        <h2>My Returns</h2>
-        <p>Manage return requests</p>
-        @include('components.alert')
+    <div class="card-header" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>All Returns</h2>
+            <p>Manage return requests</p>
+            @include('components.alert')
+        </div>
+        <div>
+            <a href="{{ route('sr.return.create') }}" class="btn-smart btn-blue">
+                <i class="fas fa-plus me-1"></i> New Return
+            </a>
+        </div>
     </div>
+
     
-    <div style="margin: 15px 0; display: flex; gap: 10px;">
-        <input type="text" id="search" class="input-form" placeholder="Search by BRET ID or Customer name..." style="flex: 1;">
-        <a href="{{ route('sr.return.create') }}" class="btn-smart btn-blue">
-            <i class="fas fa-plus me-1"></i> New Return
-        </a>
+
+    {{-- Smart Filter Bar --}}
+    <div style="margin: 15px 0; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+        <div class="row g-2 align-items-end">
+            {{-- Search Bar --}}
+            <div class="col-12 col-lg-5 order-1 order-lg-1">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+                <div style="position: relative;">
+                    <input type="text" id="search" class="input-form" placeholder="Search by BRET ID or Customer name..." value="{{ request('search') }}" style="margin-bottom: 0; padding-left: 35px; height: 42px;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                </div>
+            </div>
+
+            {{-- From Date --}}
+            <div class="col-6 col-lg-2 order-2 order-lg-3">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
+                <input type="date" id="fromDate" class="input-form" value="{{ request('from_date') }}" style="margin-bottom: 0; height: 42px;">
+            </div>
+
+            {{-- To Date --}}
+            <div class="col-6 col-lg-2 order-3 order-lg-4">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
+                <input type="date" id="toDate" class="input-form" value="{{ request('to_date') }}" style="margin-bottom: 0; height: 42px;">
+            </div>
+
+            {{-- Status Filter --}}
+            <div class="col-6 col-lg-2 order-4 order-lg-2">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Status</label>
+                <select id="statusFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
+                    <option value="">-- All Statuses --</option>
+                    <option value="pending_manager" {{ request('status') == 'pending_manager' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
+            </div>
+
+            {{-- New Return + Reset Row --}}
+            <div class="col-6 col-lg-1 order-5 order-lg-5">
+                <div class="d-flex gap-2 align-items-end h-100" style="padding-top: 22px;">
+                    <button type="button" id="resetBtn" class="btn btn-outline-secondary flex-fill" title="Reset Filters" style="height: 42px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+
+            
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -35,7 +85,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <div class="manage-mobile-cards" id="mobileTable">
         @include('pages.sr.return.mtable')
     </div>
@@ -50,17 +100,61 @@
 
 @push('scripts')
 <script>
-    document.getElementById('search').addEventListener('keyup', function () {
-        let query = this.value;
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput  = document.getElementById('search');
+    const statusFilter = document.getElementById('statusFilter');
+    const fromDate     = document.getElementById('fromDate');
+    const toDate       = document.getElementById('toDate');
+    const resetBtn     = document.getElementById('resetBtn');
 
-        fetch(`{{ route('sr.return.index') }}?search=${query}`, {
+    function fetchFilteredReturns() {
+        const query  = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+        const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
+        const from   = encodeURIComponent(fromDate ? fromDate.value : '');
+        const to     = encodeURIComponent(toDate ? toDate.value : '');
+
+        const url = `{{ route('sr.return.index') }}?search=${query}&status=${status}&from_date=${from}&to_date=${to}`;
+
+        fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => res.json())
         .then(data => {
             document.getElementById('desktopTable').innerHTML = data.table;
             document.getElementById('mobileTable').innerHTML = data.mobile;
+        })
+        .catch(err => console.error('Filter fetch error:', err));
+    }
+
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(fetchFilteredReturns, 350);
         });
-    });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', fetchFilteredReturns);
+    }
+
+    if (fromDate) {
+        fromDate.addEventListener('change', fetchFilteredReturns);
+    }
+
+    if (toDate) {
+        toDate.addEventListener('change', fetchFilteredReturns);
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (searchInput) searchInput.value = '';
+            if (statusFilter) statusFilter.value = '';
+            if (fromDate) fromDate.value = '';
+            if (toDate) toDate.value = '';
+            fetchFilteredReturns();
+        });
+    }
+});
 </script>
 @endpush

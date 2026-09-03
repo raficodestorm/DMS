@@ -104,6 +104,14 @@ Route::middleware(['auth'])->group(function () {
 
         return response()->json($notifications);
     })->name('notifications.poll');
+
+    Route::delete('/notifications/clear-all', function () {
+        $user = auth()->user();
+        if ($user) {
+            $user->notifications()->delete();
+        }
+        return response()->json(['success' => true, 'message' => 'All notifications deleted']);
+    })->name('notifications.clearAll');
 });
 
 
