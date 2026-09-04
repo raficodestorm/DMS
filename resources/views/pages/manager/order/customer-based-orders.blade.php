@@ -99,9 +99,26 @@
 </style>
 
 <div class="container-fluid">
-  <div class="card-header mb-4">
+  <div class="card-header mb-3">
     <h2 style="color: var(--text-main);">Customer Orders</h2>
     <p style="color: var(--text-muted);">Select a customer to view order history</p>
+  </div>
+
+  {{-- Search Bar --}}
+  <div class="smart-filter-wrapper mb-4" style="background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+    <div class="row g-2 align-items-center">
+      <div class="col-12 col-md-9">
+        <div style="position: relative;">
+          <input type="text" id="customerSearchInput" class="input-form" placeholder="Search Customer by shop name or address..." style="padding-left: 35px; height: 42px; margin-bottom: 0;">
+          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <button type="button" id="customerResetBtn" class="btn btn-outline-secondary w-100" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="row g-4">
@@ -137,4 +154,37 @@
     @endforeach
   </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('customerSearchInput');
+    const resetBtn    = document.getElementById('customerResetBtn');
+
+    function filterCards() {
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const cards = document.querySelectorAll('.branch-card');
+        cards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            const col  = card.closest('.col-12');
+            if (col) {
+                col.style.display = text.includes(query) ? '' : 'none';
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('keyup', filterCards);
+        searchInput.addEventListener('input', filterCards);
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (searchInput) searchInput.value = '';
+            filterCards();
+        });
+    }
+});
+</script>
+@endpush
 @endsection

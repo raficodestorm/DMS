@@ -3,35 +3,35 @@
 @section('content')
 <div class="manage-card">
 
-  <div class="card-header">
-    <h2>My Orders</h2>
-    <p>Manage all orders from your branch SRs</p>
-    @include('components.alert')
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">My Orders</h2>
+      <p class="text-muted mb-0">Manage all orders from your branch SRs</p>
+    </div>
+    <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+      <i class="fas fa-shopping-bag me-1"></i> Total Orders: <span id="totalOrderCount">0</span>
+    </div>
   </div>
 
-  {{-- Search and Filter Controls --}}
-  <form id="orderFilterForm" onsubmit="return false;">
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; background: var(--background); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-      
-      {{-- Search Bar --}}
-      <div style="flex: 1; min-width: 200px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+  @include('components.alert')
+
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-5">
+
+      {{-- Search --}}
+      <div>
+        <label>Search</label>
         <div style="position: relative;">
-          <input type="text" 
-                 name="search" 
-                 id="searchInput"
-                 class="input-form" 
-                 placeholder="Search by Order ID or Customer..." 
-                 value="{{ request('search') }}"
-                 style="margin-bottom: 0; padding-left: 36px; height: 42px;">
-          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          <input type="text" id="searchInput" class="input-form" placeholder="Search Order ID or Customer..." value="{{ request('search') }}" style="padding-left: 32px;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
         </div>
       </div>
 
       {{-- Status Filter --}}
-      <div style="min-width: 160px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Filter Status</label>
-        <select name="status" id="statusFilter" class="input-form" style="padding: 5px; margin-bottom: 0; height: 42px;">
+      <div>
+        <label>Status</label>
+        <select id="statusFilter" class="input-form">
           <option value="">-- All Statuses --</option>
           <option value="pending_sr" {{ request('status') == 'pending_sr' ? 'selected' : '' }}>Pending SR</option>
           <option value="pending_manager" {{ request('status') == 'pending_manager' ? 'selected' : '' }}>Pending Manager</option>
@@ -43,36 +43,26 @@
       </div>
 
       {{-- From Date --}}
-      <div style="min-width: 140px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
-        <input type="date" 
-               name="from_date" 
-               id="fromDate" 
-               class="input-form" 
-               value="{{ request('from_date') }}"
-               style="margin-bottom: 0; height: 42px;">
+      <div>
+        <label>From</label>
+        <input type="date" id="fromDate" class="input-form" value="{{ request('from_date') }}">
       </div>
 
       {{-- To Date --}}
-      <div style="min-width: 140px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
-        <input type="date" 
-               name="to_date" 
-               id="toDate" 
-               class="input-form" 
-               value="{{ request('to_date') }}"
-               style="margin-bottom: 0; height: 42px;">
+      <div>
+        <label>To</label>
+        <input type="date" id="toDate" class="input-form" value="{{ request('to_date') }}">
       </div>
 
       {{-- Reset Button --}}
       <div>
-        <button type="button" id="resetBtn" class="btn-submit" style="padding: 0 1rem; height: 42px; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #6c757d; color: #fff; border-radius: 8px;">
-          <i class="fas fa-undo"></i> Reset
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
         </button>
       </div>
 
     </div>
-  </form>
+  </div>
 
   <div class="table-wrapper">
     <table>
@@ -89,45 +79,156 @@
         </tr>
       </thead>
       <tbody class="desktop-table" id="desktopTable">
-        @include('pages.manager.order.table')
+        <tr>
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view orders.
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
+
   <div class="manage-mobile-cards" id="mobileTable">
-    @include('pages.manager.order.mtable')
+    <p class="text-center text-muted py-5">
+      <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view orders.
+    </p>
   </div>
 
 </div>
-<div class="mt-3" id="paginationWrapper">
-  {{ $orders->links() }}
-</div>
+
+<div class="mt-3" id="paginationWrapper"></div>
+
 @endsection
 
 @push('scripts')
 <script>
-  const filterForm = document.getElementById('orderFilterForm');
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput       = document.getElementById('searchInput');
+    const statusFilter      = document.getElementById('statusFilter');
+    const fromDate          = document.getElementById('fromDate');
+    const toDate            = document.getElementById('toDate');
+    const resetBtn          = document.getElementById('resetBtn');
 
-  function fetchFilteredOrders() {
-    const params = new URLSearchParams(new FormData(filterForm)).toString();
-    fetch(`{{ route('manager.order.index') }}?${params}`, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('desktopTable').innerHTML = data.table;
-      document.getElementById('mobileTable').innerHTML = data.mobile;
-      if (data.pagination) {
-        document.getElementById('paginationWrapper').innerHTML = data.pagination;
-      }
-    });
-  }
+    const desktopTable      = document.getElementById('desktopTable');
+    const mobileTable       = document.getElementById('mobileTable');
+    const totalCountEl      = document.getElementById('totalOrderCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-  filterForm.addEventListener('input', fetchFilteredOrders);
-  filterForm.addEventListener('change', fetchFilteredOrders);
+    function showLoadingState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading orders...
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading orders...
+                </p>`;
+        }
+    }
 
-  document.getElementById('resetBtn').addEventListener('click', function () {
-    filterForm.reset();
-    fetchFilteredOrders();
-  });
+    function showErrorState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load order data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load order data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput)  searchInput.value  = '';
+        if (statusFilter) statusFilter.value = '';
+        if (fromDate)     fromDate.value     = '';
+        if (toDate)       toDate.value       = '';
+    }
+
+    function fetchFilteredOrders(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
+            const from   = encodeURIComponent(fromDate ? fromDate.value : '');
+            const to     = encodeURIComponent(toDate ? toDate.value : '');
+
+            url = `{{ route('manager.order.index.data') }}?search=${search}&status=${status}&from_date=${from}&to_date=${to}`;
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (desktopTable) desktopTable.innerHTML = data.table;
+            if (mobileTable)  mobileTable.innerHTML  = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if search/status/date parameters exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredOrders();
+    }
+
+    // Debounce search input
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredOrders(), 350);
+        });
+    }
+
+    // Filter change listeners
+    if (statusFilter) statusFilter.addEventListener('change', () => fetchFilteredOrders());
+    if (fromDate)     fromDate.addEventListener('change',     () => fetchFilteredOrders());
+    if (toDate)       toDate.addEventListener('change',       () => fetchFilteredOrders());
+
+    // Reset button handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredOrders();
+        });
+    }
+
+    // AJAX pagination handling
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredOrders(link.href);
+            }
+        });
+    }
+});
 </script>
 @endpush

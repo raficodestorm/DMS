@@ -3,8 +3,20 @@
   <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
   <td>BRS{{ $order->id }}</td>
   <td>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</td>
-  <td>{{ $order->sr->fullname ?? $order->manager->fullname }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
+  
+  <td>
+    @if($order->order_type == "field_order")
+    <span class="emerald-type-badge">Field Order</span>
+    @elseif($order->order_type == 'retail')
+    <span class="pink-type-badge">Retail</span>
+    @elseif($order->order_type == 'online')
+    <span class="purple-type-badge">Online</span>
+    @else
+    <span class="status-undefined-badge">Undefined</span>
+    @endif
+  </td>
+
   <td>
     @if($order->status == "pending_sr")
     <span class="status-pending-badge">Pending..SR..</span>
@@ -22,6 +34,7 @@
     <span class="status-undefined-badge">Undefined</span>
     @endif
   </td>
+
   <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
 
   <td class="action-icons">

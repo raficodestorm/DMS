@@ -18,7 +18,18 @@ use Illuminate\Support\Facades\Log;
 
 class OrderManagerController extends Controller
 {
-  public function index(Request $request)
+  /**
+   * Load UI page for Manager Orders.
+   */
+  public function index()
+  {
+    return view('pages.manager.order.index');
+  }
+
+  /**
+   * Fetch Manager Orders data via AJAX.
+   */
+  public function fetchOrdersData(Request $request)
   {
     $user = auth()->user();
 
@@ -57,17 +68,14 @@ class OrderManagerController extends Controller
       });
     }
 
-    $orders = $query->paginate(15)->appends($request->query());
+    $orders = $query->paginate(20)->withQueryString();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'      => view('pages.manager.order.table', compact('orders'))->render(),
-        'mobile'     => view('pages.manager.order.mtable', compact('orders'))->render(),
-        'pagination' => $orders->links()->render(),
-      ]);
-    }
-
-    return view('pages.manager.order.index', compact('orders'));
+    return response()->json([
+      'table'      => view('pages.manager.order.table', compact('orders'))->render(),
+      'mobile'     => view('pages.manager.order.mtable', compact('orders'))->render(),
+      'total'      => $orders->total(),
+      'pagination' => (string) $orders->links(),
+    ]);
   }
 
   public function showForManager($id)
@@ -120,27 +128,52 @@ class OrderManagerController extends Controller
     );
   }
 
-  public function specificCustomerOrders($id)
+  public function specificCustomerOrders(Request $request, $id)
   {
     $customer = Customer::findOrFail($id);
 
-    $orders = Order::where('customer_id', $id)
+    $query = Order::where('customer_id', $id)
       ->where('status', '!=', 'rejected')
-      ->latest()
-      ->paginate(15);
+      ->latest();
+
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        $q->where('id', 'like', "%{$search}%")
+          ->orWhereHas('sr', function ($sr) use ($search) {
+            $sr->where('fullname', 'like', "%{$search}%")
+              ->orWhere('username', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%");
+          });
+      });
+    }
+
+    $orders = $query->paginate(15)->withQueryString();
 
     return view('pages.manager.order.specific-index', compact('customer', 'orders'));
   }
 
 
-  public function specificSrOrders($id)
+  public function specificSrOrders(Request $request, $id)
   {
     $sr = User::where('role', 'sr')->findOrFail($id);
 
-    $orders = Order::where('sr_id', $id)
+    $query = Order::where('sr_id', $id)
       ->where('status', '!=', 'rejected')
-      ->latest()
-      ->paginate(15);
+      ->latest();
+
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        $q->where('id', 'like', "%{$search}%")
+          ->orWhereHas('customer', function ($c) use ($search) {
+            $c->where('shop_name', 'like', "%{$search}%")
+              ->orWhere('owner_name', 'like', "%{$search}%");
+          });
+      });
+    }
+
+    $orders = $query->paginate(15)->withQueryString();
 
     return view(
       'pages.manager.order.specific-index',

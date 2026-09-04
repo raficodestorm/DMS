@@ -1,7 +1,6 @@
 @forelse($employees as $employee)
 <tr>
-  {{-- <td>{{ $user->id }}</td> --}}
-  <td scope="row">{{ $loop->iteration }}</td>
+  <td scope="row">{{ $employees->firstItem() ? $employees->firstItem() + $loop->index : $loop->iteration }}</td>
   <td>BRE100{{ $employee->id }}</td>
   <td class="name">{{ $employee->name }}</td>
   <td>{{ $employee->rank }}</td>
@@ -16,6 +15,6 @@
 </tr>
 @empty
 <tr>
-  <td colspan="8" class="text-center text-muted">No records found.</td>
+  <td colspan="7" class="text-center text-muted">No records found.</td>
 </tr>
 @endforelse

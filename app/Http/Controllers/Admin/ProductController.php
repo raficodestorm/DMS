@@ -19,26 +19,29 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        return view('pages.admin.product.index');
+    }
+
+    public function fetchProductsIndexData(Request $request)
+    {
         $query = Product::orderBy('id', 'asc');
 
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', "%{$request->search}%");
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('sku', 'LIKE', "%{$search}%");
+            });
         }
 
-        if ($request->filled('amount')) {
-            $query->where('price', '>=', $request->amount);
-        }
+        $products = $query->paginate(25)->withQueryString();
 
-        $products = $query->paginate(25);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'table' => view('pages.admin.product.table', compact('products'))->render(),
-                'mobile' => view('pages.admin.product.mtable', compact('products'))->render(),
-            ]);
-        }
-
-        return view('pages.admin.product.index', compact('products'));
+        return response()->json([
+            'table'      => view('pages.admin.product.table', compact('products'))->render(),
+            'mobile'     => view('pages.admin.product.mtable', compact('products'))->render(),
+            'pagination' => (string) $products->links(),
+            'total'      => $products->total(),
+        ]);
     }
 
 

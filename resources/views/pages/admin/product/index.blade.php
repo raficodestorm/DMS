@@ -3,17 +3,45 @@
 @section('content')
 <div class="manage-card">
 
-    <div class="card-header">
-        <h2>All Products</h2>
-        <p>Manage all registered products</p>
-    </div>
-
-    <div style="margin: 15px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <input type="text" id="search" class="input-form" placeholder="Search by Product Name...">
-        <input type="number" id="amount" class="input-form" placeholder="Filter by Minimum Price...">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="mb-0">All Products</h2>
+            <p class="text-muted mb-0">Manage all registered products</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+                <i class="fas fa-box me-1"></i> Total Products: <span id="totalProductCount">0</span>
+            </div>
+            <a href="{{ route('admin.products.create') }}" class="btn-smart btn-blue">
+                <i class="fas fa-plus me-1"></i> Add New Product
+            </a>
+        </div>
     </div>
 
     @include('components.alert')
+
+    {{-- Smart Filter Bar --}}
+    <div class="smart-filter-wrapper">
+        <div class="smart-filter-grid-2">
+
+            {{-- Search --}}
+            <div>
+                <label>Search</label>
+                <div style="position: relative;">
+                    <input type="text" id="searchInput" class="input-form" placeholder="Search by Product Name or SKU..." value="{{ request('search') }}" style="padding-left: 32px;">
+                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+                </div>
+            </div>
+
+            {{-- Reset Button --}}
+            <div>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
 
     <div class="table-wrapper">
         <table>
@@ -28,44 +56,138 @@
                 </tr>
             </thead>
             <tbody class="desktop-table" id="productTable">
-                @include('pages.admin.product.table')
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view products.
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
+
     <div class="manage-mobile-cards" id="productMobile">
-        @include('pages.admin.product.mtable')
+        <p class="text-center text-muted py-5">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view products.
+        </p>
     </div>
 
+</div>
 
-</div>
-<div class="d-flex justify-content-center mt-3" id="pagination-links">
-    {{ $products->links() }}
-</div>
+<div class="mt-3" id="paginationWrapper"></div>
 
 @endsection
 
 @push('scripts')
 <script>
-    const searchInput = document.getElementById('search');
-    const amountInput = document.getElementById('amount');
-    const productTable = document.getElementById('productTable');
-    const productMobile = document.getElementById('productMobile');
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput       = document.getElementById('searchInput');
+    const resetBtn          = document.getElementById('resetBtn');
 
-    const filterProducts = () => {
-        let search = searchInput.value;
-        let amount = amountInput.value;
+    const productTable      = document.getElementById('productTable');
+    const productMobile     = document.getElementById('productMobile');
+    const totalCountEl      = document.getElementById('totalProductCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-        fetch(`{{ route('admin.products.index') }}?search=${search}&amount=${amount}`, {
+    function showLoadingState() {
+        if (productTable) {
+            productTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading products...
+                    </td>
+                </tr>`;
+        }
+        if (productMobile) {
+            productMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading products...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (productTable) {
+            productTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load product data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (productMobile) {
+            productMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load product data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput) searchInput.value = '';
+    }
+
+    function fetchFilteredProducts(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            url = `{{ route('admin.products.index.data') }}?search=${search}`;
+        }
+
+        fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
         .then(data => {
-            productTable.innerHTML = data.table;
-            productMobile.innerHTML = data.mobile;
+            if (productTable)  productTable.innerHTML  = data.table;
+            if (productMobile) productMobile.innerHTML = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
         });
-    };
+    }
 
-    searchInput.addEventListener('keyup', filterProducts);
-    amountInput.addEventListener('input', filterProducts);
+    // Initial Load: Only fetch if filters or page parameter exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredProducts();
+    }
+
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredProducts(), 450);
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredProducts();
+        });
+    }
+
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredProducts(link.href);
+            }
+        });
+    }
+});
 </script>
 @endpush

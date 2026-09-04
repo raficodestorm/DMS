@@ -9,12 +9,24 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Load UI page only for Admin Customers (no heavy query on page load).
+     */
+    public function index()
+    {
+        $branches = Branch::orderBy('name', 'asc')->get();
+        return view('pages.admin.customer.index', compact('branches'));
+    }
+
+    /**
+     * Fetch Customer data via AJAX.
+     */
+    public function fetchCustomersIndexData(Request $request)
     {
         $query = Customer::with('branch')->orderBy('shop_name', 'asc');
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
             if (str_starts_with($search, 'BRC200')) {
                 $id = str_replace('BRC200', '', $search);
                 $query->where('id', $id);
@@ -30,18 +42,14 @@ class CustomerController extends Controller
             $query->where('branch_id', $request->branch_id);
         }
 
-        $customers = $query->get();
-        $branches  = Branch::orderBy('name', 'asc')->get();
+        $customers = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.admin.customer.table', compact('customers'))->render(),
-                'mobile' => view('pages.admin.customer.mtable', compact('customers'))->render(),
-                'total'  => $customers->count(),
-            ]);
-        }
-
-        return view('pages.admin.customer.index', compact('customers', 'branches'));
+        return response()->json([
+            'table'      => view('pages.admin.customer.table', compact('customers'))->render(),
+            'mobile'     => view('pages.admin.customer.mtable', compact('customers'))->render(),
+            'total'      => $customers->total(),
+            'pagination' => (string) $customers->links(),
+        ]);
     }
 
 

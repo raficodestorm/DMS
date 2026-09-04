@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
   Route::get('/users/index', [UserManagementController::class, 'users'])->name('index.users');
+  Route::get('/users/index/data', [UserManagementController::class, 'fetchUsersIndexData'])->name('users.index.data');
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('users/show/{user}', [UserManagementController::class, 'show'])->name('users.show');
@@ -37,23 +38,30 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     ->name('employees.qr.download');
 
   Route::resource('employees', EmployeeController::class);
+  Route::get('/employees/index/data', [EmployeeController::class, 'fetchEmployeesIndexData'])->name('employees.index.data');
   Route::resource('branches', BranchController::class);
+  Route::get('/customers/index/data', [CustomerController::class, 'fetchCustomersIndexData'])->name('customers.index.data');
   Route::resource('customers', CustomerController::class);
+  Route::get('/categories/index/data', [CategoryController::class, 'fetchCategoriesIndexData'])->name('categories.index.data');
   Route::resource('categories', CategoryController::class);
+  Route::get('/company_costs/index/data', [CompanyCostController::class, 'fetchCompanyCostsIndexData'])->name('company_costs.index.data');
   Route::resource('company_costs', CompanyCostController::class);
 
   // Cost Dashboard Routes
   Route::get('/costs-dashboard', [CostDashboardController::class, 'index'])->name('costs.dashboard');
   Route::get('/costs-branch/{id}', [CostDashboardController::class, 'branchCosts'])->name('costs.branch');
 
+  Route::get('/products/index/data', [ProductController::class, 'fetchProductsIndexData'])->name('products.index.data');
   Route::resource('products', ProductController::class);
   Route::resource('offers', OfferController::class);
   Route::resource('deductions', DeductionController::class);
   Route::resource('suppliers', SupplierController::class);
+  Route::get('/bonuses/index/data', [BonusController::class, 'fetchBonusesIndexData'])->name('bonuses.index.data');
   Route::resource('bonuses', BonusController::class);
 
 
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForAdmin'])->name('stock.in.requests.index');
+  Route::get('/stock-in-requests/data', [StockRequestController::class, 'fetchStockInRequestsData'])->name('stock.in.requests.data');
 
   // রিকোয়েস্টের ডিটেইল দেখার জন্য
   Route::get('/stock-in-request/show/{id}', [StockRequestController::class, 'showForAdmin'])->name('stock.in.request.show');
@@ -72,7 +80,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/stock/branch/{branch_id?}', [StockController::class, 'specificStock'])->name('stocks.specific');
 
   Route::get('/orders', [OrderAdminController::class, 'indexForAllAdmin'])->name('order.index');
-  Route::get('/orders/pending', [OrderAdminController::class, 'indexForPendingAdmin'])->name('order.pending.index');
+  Route::get('/orders/data', [OrderAdminController::class, 'fetchOrdersData'])->name('order.data');
+  
   Route::get('/orders/allsrs', [OrderAdminController::class, 'allSrOrders'])->name('order.all.srs');
   Route::get('/orders/allbranches', [OrderAdminController::class, 'allBranchOrders'])->name('order.all.branches');
   Route::get('/orders/allcustomer', [OrderAdminController::class, 'allCustomerOrders'])->name('order.all.customers');
@@ -88,6 +97,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/retail/invoice/view/{order}', [RetailOrderController::class, 'viewRetailInvoice'])->name('order.view_retail_invoice');
 
   Route::get('/return', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'index'])->name('return.index');
+  Route::get('/return/index/data', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'fetchReturnsIndexData'])->name('return.index.data');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'show'])->name('return.show');
   // Use POST or PATCH for approval
   Route::post('/return/{id}/approve', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'approve'])->name('return.approve');
@@ -95,6 +105,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
 
   Route::get('/payments', [PaymentController::class, 'indexForAdmin'])->name('payments.index');
+  Route::get('/payments/index/data', [PaymentController::class, 'fetchPaymentsIndexData'])->name('payments.index.data');
   Route::post('/payments/{payment}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
 
   // Admin chaitile shob role-er payment delete o korte parbe
@@ -102,7 +113,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/payments/show/{payment}', [PaymentController::class, 'showForAdmin'])->name('payments.show');
 
   // Stock Transfer Routes
-  Route::get('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'index'])->name('stock-transfer.index');
+  Route::get('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'indexForAdmin'])->name('stock-transfer.index');
+  Route::get('/stock-transfer/index/data', [\App\Http\Controllers\StockTransferController::class, 'fetchTransfersIndexData'])->name('stock-transfer.index.data');
   Route::get('/stock-transfer/{id}', [\App\Http\Controllers\StockTransferController::class, 'show'])->name('stock-transfer.show');
   Route::post('/stock-transfer/{id}/approve', [\App\Http\Controllers\StockTransferController::class, 'approve'])->name('stock-transfer.approve');
   Route::post('/stock-transfer/{id}/reject', [\App\Http\Controllers\StockTransferController::class, 'reject'])->name('stock-transfer.reject');
@@ -127,6 +139,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/stock/get-products/{supplier_id}', [StockCutController::class, 'getProductsBySupplier'])->name('getProducts');
   Route::post('/stock/store', [StockCutController::class, 'store'])->name('stockcut.store');
   Route::get('/stock-cut-cuts/index', [StockCutController::class, 'index'])->name('stock.cut.cuts.index');
+  Route::get('/stock-cut/index/data', [StockCutController::class, 'fetchStockCutsIndexData'])->name('stock.cut.index.data');
 
   Route::get('/stock-cut-cut/{id}', [StockCutController::class, 'show'])->name('stock.cut.cut.show');
 

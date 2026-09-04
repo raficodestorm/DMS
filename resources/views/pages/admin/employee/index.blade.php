@@ -9,28 +9,29 @@
             <p class="text-muted mb-0">Manage all registered Employees</p>
         </div>
         <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
-            <i class="fas fa-id-badge me-1"></i> Total Employees: <span id="totalEmployeeCount">{{ $employees->count() }}</span>
+            <i class="fas fa-id-badge me-1"></i> Total Employees: <span id="totalEmployeeCount">0</span>
         </div>
     </div>
 
     @include('components.alert')
 
     {{-- Smart Filter Bar --}}
-    <div style="margin: 15px 0; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
-        <div class="row g-2 align-items-end">
+    <div class="smart-filter-wrapper">
+        <div class="smart-filter-grid-5">
+
             {{-- Search --}}
-            <div class="col-12 col-md-5 col-lg-5">
-                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+            <div>
+                <label>Search</label>
                 <div style="position: relative;">
-                    <input type="text" id="search" class="input-form" placeholder="Search by Name or BRE100 ID..." style="margin-bottom: 0; padding-left: 35px; height: 42px;">
-                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="search" class="input-form" placeholder="Search by Name or BRE100 ID..." style="padding-left: 32px;">
+                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
                 </div>
             </div>
 
             {{-- Rank Filter --}}
-            <div class="col-6 col-md-3 col-lg-3">
-                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Rank</label>
-                <select id="rankFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
+            <div>
+                <label>Rank</label>
+                <select id="rankFilter" class="input-form">
                     <option value="">-- All Ranks --</option>
                     <option value="SR">SR</option>
                     <option value="TSM">TSM</option>
@@ -41,9 +42,9 @@
             </div>
 
             {{-- Branch Filter --}}
-            <div class="col-6 col-md-3 col-lg-3">
-                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Branch</label>
-                <select id="branchFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
+            <div>
+                <label>Branch</label>
+                <select id="branchFilter" class="input-form">
                     <option value="">-- All Branches --</option>
                     @foreach($branches as $b)
                     <option value="{{ $b->id }}">{{ $b->name }}</option>
@@ -51,12 +52,13 @@
                 </select>
             </div>
 
-            {{-- Reset --}}
-            <div class="col-12 col-md-1 col-lg-1">
-                <button type="button" id="resetBtn" class="btn btn-outline-secondary w-100" title="Reset Filters" style="height: 42px; display: inline-flex; align-items: center; justify-content: center;">
+            {{-- Reset Button --}}
+            <div>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
                     <i class="fas fa-undo"></i>
                 </button>
             </div>
+
         </div>
     </div>
 
@@ -74,65 +76,146 @@
                 </tr>
             </thead>
             <tbody class="desktop-table" id="employeeTable">
-                @include('pages.admin.employee.table')
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view employees.
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
 
     <div class="manage-mobile-cards" id="employeeMobile">
-        @include('pages.admin.employee.mtable')
+        <p class="text-center text-muted py-5">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view employees.
+        </p>
     </div>
 
 </div>
+
+<div class="mt-3" id="paginationWrapper"></div>
 
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const searchInput  = document.getElementById('search');
-    const rankFilter   = document.getElementById('rankFilter');
-    const branchFilter = document.getElementById('branchFilter');
-    const resetBtn     = document.getElementById('resetBtn');
+    const searchInput       = document.getElementById('search');
+    const rankFilter        = document.getElementById('rankFilter');
+    const branchFilter      = document.getElementById('branchFilter');
+    const resetBtn          = document.getElementById('resetBtn');
 
-    function fetchFilteredEmployees() {
-        const query  = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
-        const rank   = encodeURIComponent(rankFilter ? rankFilter.value : '');
-        const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+    const employeeTable     = document.getElementById('employeeTable');
+    const employeeMobile    = document.getElementById('employeeMobile');
+    const totalCountEl      = document.getElementById('totalEmployeeCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-        const url = `{{ route('admin.employees.index') }}?search=${query}&rank=${rank}&branch_id=${branch}`;
+    function showLoadingState() {
+        if (employeeTable) {
+            employeeTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading employees...
+                    </td>
+                </tr>`;
+        }
+        if (employeeMobile) {
+            employeeMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading employees...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (employeeTable) {
+            employeeTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load employee data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (employeeMobile) {
+            employeeMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load employee data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput)  searchInput.value  = '';
+        if (rankFilter)   rankFilter.value   = '';
+        if (branchFilter) branchFilter.value = '';
+    }
+
+    function fetchFilteredEmployees(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const rank   = encodeURIComponent(rankFilter ? rankFilter.value : '');
+            const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+
+            url = `{{ route('admin.employees.index.data') }}?search=${search}&rank=${rank}&branch_id=${branch}`;
+        }
 
         fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
         .then(data => {
-            document.getElementById('employeeTable').innerHTML = data.table;
-            document.getElementById('employeeMobile').innerHTML = data.mobile;
-            if (document.getElementById('totalEmployeeCount') && data.total !== undefined) {
-                document.getElementById('totalEmployeeCount').innerText = data.total;
+            if (employeeTable)  employeeTable.innerHTML  = data.table;
+            if (employeeMobile) employeeMobile.innerHTML = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
             }
         })
-        .catch(err => console.error('Filter fetch error:', err));
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if filters/page params exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredEmployees();
     }
 
     let debounceTimer;
     if (searchInput) {
         searchInput.addEventListener('keyup', function () {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(fetchFilteredEmployees, 350);
+            debounceTimer = setTimeout(() => fetchFilteredEmployees(), 350);
         });
     }
 
-    if (rankFilter) rankFilter.addEventListener('change', fetchFilteredEmployees);
-    if (branchFilter) branchFilter.addEventListener('change', fetchFilteredEmployees);
+    if (rankFilter)   rankFilter.addEventListener('change',   () => fetchFilteredEmployees());
+    if (branchFilter) branchFilter.addEventListener('change', () => fetchFilteredEmployees());
 
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            if (searchInput) searchInput.value = '';
-            if (rankFilter) rankFilter.value = '';
-            if (branchFilter) branchFilter.value = '';
+            clearAllFilterInputs();
             fetchFilteredEmployees();
+        });
+    }
+
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredEmployees(link.href);
+            }
         });
     }
 });

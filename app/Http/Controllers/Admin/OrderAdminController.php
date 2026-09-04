@@ -19,18 +19,24 @@ use Illuminate\Support\Facades\Log;
 class OrderAdminController extends Controller
 {
 
-  public function indexForPendingAdmin()
-  {
-    $query = Order::with(['customer', 'sr']);
+  
 
-    $orders = $query->where('status', 'pending_manager')->latest()->paginate(15);
-    return view("pages.admin.orders.index", compact('orders'));
+
+  /**
+   * Load UI page only (no heavy order database query).
+   */
+  public function indexForAllAdmin()
+  {
+    $branches = Branch::select('id', 'name')->orderBy('name', 'asc')->get();
+    return view('pages.admin.orders.index', compact('branches'));
   }
 
-
-  public function indexForAllAdmin(Request $request)
+  /**
+   * Fetch paginated & filtered order data via AJAX.
+   */
+  public function fetchOrdersData(Request $request)
   {
-    $query = Order::with(['customer', 'sr.branch', 'manager.branch'])
+    $query = Order::with(['customer:id,shop_name', 'sr:id,fullname,branch_id', 'sr.branch:id,name', 'manager:id,fullname,branch_id', 'manager.branch:id,name'])
       ->latest();
 
     if ($request->filled('search')) {
@@ -48,16 +54,11 @@ class OrderAdminController extends Controller
     }
 
     if ($request->filled('branch_id')) {
-      $branchId = $request->branch_id;
-      $query->where(function ($q) use ($branchId) {
-        $q->where('branch_id', $branchId)
-          ->orWhereHas('sr', function ($srQ) use ($branchId) {
-            $srQ->where('branch_id', $branchId);
-          })
-          ->orWhereHas('manager', function ($mgrQ) use ($branchId) {
-            $mgrQ->where('branch_id', $branchId);
-          });
-      });
+      $query->where('branch_id', $request->branch_id);
+    }
+
+    if ($request->filled('order_type')) {
+      $query->where('order_type', $request->order_type);
     }
 
     if ($request->filled('status')) {
@@ -73,18 +74,13 @@ class OrderAdminController extends Controller
     }
 
     $orders = $query->paginate(15)->withQueryString();
-    $branches = Branch::orderBy('name', 'asc')->get();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'      => view('pages.admin.orders.table', compact('orders'))->render(),
-        'mobile'     => view('pages.admin.orders.mtable', compact('orders'))->render(),
-        'total'      => $orders->total(),
-        'pagination' => (string) $orders->links(),
-      ]);
-    }
-
-    return view('pages.admin.orders.index', compact('orders', 'branches'));
+    return response()->json([
+      'table'      => view('pages.admin.orders.table', compact('orders'))->render(),
+      'mobile'     => view('pages.admin.orders.mtable', compact('orders'))->render(),
+      'total'      => $orders->total(),
+      'pagination' => (string) $orders->links(),
+    ]);
   }
 
 
@@ -114,12 +110,12 @@ class OrderAdminController extends Controller
 
       // Only delivered orders count
       $sr->total_orders = $sr->srOrders
-        ->where('status', 'delivered')
+        ->where('status', '!=', 'rejected')
         ->count();
 
       // Only delivered amount
       $sr->total_order_amount = $sr->srOrders
-        ->where('status', 'delivered')
+        ->where('status', '!=', 'rejected')
         ->sum('net_total');
     }
 
@@ -134,7 +130,7 @@ class OrderAdminController extends Controller
 {
     $branches = Branch::with([
         'orders' => function ($query) {
-            $query->where('status', 'delivered');
+            $query->where('status', '!=', 'rejected');
         }
     ])->get();
 

@@ -3,7 +3,7 @@
 
   <div class="card-body">
     <div><span>S.No</span>
-      <p>{{ $loop->iteration }}</p>
+      <p>{{ $employees->firstItem() ? $employees->firstItem() + $loop->index : $loop->iteration }}</p>
     </div>
     <div><span>Employee ID</span>
       <p>BRE100{{ $employee->id }}</p>
@@ -18,7 +18,7 @@
       <p>{{ $employee->phone }}</p>
     </div>
     <div><span>Branch</span>
-      <p>{{ $employee->branch->name }}</p>
+      <p>{{ $employee->branch->name ?? 'N/A' }}</p>
     </div>
   </div>
 

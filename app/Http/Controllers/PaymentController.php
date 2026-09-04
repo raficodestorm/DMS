@@ -16,32 +16,29 @@ class PaymentController extends Controller
 
   public function indexForSr(Request $request)
   {
+    return view('pages.sr.payment.index');
+  }
+
+  /**
+   * Fetch SR payments data via AJAX with filters.
+   */
+  public function fetchSrPaymentsData(Request $request)
+  {
     $sr = auth()->user();
 
     $query = Transaction::with(['customer', 'sr'])
-
-
       ->whereHas('customer', function ($q) use ($sr) {
         $q->where('branch_id', $sr->branch_id);
       })
-
       ->latest();
 
     if ($request->filled('search')) {
-
       $search = trim($request->search);
-
       $query->where(function ($q) use ($search) {
-
-        if (str_starts_with('BRT00', strtoupper($search))) {
-          return;
-        }
-
         if (preg_match('/^BRT00(\d+)$/i', $search, $match)) {
           $q->where('id', $match[1]);
           return;
         }
-        // Normal Search
         $q->where('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
             $customer->where('shop_name', 'like', "%{$search}%");
@@ -61,48 +58,47 @@ class PaymentController extends Controller
       $query->whereDate('created_at', '<=', $request->to_date);
     }
 
+    $totalCount = $query->count();
     $payments = $query->paginate(15)->withQueryString();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.sr.payment.table', compact('payments'))->render(),
-        'mobile' => view('pages.sr.payment.mtable', compact('payments'))->render(),
-      ]);
-    }
-
-    return view('pages.sr.payment.index', compact('payments'));
+    return response()->json([
+      'table'       => view('pages.sr.payment.table', compact('payments'))->render(),
+      'mobile'      => view('pages.sr.payment.mtable', compact('payments'))->render(),
+      'pagination'  => $payments->links()->toHtml(),
+      'total_count' => $totalCount,
+    ]);
   }
 
 
 
   public function indexForManager(Request $request)
   {
+    return view('pages.manager.payment.index');
+  }
+
+  /**
+   * Fetch manager payments data via AJAX with filters.
+   */
+  public function fetchManagerPaymentsData(Request $request)
+  {
     $manager = auth()->user();
 
     $query = Transaction::with(['customer', 'sr'])
-
-
       ->whereHas('customer', function ($q) use ($manager) {
         $q->where('branch_id', $manager->branch_id);
       })
-
       ->latest();
 
     if ($request->filled('search')) {
-
       $search = trim($request->search);
-
       $query->where(function ($q) use ($search) {
-
         if (str_starts_with('BRT00', strtoupper($search))) {
           return;
         }
-
         if (preg_match('/^BRT00(\d+)$/i', $search, $match)) {
           $q->where('id', $match[1]);
           return;
         }
-        // Normal Search
         $q->where('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
             $customer->where('shop_name', 'like', "%{$search}%");
@@ -124,14 +120,12 @@ class PaymentController extends Controller
 
     $payments = $query->paginate(15)->withQueryString();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.manager.payment.table', compact('payments'))->render(),
-        'mobile' => view('pages.manager.payment.mtable', compact('payments'))->render(),
-      ]);
-    }
-
-    return view('pages.manager.payment.index', compact('payments'));
+    return response()->json([
+      'table'      => view('pages.manager.payment.table',  compact('payments'))->render(),
+      'mobile'     => view('pages.manager.payment.mtable', compact('payments'))->render(),
+      'total'      => $payments->total(),
+      'pagination' => (string) $payments->links(),
+    ]);
   }
 
 
@@ -144,18 +138,18 @@ class PaymentController extends Controller
 
   public function indexForAdmin(Request $request)
   {
-    $query = Transaction::with(['customer', 'sr'])->latest();
+    $branches = \App\Models\Branch::orderBy('name', 'asc')->get();
+    return view('pages.admin.transaction.index', compact('branches'));
+  }
+
+  public function fetchPaymentsIndexData(Request $request)
+  {
+    $query = Transaction::with(['customer', 'sr', 'branch'])->latest();
 
     if ($request->filled('search')) {
-
       $search = trim($request->search);
 
       $query->where(function ($q) use ($search) {
-
-        if (str_starts_with('BRT00', strtoupper($search))) {
-          return;
-        }
-
         if (preg_match('/^BRT00(\d+)$/i', $search, $match)) {
           $q->where('id', $match[1]);
           return;
@@ -163,21 +157,43 @@ class PaymentController extends Controller
 
         $q->where('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
-            $customer->where('shop_name', 'like', "%{$search}%");
+            $customer->where('shop_name', 'like', "%{$search}%")
+                     ->orWhere('name', 'like', "%{$search}%");
+          })
+          ->orWhereHas('sr', function ($sr) use ($search) {
+            $sr->where('name', 'like', "%{$search}%");
           });
       });
     }
 
-    $payments = $query->paginate(15);
-
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.admin.transaction.table', compact('payments'))->render(),
-        'mobile' => view('pages.admin.transaction.mtable', compact('payments'))->render(),
-      ]);
+    if ($request->filled('branch_id')) {
+      $query->where('branch_id', $request->branch_id);
     }
 
-    return view('pages.admin.transaction.index', compact('payments'));
+    if ($request->filled('type')) {
+      $query->where('type', $request->type);
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $payments = $query->paginate(15)->withQueryString();
+
+    return response()->json([
+      'table'      => view('pages.admin.transaction.table', compact('payments'))->render(),
+      'mobile'     => view('pages.admin.transaction.mtable', compact('payments'))->render(),
+      'pagination' => (string) $payments->links(),
+      'total'      => $payments->total(),
+    ]);
   }
 
 

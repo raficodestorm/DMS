@@ -13,8 +13,29 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::orderBy('id', 'asc')->paginate(10);
-        return view('pages.admin.category.index', compact('categories'));
+        return view('pages.admin.category.index');
+    }
+
+    public function fetchCategoriesIndexData(Request $request)
+    {
+        $query = Category::orderBy('id', 'asc');
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $categories = $query->paginate(15)->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.admin.category.table', compact('categories'))->render(),
+            'mobile'     => view('pages.admin.category.mtable', compact('categories'))->render(),
+            'pagination' => (string) $categories->links(),
+            'total'      => $categories->total(),
+        ]);
     }
 
     /**

@@ -12,7 +12,10 @@ class EmployeeController extends Controller
 {
     use UploadHelper;
 
-    public function index(Request $request)
+    /**
+     * Load UI page for Branch Employees.
+     */
+    public function index()
     {
         $branchId = auth()->user()->branch_id;
 
@@ -21,6 +24,16 @@ class EmployeeController extends Controller
             ->whereNotNull('rank')
             ->distinct()
             ->pluck('rank');
+
+        return view('pages.manager.employee.index', compact('ranks'));
+    }
+
+    /**
+     * Fetch Employees data via AJAX.
+     */
+    public function fetchEmployeesIndexData(Request $request)
+    {
+        $branchId = auth()->user()->branch_id;
 
         $query = Employee::where('branch_id', $branchId)
             ->whereNotIn('rank', ['manager', 'admin']);
@@ -43,16 +56,14 @@ class EmployeeController extends Controller
             $query->where('rank', $request->rank);
         }
 
-        $employees = $query->get();
+        $employees = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.manager.employee.table', compact('employees'))->render(),
-                'mobile' => view('pages.manager.employee.mtable', compact('employees'))->render(),
-            ]);
-        }
-
-        return view('pages.manager.employee.index', compact('employees', 'ranks'));
+        return response()->json([
+            'table'      => view('pages.manager.employee.table', compact('employees'))->render(),
+            'mobile'     => view('pages.manager.employee.mtable', compact('employees'))->render(),
+            'total'      => $employees->total(),
+            'pagination' => (string) $employees->links(),
+        ]);
     }
 
     public function create()

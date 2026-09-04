@@ -177,13 +177,6 @@
         <ul class="sub-menu" style="{{ isOpen(['admin.order.*', 'admin.orders.*']) }}">
 
           <li>
-            <a href="{{ route('admin.order.pending.index') }}"
-              class="sub-link {{ isActive('admin.order.pending.index') }}">
-              <i class="fa-solid fa-boxes-stacked me-1"></i> Pending orders
-            </a>
-          </li>
-
-          <li>
             <a href="{{ route('admin.order.index') }}" class="sub-link {{ isActive('admin.order.index') }}">
               <i class="fa-solid fa-boxes-stacked me-1"></i> All orders
             </a>

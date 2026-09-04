@@ -11,34 +11,44 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::where('branch_id', auth()->user()->branch_id);
+        return view('pages.common.customer.index');
+    }
+
+    /**
+     * Fetch customers index data via AJAX for common customer index page.
+     */
+    public function fetchCustomersIndexData(Request $request)
+    {
+        $query = Customer::where('branch_id', auth()->user()->branch_id)->latest();
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
 
-
-            if (str_starts_with($search, 'BRC200')) {
-                $id = str_replace('BRC200', '', $search);
-
+            if (str_starts_with(strtoupper($search), 'BRC200')) {
+                $id = str_replace(['BRC200', 'brc200'], '', $search);
+                $query->where('id', $id);
+            } elseif (str_starts_with(strtoupper($search), 'BRC')) {
+                $id = str_replace(['BRC', 'brc'], '', $search);
                 $query->where('id', $id);
             } else {
                 $query->where(function ($q) use ($search) {
                     $q->where('shop_name', 'LIKE', "%{$search}%")
-                        ->orWhere('id', $search);
+                      ->orWhere('manager', 'LIKE', "%{$search}%")
+                      ->orWhere('phone', 'LIKE', "%{$search}%")
+                      ->orWhere('id', 'LIKE', "%{$search}%");
                 });
             }
         }
 
-        $customers = $query->get();
+        $totalCount = $query->count();
+        $customers = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table' => view('pages.common.customer.table', compact('customers'))->render(),
-                'mobile' => view('pages.common.customer.mtable', compact('customers'))->render(),
-            ]);
-        }
-
-        return view('pages.common.customer.index', compact('customers'));
+        return response()->json([
+            'table'      => view('pages.common.customer.table', compact('customers'))->render(),
+            'mobile'     => view('pages.common.customer.mtable', compact('customers'))->render(),
+            'total'      => $totalCount,
+            'pagination' => $customers->links()->toHtml(),
+        ]);
     }
 
     public function create()

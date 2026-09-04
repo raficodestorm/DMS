@@ -15,31 +15,51 @@ class CompanyCostController extends Controller
      */
     public function index(Request $request)
     {
+        return view('pages.admin.cost.index');
+    }
+
+    public function fetchCompanyCostsIndexData(Request $request)
+    {
         $query = CompanyCost::with('creator')->latest('cost_date');
 
-        // Filters
-        $month = $request->input('month', Carbon::now()->format('m'));
-        $year = $request->input('year', Carbon::now()->format('Y'));
-        
-        $query->whereMonth('cost_date', $month)
-              ->whereYear('cost_date', $year);
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%");
+            });
+        }
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        if ($request->filled('search')) {
-            $query->where('description', 'like', '%' . $request->search . '%');
+        if ($request->filled('month')) {
+            $query->whereMonth('cost_date', $request->month);
         }
 
-        $costs = $query->paginate(15);
-        
-        // Summary for current filter
-        $totalCost = CompanyCost::whereMonth('cost_date', $month)
-                                ->whereYear('cost_date', $year)
-                                ->sum('amount');
+        if ($request->filled('year')) {
+            $query->whereYear('cost_date', $request->year);
+        }
 
-        return view('pages.admin.cost.index', compact('costs', 'totalCost', 'month', 'year'));
+        if ($request->filled('from_date')) {
+            $query->whereDate('cost_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('cost_date', '<=', $request->to_date);
+        }
+
+        $totalCost = (clone $query)->sum('amount');
+        $costs = $query->paginate(15)->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.admin.cost.table', compact('costs'))->render(),
+            'mobile'     => view('pages.admin.cost.mtable', compact('costs'))->render(),
+            'pagination' => (string) $costs->links(),
+            'total'      => $costs->total(),
+            'totalCost'  => number_format($totalCost, 2) . ' ৳',
+        ]);
     }
 
     /**

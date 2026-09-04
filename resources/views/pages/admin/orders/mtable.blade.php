@@ -10,13 +10,25 @@
     <div><span>Branch</span>
       <p>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</p>
     </div>
-    <div><span>Reference</span>
-      <p>{{ $order->sr->name ?? $order->manager->fullname }}</p>
-    </div>
 
     <div><span>Amount</span>
       <p>{{ number_format($order->net_total, 2) }} TK</p>
     </div>
+
+    <div><span>Order Type</span>
+      <p>
+        @if($order->order_type == "field_order")
+        <span class="emerald-type-badge">Field Order</span>
+        @elseif($order->order_type == 'retail')
+        <span class="pink-type-badge">Retail</span>
+        @elseif($order->order_type == 'online')
+        <span class="purple-type-badge">Online</span>
+        @else
+        <span class="status-undefined-badge">Undefined</span>
+        @endif
+      </p>
+    </div>
+    
     <div><span>Status</span>
       <p>
         @if($order->status == "pending_sr")

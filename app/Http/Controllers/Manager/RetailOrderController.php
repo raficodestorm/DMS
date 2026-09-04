@@ -19,15 +19,23 @@ use App\Notifications\SystemNotification;
 class RetailOrderController extends Controller
 {
   /**
-   * Display all retail orders created by this manager directly.
+   * Display the retail orders page UI (no data loaded initially).
    */
   public function index(Request $request)
+  {
+    return view('pages.manager.retail.index');
+  }
+
+  /**
+   * Fetch retail orders data via AJAX with filters.
+   */
+  public function fetchData(Request $request)
   {
     $user = auth()->user();
 
     $query = Order::with(['customer'])
       ->where('manager_id', $user->id)
-      ->whereNull('sr_id') // Identifying retail orders where manager is the creator and no SR is assigned
+      ->whereNull('sr_id') // Retail orders: manager is creator, no SR assigned
       ->latest();
 
     // Date Range Filter
@@ -58,7 +66,12 @@ class RetailOrderController extends Controller
 
     $orders = $query->paginate(20)->withQueryString();
 
-    return view('pages.manager.retail.index', compact('orders'));
+    return response()->json([
+      'table'      => view('pages.manager.retail.table',  compact('orders'))->render(),
+      'mobile'     => view('pages.manager.retail.mtable', compact('orders'))->render(),
+      'total'      => $orders->total(),
+      'pagination' => (string) $orders->links(),
+    ]);
   }
 
   /**

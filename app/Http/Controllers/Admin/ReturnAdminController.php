@@ -17,33 +17,58 @@ class ReturnAdminController extends Controller
 {
     public function index(Request $request)
     {
+        $branches = \App\Models\Branch::orderBy('name', 'asc')->get();
+        return view('pages.admin.return.index', compact('branches'));
+    }
+
+    public function fetchReturnsIndexData(Request $request)
+    {
         $query = ProductReturn::with(['customer', 'sr', 'order', 'branch'])
             ->latest();
 
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
+                if (preg_match('/^BRET(\d+)$/i', $search, $match)) {
+                    $q->where('id', $match[1]);
+                    return;
+                }
+                $q->where('id', $search)
                   ->orWhereHas('customer', function ($customer) use ($search) {
-                      $customer->where('shop_name', 'like', "%{$search}%");
+                      $customer->where('shop_name', 'like', "%{$search}%")
+                               ->orWhere('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('sr', function ($sr) use ($search) {
+                      $sr->where('username', 'like', "%{$search}%")
+                         ->orWhere('name', 'like', "%{$search}%");
                   });
             });
+        }
+
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
         }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $returns = $query->paginate(15);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.admin.return.table', compact('returns'))->render(),
-                'mobile' => view('pages.admin.return.mtable', compact('returns'))->render(),
-            ]);
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
         }
 
-        return view('pages.admin.return.index', compact('returns'));
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $returns = $query->paginate(15)->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.admin.return.table', compact('returns'))->render(),
+            'mobile'     => view('pages.admin.return.mtable', compact('returns'))->render(),
+            'pagination' => (string) $returns->links(),
+            'total'      => $returns->total(),
+        ]);
     }
 
     public function show($id)

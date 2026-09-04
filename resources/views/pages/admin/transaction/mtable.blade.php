@@ -18,7 +18,7 @@
 
     <div>
       <span>Customer</span>
-      <p>{{ $payment->customer->shop_name }}</p>
+      <p>{{ $payment->customer?->shop_name ?? 'N/A' }}</p>
     </div>
 
     <div>

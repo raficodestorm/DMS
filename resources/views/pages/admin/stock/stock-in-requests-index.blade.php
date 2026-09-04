@@ -6,66 +6,61 @@
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
       <h2 class="mb-0">Stock-In Requests</h2>
-      <p class="text-muted mb-0">Manage your all Stock-In Requests</p>
+      <p class="text-muted mb-0">Manage all Stock-In Requests</p>
+    </div>
+    <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+      <i class="fas fa-boxes me-1"></i> Total Requests: <span id="totalRequestCount">0</span>
     </div>
   </div>
 
   @include('components.alert')
 
   {{-- Smart Filter Bar --}}
-  <div style="margin: 15px 0; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
-    <form method="GET" action="{{ route('admin.stock.in.requests.index') }}" id="filterForm">
-      <div class="row g-2 align-items-end">
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-5">
 
-        {{-- Branch Filter --}}
-        <div class="col-6 col-md-3 col-lg-3">
-          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Branch</label>
-          <select name="branch_id" id="branchFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
-            <option value="">-- All Branches --</option>
-            @foreach($branches as $b)
-            <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
-            @endforeach
-          </select>
-        </div>
-
-        {{-- Status Filter --}}
-        <div class="col-6 col-md-2 col-lg-2">
-          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Status</label>
-          <select name="status" id="statusFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
-            <option value="">-- All --</option>
-            <option value="pending"  {{ request('status') == 'pending'  ? 'selected' : '' }}>Pending</option>
-            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-          </select>
-        </div>
-
-        {{-- From Date --}}
-        <div class="col-6 col-md-3 col-lg-3">
-          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
-          <input type="date" name="from_date" id="fromDate" class="input-form"
-            value="{{ request('from_date') }}"
-            style="margin-bottom: 0; height: 42px; padding: 5px 10px;">
-        </div>
-
-        {{-- To Date --}}
-        <div class="col-6 col-md-3 col-lg-2">
-          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
-          <input type="date" name="to_date" id="toDate" class="input-form"
-            value="{{ request('to_date') }}"
-            style="margin-bottom: 0; height: 42px; padding: 5px 10px;">
-        </div>
-
-        {{-- Buttons --}}
-        <div class="col-12 col-md-1 col-lg-2 d-flex gap-2">
-          <button type="submit" class="btn btn-primary" style="height: 42px; flex: 1;">
-            <i class="fas fa-filter"></i> Filter
-          </button>
-          <a href="{{ route('admin.stock.in.requests.index') }}" class="btn btn-outline-secondary" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px;" title="Reset">
-            <i class="fas fa-undo"></i>
-          </a>
-        </div>
+      {{-- Branch Filter --}}
+      <div>
+        <label>Branch</label>
+        <select id="branchFilter" class="input-form">
+          <option value="">-- All Branches --</option>
+          @foreach($branches as $b)
+          <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+          @endforeach
+        </select>
       </div>
-    </form>
+
+      {{-- Status Filter --}}
+      <div>
+        <label>Status</label>
+        <select id="statusFilter" class="input-form">
+          <option value="">-- All Statuses --</option>
+          <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+          <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+          <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+        </select>
+      </div>
+
+      {{-- From Date --}}
+      <div>
+        <label>From</label>
+        <input type="date" id="fromDate" class="input-form" value="{{ request('from_date') }}">
+      </div>
+
+      {{-- To Date --}}
+      <div>
+        <label>To</label>
+        <input type="date" id="toDate" class="input-form" value="{{ request('to_date') }}">
+      </div>
+
+      {{-- Reset Button --}}
+      <div>
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; width: 100%;">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <div class="table-wrapper">
@@ -81,109 +76,149 @@
           <th>Action</th>
         </tr>
       </thead>
-      <tbody class="desktop-table">
-        @forelse($requests as $request)
+      <tbody class="desktop-table" id="desktopTable">
         <tr>
-          <td scope="row">{{ $loop->iteration }}</td>
-          <td class="name">{{ $request->requestedBy->branch->name ?? 'N/A' }}</td>
-          <td>{{ $request->supplier->company_name }}</td>
-          <td>{{ number_format($request->net_total, 2) }} TK</td>
-          <td>
-            @if($request->status == "pending")
-            <span class="status-pending-badge">Pending...</span>
-            @elseif($request->status == 'rejected')
-            <span class="status-rejected-badge">Rejected</span>
-            @else
-            <span class="status-approved-badge">Approved</span>
-            @endif
-          </td>
-          <td>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
-          <td class="action-icons">
-            <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
-              <i class="fa-solid fa-eye"></i>
-            </a>
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view requests.
           </td>
         </tr>
-        @empty
-        <tr>
-          <td colspan="7" class="text-center text-muted">No requests found.</td>
-        </tr>
-        @endforelse
       </tbody>
     </table>
   </div>
 
-  <div class="manage-mobile-cards">
-    @forelse($requests as $request)
-    <div class="manage-card">
-
-      <div class="card-body">
-        <div><span>S.No</span>
-          <p>{{ $loop->iteration }}</p>
-        </div>
-        <div><span>Branch</span>
-          <p>{{ $request->requestedBy->branch->name ?? 'N/A' }}</p>
-        </div>
-        <div><span>Supplier</span>
-          <p>{{ $request->supplier->company_name }}</p>
-        </div>
-        <div><span>Amount</span>
-          <p>{{ number_format($request->net_total, 2) }} TK</p>
-        </div>
-        <div><span>Status</span>
-          <p>
-            @if($request->status == "pending")
-            <span style="color:#d39e00;">⏳ Pending...</span>
-            @elseif($request->status == "rejected")
-            <span style="color:#dc3545;">● Rejected</span>
-            @else
-            <span style="color:#28a745;">✓ Approved</span>
-            @endif
-          </p>
-        </div>
-        <div><span>Date & Time</span>
-          <p>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
-          <i class="fa-solid fa-eye"></i>
-        </a>
-      </div>
-
-    </div>
-    @empty
-    <p class="text-center text-muted">No requests found.</p>
-    @endforelse
+  <div class="manage-mobile-cards" id="mobileTable">
+    <p class="text-center text-muted py-5">
+      <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view requests.
+    </p>
   </div>
 
 </div>
 
+<div class="mt-3" id="paginationWrapper"></div>
+
+@endsection
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Auto-submit on dropdown change
-    ['branchFilter', 'statusFilter'].forEach(function(id) {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('change', function () {
-            document.getElementById('filterForm').submit();
-        });
-    });
+    const branchFilter   = document.getElementById('branchFilter');
+    const statusFilter   = document.getElementById('statusFilter');
+    const fromDate       = document.getElementById('fromDate');
+    const toDate         = document.getElementById('toDate');
+    const resetBtn       = document.getElementById('resetBtn');
 
-    // Auto-submit when both date fields are filled
-    ['fromDate', 'toDate'].forEach(function(id) {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('change', function () {
-            const from = document.getElementById('fromDate').value;
-            const to   = document.getElementById('toDate').value;
-            if (from && to) {
-                document.getElementById('filterForm').submit();
+    const desktopTable   = document.getElementById('desktopTable');
+    const mobileTable    = document.getElementById('mobileTable');
+    const totalCountEl   = document.getElementById('totalRequestCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
+
+    function showLoadingState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading stock requests...
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading stock requests...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock requests data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock requests data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (branchFilter)    branchFilter.value    = '';
+        if (statusFilter)    statusFilter.value    = '';
+        if (fromDate)        fromDate.value        = '';
+        if (toDate)          toDate.value          = '';
+    }
+
+    function fetchFilteredRequests(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+            const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
+            const from   = encodeURIComponent(fromDate ? fromDate.value : '');
+            const to     = encodeURIComponent(toDate ? toDate.value : '');
+
+            url = `{{ route('admin.stock.in.requests.data') }}?branch_id=${branch}&status=${status}&from_date=${from}&to_date=${to}`;
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (desktopTable) desktopTable.innerHTML = data.table;
+            if (mobileTable)  mobileTable.innerHTML  = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if filters/page parameters exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredRequests();
+    }
+
+    // Filter Change Event Listeners
+    if (branchFilter) branchFilter.addEventListener('change', () => fetchFilteredRequests());
+    if (statusFilter) statusFilter.addEventListener('change', () => fetchFilteredRequests());
+    if (fromDate)     fromDate.addEventListener('change', () => fetchFilteredRequests());
+    if (toDate)       toDate.addEventListener('change', () => fetchFilteredRequests());
+
+    // Reset Button (Clears filters & fetches all requests)
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredRequests();
+        });
+    }
+
+    // AJAX Pagination Clicks
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredRequests(link.href);
             }
         });
-    });
+    }
 });
 </script>
 @endpush
-
-@endsection

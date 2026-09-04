@@ -13,12 +13,24 @@ class EmployeeController extends Controller
 {
     use UploadHelper;
 
-    public function index(Request $request)
+    /**
+     * Load UI page only for Admin Employees (no heavy query on page load).
+     */
+    public function index()
+    {
+        $branches = Branch::orderBy('name', 'asc')->get();
+        return view('pages.admin.employee.index', compact('branches'));
+    }
+
+    /**
+     * Fetch Employee data via AJAX.
+     */
+    public function fetchEmployeesIndexData(Request $request)
     {
         $query = Employee::with('branch')->orderBy('branch_id', 'asc');
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
             if (str_starts_with($search, 'BRE100')) {
                 $id = str_replace('BRE100', '', $search);
                 $query->where('id', $id);
@@ -38,18 +50,14 @@ class EmployeeController extends Controller
             $query->where('branch_id', $request->branch_id);
         }
 
-        $employees = $query->get();
-        $branches  = Branch::orderBy('name', 'asc')->get();
+        $employees = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.admin.employee.table', compact('employees'))->render(),
-                'mobile' => view('pages.admin.employee.mtable', compact('employees'))->render(),
-                'total'  => $employees->count(),
-            ]);
-        }
-
-        return view('pages.admin.employee.index', compact('employees', 'branches'));
+        return response()->json([
+            'table'      => view('pages.admin.employee.table', compact('employees'))->render(),
+            'mobile'     => view('pages.admin.employee.mtable', compact('employees'))->render(),
+            'total'      => $employees->total(),
+            'pagination' => (string) $employees->links(),
+        ]);
     }
 
 

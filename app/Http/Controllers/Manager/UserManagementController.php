@@ -22,50 +22,30 @@ class UserManagementController extends Controller
     $this->middleware(['auth', 'role:manager']);
   }
 
-  public function sr(Request $request)
+  
+
+  /**
+   * Load UI page for Customer Accounts.
+   */
+  public function customer(Request $request)
   {
-    $branchId = auth()->user()->branch_id;
-    $search = $request->get('search');
-
-    $query = User::with('branch')
-      ->where('role', 'sr')
-      ->where('branch_id', $branchId);
-
-    if ($search) {
-      $cleanSearch = trim($search);
-      $query->where(function ($q) use ($cleanSearch) {
-        $q->where('fullname', 'like', "%{$cleanSearch}%")
-          ->orWhere('username', 'like', "%{$cleanSearch}%");
-      });
-    }
-
-    $srs = $query->latest()->paginate(20)->withQueryString();
-
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.manager.users.sr-table', compact('srs'))->render(),
-        'mobile' => view('pages.manager.users.sr-mtable', compact('srs'))->render(),
-      ]);
-    }
-
-    return view('pages.manager.users.index-sr', [
-      'srs' => $srs,
-      'roleTitle' => 'SR',
-      'search' => $search
+    return view('pages.manager.users.index-customer', [
+      'roleTitle' => 'Customer',
     ]);
   }
 
-  public function customer(Request $request)
+  /**
+   * Fetch Customer Accounts data via AJAX.
+   */
+  public function fetchCustomersData(Request $request)
   {
     $branchId = auth()->user()->branch_id;
-    $search = $request->get('search');
-
     $query = User::with('branch')
       ->where('role', 'customer')
       ->where('branch_id', $branchId);
 
-    if ($search) {
-      $cleanSearch = trim($search);
+    if ($request->filled('search')) {
+      $cleanSearch = trim($request->search);
       $idSearch = preg_replace('/^brc(200)?/i', '', $cleanSearch);
 
       $query->where(function ($q) use ($cleanSearch, $idSearch) {
@@ -81,17 +61,11 @@ class UserManagementController extends Controller
 
     $customers = $query->latest()->paginate(20)->withQueryString();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.manager.users.customer-table', compact('customers'))->render(),
-        'mobile' => view('pages.manager.users.customer-mtable', compact('customers'))->render(),
-      ]);
-    }
-
-    return view('pages.manager.users.index-customer', [
-      'customers' => $customers,
-      'roleTitle' => 'Customer',
-      'search' => $search
+    return response()->json([
+      'table'      => view('pages.manager.users.customer-table', compact('customers'))->render(),
+      'mobile'     => view('pages.manager.users.customer-mtable', compact('customers'))->render(),
+      'total'      => $customers->total(),
+      'pagination' => (string) $customers->links(),
     ]);
   }
 

@@ -68,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
         return view('settings.mysettings');
     })->name('settings');
 
+    Route::get('/customers/index/data', [CustomerController::class, 'fetchCustomersIndexData'])->name('customers.index.data');
     Route::resource('customers', CustomerController::class);
 
     Route::get('/payments/{payment}/slip', [PaymentController::class, 'viewSlip'])->name('payments.slip');

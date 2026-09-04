@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(function () {
   Route::get('/customers', [UserManagementController::class, 'customer'])->name('index.customers');
+  Route::get('/customers/data', [UserManagementController::class, 'fetchCustomersData'])->name('index.customers.data');
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('users/show/{user}', [UserManagementController::class, 'show'])->name('users.show');
@@ -29,6 +30,7 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::get('/customers/search', [OrderSrController::class, 'searchCustomers'])->name('customers.search');
 
   Route::get('/return', [\App\Http\Controllers\Sr\ReturnSrController::class, 'index'])->name('return.index');
+  Route::get('/return/data', [\App\Http\Controllers\Sr\ReturnSrController::class, 'fetchReturnsData'])->name('return.index.data');
   Route::get('/return/create', [\App\Http\Controllers\Sr\ReturnSrController::class, 'create'])->name('return.create');
   Route::post('/return', [\App\Http\Controllers\Sr\ReturnSrController::class, 'store'])->name('return.store');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Sr\ReturnSrController::class, 'show'])->name('return.show');
@@ -43,6 +45,7 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
 
 
   Route::get('/payments', [PaymentController::class, 'indexForSr'])->name('payments.index');
+  Route::get('/payments/data', [PaymentController::class, 'fetchSrPaymentsData'])->name('payments.index.data');
   Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
   Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
 

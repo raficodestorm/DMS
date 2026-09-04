@@ -24,15 +24,23 @@ class UserManagementController extends Controller
 
   public function customer(Request $request)
   {
-    $branchId = auth()->user()->branch_id;
-    $search = $request->get('search');
+    return view('pages.sr.users.index-customer', [
+      'roleTitle' => 'Customer',
+    ]);
+  }
 
+  /**
+   * Fetch Customer Accounts data via AJAX for SR.
+   */
+  public function fetchCustomersData(Request $request)
+  {
+    $branchId = auth()->user()->branch_id;
     $query = User::with('branch')
       ->where('role', 'customer')
       ->where('branch_id', $branchId);
 
-    if ($search) {
-      $cleanSearch = trim($search);
+    if ($request->filled('search')) {
+      $cleanSearch = trim($request->search);
       $idSearch = preg_replace('/^brc(200)?/i', '', $cleanSearch);
 
       $query->where(function ($q) use ($cleanSearch, $idSearch) {
@@ -46,21 +54,14 @@ class UserManagementController extends Controller
       });
     }
 
-    $customers = $query->latest()
-      ->paginate(20)
-      ->withQueryString();
+    $totalCount = $query->count();
+    $customers = $query->latest()->paginate(15)->withQueryString();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.sr.users.table', compact('customers'))->render(),
-        'mobile' => view('pages.sr.users.mtable', compact('customers'))->render(),
-      ]);
-    }
-
-    return view('pages.sr.users.index-customer', [
-      'customers' => $customers,
-      'roleTitle' => 'Customer',
-      'search'    => $search
+    return response()->json([
+      'table'      => view('pages.sr.users.table', compact('customers'))->render(),
+      'mobile'     => view('pages.sr.users.mtable', compact('customers'))->render(),
+      'total'      => $totalCount,
+      'pagination' => $customers->links()->toHtml(),
     ]);
   }
 

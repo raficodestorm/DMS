@@ -10,7 +10,7 @@
   </td>
 
   <td>
-    {{ $payment->customer->shop_name }}
+    {{ $payment->customer?->shop_name ?? 'N/A' }}
   </td>
 
   <td>
@@ -68,7 +68,7 @@
 </tr>
 @empty
 <tr>
-  <td colspan="7" class="text-center text-muted">
+  <td colspan="8" class="text-center text-muted">
     No transaction records found.
   </td>
 </tr>

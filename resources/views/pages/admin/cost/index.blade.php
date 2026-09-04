@@ -2,139 +2,262 @@
 
 @section('content')
 <div class="manage-card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-            <h2 class="mb-0">Company Global Costs</h2>
-            <p class="text-muted mb-0">Record and track all global company-wide expenses.</p>
-        </div>
-        <a href="{{ route('admin.company_costs.create') }}" class="btn-smart btn-blue">
-            <i class="fas fa-plus me-1"></i> Record Global Cost
-        </a>
-    </div>
 
-    <!-- Summary & Filters -->
-    <div class="row mt-4 g-3">
-        <div class="col-12 col-md-4">
-            <div class="p-3 border rounded bg-white shadow-sm h-100 d-flex flex-column justify-content-center">
-                <small class="text-muted d-block mb-1">Global Total (Selected Period)</small>
-                <h3 class="mb-0 text-danger fw-bold">{{ number_format($totalCost, 2) }} ৳</h3>
-            </div>
-        </div>
-        <div class="col-12 col-md-8">
-            <form action="{{ route('admin.company_costs.index') }}" method="GET" class="row g-2">
-                <div class="col-6 col-md-3">
-                    <label class="small text-muted">Month</label>
-                    <select name="month" class="input-form py-1" onchange="this.form.submit()">
-                        @for($m=1; $m<=12; $m++)
-                            <option value="{{ sprintf('%02d', $m) }}" {{ $month == sprintf('%02d', $m) ? 'selected' : '' }}>
-                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-6 col-md-3">
-                    <label class="small text-muted">Year</label>
-                    <select name="year" class="input-form py-1" onchange="this.form.submit()">
-                        @for($y=date('Y'); $y>=2020; $y--)
-                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="small text-muted">Category</label>
-                    <select name="category" class="input-form py-1" onchange="this.form.submit()">
-                        <option value="">All Categories</option>
-                        @foreach(['office', 'transport', 'staff', 'maintenance', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3 d-flex align-items-end">
-                    <a href="{{ route('admin.company_costs.index') }}" class="btn-smart btn-blue w-100 text-center py-2">Reset</a>
-                </div>
-            </form>
-        </div>
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">Company Global Costs</h2>
+      <p class="text-muted mb-0">Record and track all global company-wide expenses</p>
     </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div style="background: rgba(239, 68, 68, 0.08); color: #ef4444; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+        <i class="fas fa-wallet me-1"></i> Total Cost: <span id="totalCostAmount">0.00 ৳</span>
+      </div>
+      <a href="{{ route('admin.company_costs.create') }}" class="btn-smart btn-blue">
+        <i class="fas fa-plus me-1"></i> Record Global Cost
+      </a>
+    </div>
+  </div>
 
-    <!-- Desktop Table -->
-    <div class="table-wrapper mt-4 d-none d-md-block">
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Recorded By</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($costs as $cost)
-                <tr>
-                    <td>{{ $cost->cost_date->format('d M Y') }}</td>
-                    <td>
-                        <span class="badge bg-secondary">{{ ucfirst($cost->category) }}</span>
-                    </td>
-                    <td class="fw-bold">{{ Str::limit($cost->description, 40) }}</td>
-                    <td class="fw-bold text-danger">{{ number_format($cost->amount, 2) }} ৳</td>
-                    <td>{{ $cost->creator->username ?? 'N/A' }}</td>
-                    <td class="text-end">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.company_costs.show', $cost->id) }}" class="btn-sm-smart btn-blue" title="View">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.company_costs.edit', $cost->id) }}" class="btn-sm-smart btn-green" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('admin.company_costs.destroy', $cost->id) }}" method="POST" onsubmit="return confirm('Delete this record?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-sm-smart btn-red" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="text-center py-4">No expense records found.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+  @include('components.alert')
 
-    <!-- Mobile Cards -->
-    <div class="d-md-none mt-3">
-        @forelse($costs as $cost)
-        <div class="p-3 border rounded mb-3 bg-white shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-secondary small">{{ ucfirst($cost->category) }}</span>
-                <small class="text-muted">{{ $cost->cost_date->format('d M Y') }}</small>
-            </div>
-            <h6 class="fw-bold mb-2">{{ $cost->description }}</h6>
-            <div class="d-flex justify-content-between align-items-end">
-                <div>
-                    <small class="text-muted d-block">By: {{ $cost->creator->username ?? 'N/A' }}</small>
-                    <span class="fw-bold text-danger">{{ number_format($cost->amount, 2) }} ৳</span>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('admin.company_costs.edit', $cost->id) }}" class="btn-sm-smart btn-green py-1"><i class="fas fa-edit"></i></a>
-                    <form action="{{ route('admin.company_costs.destroy', $cost->id) }}" method="POST" onsubmit="return confirm('Delete?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn-sm-smart btn-red py-1"><i class="fas fa-trash"></i></button>
-                    </form>
-                </div>
-            </div>
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-7">
+
+      {{-- Search --}}
+      <div>
+        <label>Search</label>
+        <div style="position: relative;">
+          <input type="text" id="searchInput" class="input-form" placeholder="Search description..." value="{{ request('search') }}" style="padding-left: 30px;">
+          <i class="fas fa-search" style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem;"></i>
         </div>
-        @empty
-        <div class="text-center py-4 text-muted">No records found.</div>
-        @endforelse
-    </div>
+      </div>
 
-    <div class="mt-4">
-        {{ $costs->appends(request()->query())->links() }}
+      {{-- Category Filter --}}
+      <div>
+        <label>Category</label>
+        <select id="categoryFilter" class="input-form">
+          <option value="">-- All Categories --</option>
+          @foreach(['office', 'transport', 'staff', 'maintenance', 'salary', 'product', 'utility', 'marketing', 'miscellaneous'] as $cat)
+          <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      {{-- Month Filter --}}
+      <div>
+        <label>Month</label>
+        <select id="monthFilter" class="input-form">
+          <option value="">-- All Months --</option>
+          @for($m=1; $m<=12; $m++)
+          <option value="{{ sprintf('%02d', $m) }}" {{ request('month') == sprintf('%02d', $m) ? 'selected' : '' }}>
+            {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+          </option>
+          @endfor
+        </select>
+      </div>
+
+      {{-- Year Filter --}}
+      <div>
+        <label>Year</label>
+        <select id="yearFilter" class="input-form">
+          <option value="">-- All Years --</option>
+          @for($y=date('Y'); $y>=2020; $y--)
+          <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+          @endfor
+        </select>
+      </div>
+
+      {{-- From Date --}}
+      <div>
+        <label>From Date</label>
+        <input type="date" id="fromDate" class="input-form" value="{{ request('from_date') }}">
+      </div>
+
+      {{-- To Date --}}
+      <div>
+        <label>To Date</label>
+        <input type="date" id="toDate" class="input-form" value="{{ request('to_date') }}">
+      </div>
+
+      {{-- Reset Button --}}
+      <div>
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+
     </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Recorded By</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="desktop-table" id="desktopTable">
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view expense records.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {{-- Mobile Cards --}}
+  <div class="manage-mobile-cards" id="mobileTable">
+    <p class="text-center text-muted py-5">
+      <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view expense records.
+    </p>
+  </div>
+
 </div>
+
+<div class="mt-3" id="paginationWrapper"></div>
+
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput    = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const monthFilter    = document.getElementById('monthFilter');
+    const yearFilter     = document.getElementById('yearFilter');
+    const fromDate       = document.getElementById('fromDate');
+    const toDate         = document.getElementById('toDate');
+    const resetBtn       = document.getElementById('resetBtn');
+
+    const desktopTable      = document.getElementById('desktopTable');
+    const mobileTable       = document.getElementById('mobileTable');
+    const totalAmountEl     = document.getElementById('totalCostAmount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
+
+    function showLoadingState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading expense records...
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading expense records...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (desktopTable) {
+            desktopTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load expense data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (mobileTable) {
+            mobileTable.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load expense data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput)    searchInput.value    = '';
+        if (categoryFilter) categoryFilter.value = '';
+        if (monthFilter)    monthFilter.value    = '';
+        if (yearFilter)     yearFilter.value     = '';
+        if (fromDate)       fromDate.value       = '';
+        if (toDate)         toDate.value         = '';
+    }
+
+    function fetchFilteredCosts(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search   = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const category = encodeURIComponent(categoryFilter ? categoryFilter.value : '');
+            const month    = encodeURIComponent(monthFilter ? monthFilter.value : '');
+            const year     = encodeURIComponent(yearFilter ? yearFilter.value : '');
+            const from     = encodeURIComponent(fromDate ? fromDate.value : '');
+            const to       = encodeURIComponent(toDate ? toDate.value : '');
+
+            url = `{{ route('admin.company_costs.index.data') }}?search=${search}&category=${category}&month=${month}&year=${year}&from_date=${from}&to_date=${to}`;
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (desktopTable) desktopTable.innerHTML = data.table;
+            if (mobileTable)  mobileTable.innerHTML  = data.mobile;
+            if (totalAmountEl && data.totalCost !== undefined) {
+                totalAmountEl.innerText = data.totalCost;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if filters or page parameter exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredCosts();
+    }
+
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredCosts(), 450);
+        });
+    }
+
+    if (categoryFilter) categoryFilter.addEventListener('change', () => fetchFilteredCosts());
+    if (monthFilter)    monthFilter.addEventListener('change',    () => fetchFilteredCosts());
+    if (yearFilter)     yearFilter.addEventListener('change',     () => fetchFilteredCosts());
+    if (fromDate)       fromDate.addEventListener('change',       () => fetchFilteredCosts());
+    if (toDate)         toDate.addEventListener('change',         () => fetchFilteredCosts());
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredCosts();
+        });
+    }
+
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredCosts(link.href);
+            }
+        });
+    }
+});
+</script>
+@endpush

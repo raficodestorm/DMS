@@ -14,27 +14,51 @@ class BonusController extends Controller
      */
     public function index(Request $request)
     {
+        return view('pages.admin.bonus.index');
+    }
+
+    public function fetchBonusesIndexData(Request $request)
+    {
         $query = Bonus::with('creator')->latest('bonus_date');
 
-        // Filter by month/year if provided, else default to current month
-        $month = $request->input('month', Carbon::now()->format('m'));
-        $year = $request->input('year', Carbon::now()->format('Y'));
-
-        $query->whereMonth('bonus_date', $month)
-              ->whereYear('bonus_date', $year);
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
-        $bonuses = $query->paginate(15);
-        
-        // Summary for the filtered period
-        $totalBonus = Bonus::whereMonth('bonus_date', $month)
-                           ->whereYear('bonus_date', $year)
-                           ->sum('amount');
+        if ($request->filled('month')) {
+            $query->whereMonth('bonus_date', $request->month);
+        }
 
-        return view('pages.admin.bonus.index', compact('bonuses', 'totalBonus', 'month', 'year'));
+        if ($request->filled('year')) {
+            $query->whereYear('bonus_date', $request->year);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('bonus_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('bonus_date', '<=', $request->to_date);
+        }
+
+        $totalBonus = (clone $query)->sum('amount');
+        $bonuses = $query->paginate(15)->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.admin.bonus.table', compact('bonuses'))->render(),
+            'mobile'     => view('pages.admin.bonus.mtable', compact('bonuses'))->render(),
+            'pagination' => (string) $bonuses->links(),
+            'total'      => $bonuses->total(),
+            'totalBonus' => number_format($totalBonus, 2) . ' ৳',
+        ]);
     }
 
     /**

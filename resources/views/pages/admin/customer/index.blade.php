@@ -10,7 +10,7 @@
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
-                <i class="fas fa-store me-1"></i> Total Customers: <span id="totalCustomerCount">{{ $customers->count() }}</span>
+                <i class="fas fa-store me-1"></i> Total Customers: <span id="totalCustomerCount">0</span>
             </div>
             <a href="{{ route('admin.customers.create') }}" class="btn-smart btn-blue">
                 <i class="fas fa-plus me-1"></i> Add New Customer
@@ -21,34 +21,36 @@
     @include('components.alert')
 
     {{-- Smart Filter Bar --}}
-    <div style="margin: 15px 0; background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
-        <div class="row g-2 align-items-end">
+    <div class="smart-filter-wrapper">
+        <div class="smart-filter-grid-3">
+
             {{-- Search --}}
-            <div class="col-12 col-md-8 col-lg-9">
-                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+            <div>
+                <label>Search</label>
                 <div style="position: relative;">
-                    <input type="text" id="search" class="input-form" placeholder="Search by Shop Name or BRC200 ID..." style="margin-bottom: 0; padding-left: 35px; height: 42px;">
-                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="search" class="input-form" placeholder="Search by Shop Name or BRC200 ID..." value="{{ request('search') }}" style="padding-left: 32px;">
+                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
                 </div>
             </div>
 
             {{-- Branch Filter --}}
-            <div class="col-8 col-md-3 col-lg-2">
-                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Branch</label>
-                <select id="branchFilter" class="input-form" style="margin-bottom: 0; height: 42px; padding: 5px;">
+            <div>
+                <label>Branch</label>
+                <select id="branchFilter" class="input-form">
                     <option value="">-- All Branches --</option>
                     @foreach($branches as $b)
-                    <option value="{{ $b->id }}">{{ $b->name }}</option>
+                    <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            {{-- Reset --}}
-            <div class="col-4 col-md-1 col-lg-1">
-                <button type="button" id="resetBtn" class="btn btn-outline-secondary w-100" title="Reset Filters" style="height: 42px; display: inline-flex; align-items: center; justify-content: center;">
+            {{-- Reset Button --}}
+            <div>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
                     <i class="fas fa-undo"></i>
                 </button>
             </div>
+
         </div>
     </div>
 
@@ -66,61 +68,142 @@
                 </tr>
             </thead>
             <tbody class="desktop-table" id="customerTable">
-                @include('pages.admin.customer.table')
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view customers.
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
 
     <div class="manage-mobile-cards" id="customerMobile">
-        @include('pages.admin.customer.mtable')
+        <p class="text-center text-muted py-5">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view customers.
+        </p>
     </div>
 
 </div>
+
+<div class="mt-3" id="paginationWrapper"></div>
 
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const searchInput  = document.getElementById('search');
-    const branchFilter = document.getElementById('branchFilter');
-    const resetBtn     = document.getElementById('resetBtn');
+    const searchInput       = document.getElementById('search');
+    const branchFilter      = document.getElementById('branchFilter');
+    const resetBtn          = document.getElementById('resetBtn');
 
-    function fetchFilteredCustomers() {
-        const query  = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
-        const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+    const customerTable     = document.getElementById('customerTable');
+    const customerMobile    = document.getElementById('customerMobile');
+    const totalCountEl      = document.getElementById('totalCustomerCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-        const url = `{{ route('admin.customers.index') }}?search=${query}&branch_id=${branch}`;
+    function showLoadingState() {
+        if (customerTable) {
+            customerTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading customers...
+                    </td>
+                </tr>`;
+        }
+        if (customerMobile) {
+            customerMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading customers...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (customerTable) {
+            customerTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load customer data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (customerMobile) {
+            customerMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load customer data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput)  searchInput.value  = '';
+        if (branchFilter) branchFilter.value = '';
+    }
+
+    function fetchFilteredCustomers(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+
+            url = `{{ route('admin.customers.index.data') }}?search=${search}&branch_id=${branch}`;
+        }
 
         fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
         .then(data => {
-            document.getElementById('customerTable').innerHTML = data.table;
-            document.getElementById('customerMobile').innerHTML = data.mobile;
-            if (document.getElementById('totalCustomerCount') && data.total !== undefined) {
-                document.getElementById('totalCustomerCount').innerText = data.total;
+            if (customerTable)  customerTable.innerHTML  = data.table;
+            if (customerMobile) customerMobile.innerHTML = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
             }
         })
-        .catch(err => console.error('Filter fetch error:', err));
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if filters or page parameter exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredCustomers();
     }
 
     let debounceTimer;
     if (searchInput) {
         searchInput.addEventListener('keyup', function () {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(fetchFilteredCustomers, 350);
+            debounceTimer = setTimeout(() => fetchFilteredCustomers(), 350);
         });
     }
 
-    if (branchFilter) branchFilter.addEventListener('change', fetchFilteredCustomers);
+    if (branchFilter) branchFilter.addEventListener('change', () => fetchFilteredCustomers());
 
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            if (searchInput) searchInput.value = '';
-            if (branchFilter) branchFilter.value = '';
+            clearAllFilterInputs();
             fetchFilteredCustomers();
+        });
+    }
+
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredCustomers(link.href);
+            }
         });
     }
 });

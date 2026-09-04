@@ -3,31 +3,35 @@
 @section('content')
 <div class="manage-card">
 
-  <div class="card-header">
-    <h2>Current Stock</h2>
-    <p>Monitor your branch inventory</p>
-    @include('components.alert')
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">Current Stock</h2>
+      <p class="text-muted mb-0">Monitor your branch inventory</p>
+    </div>
+    <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+      <i class="fas fa-boxes me-1"></i> Total Items: <span id="totalStockCount">0</span>
+    </div>
   </div>
 
-  {{-- Search and Filter Controls --}}
-  <form method="GET" action="{{ route('manager.stock.index') }}" class="mb-4" id="stockFilterForm" onsubmit="return false;">
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-      
-      {{-- Search Input (by Product Name or Supplier Name) --}}
-      <div style="flex: 1; min-width: 240px; position: relative;">
-        <input type="text" 
-               name="search" 
-               id="stockSearchInput"
-               class="input-form" 
-               placeholder="Search by product or supplier name..." 
-               value="{{ request('search') }}"
-               style="margin-bottom: 0; padding-left: 38px;">
-        <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+  @include('components.alert')
+
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-3">
+
+      {{-- Search --}}
+      <div>
+        <label>Search</label>
+        <div style="position: relative;">
+          <input type="text" id="searchInput" class="input-form" placeholder="Search by product or supplier name..." value="{{ request('search') }}" style="padding-left: 32px;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+        </div>
       </div>
 
-      {{-- Status Filter Dropdown --}}
-      <div style="min-width: 180px;">
-        <select name="status" id="stockStatusFilter" class="input-form" style="margin-bottom: 0;">
+      {{-- Status Filter --}}
+      <div>
+        <label>Status</label>
+        <select id="statusFilter" class="input-form">
           <option value="">-- All Statuses --</option>
           <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
           <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
@@ -35,14 +39,14 @@
       </div>
 
       {{-- Reset Button --}}
-      <div id="resetBtnWrapper" style="display: {{ (request('search') || request('status')) ? 'block' : 'none' }};">
-        <button type="button" id="resetStockFilterBtn" class="btn-submit" style="padding: 0.6rem 1rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: #6c757d; color: #fff; border-radius: 8px;">
-          <i class="fas fa-undo"></i> Reset
+      <div>
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
         </button>
       </div>
 
     </div>
-  </form>
+  </div>
 
   <div class="table-wrapper">
     <table>
@@ -56,147 +60,150 @@
           <th>Status</th>
         </tr>
       </thead>
-      <tbody class="desktop-table">
-        @forelse($stocks as $stock)
-        <tr class="stock-item-row">
-          <td>{{ $loop->iteration }}</td>
-          <td><strong>{{ $stock->product->name }}</strong></td>
-          <td>{{ $stock->product->supplier->company_name }}</td>
-          <td>{{ number_format($stock->product->price, 2) }} TK</td>
-          <td>{{ $stock->quantity }}</td>
-          <td>
-            @if($stock->quantity <= $stock->product->stock_alert)
-              <span
-                style="background: var(--danger); color: #dc3545; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">Low
-                Stock</span>
-              @else
-              <span
-                style="background: var(--success); color: #16a34a; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">Available</span>
-              @endif
+      <tbody class="desktop-table" id="stockTable">
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view stock inventory.
           </td>
         </tr>
-        @empty
-        <tr>
-          <td colspan="6" class="text-center text-muted">No stock data available for your branch.</td>
-        </tr>
-        @endforelse
       </tbody>
     </table>
   </div>
 
-  {{-- Mobile Responsive Cards --}}
-  <div class="manage-mobile-cards">
-    @forelse($stocks as $stock)
-    <div class="manage-card stock-item-card" style="margin-bottom: 10px; border: 1px solid #eee;">
-      <div class="card-body">
-        <div><span>Product</span>
-          <p><strong>{{ $stock->product->name }}</strong></p>
-        </div>
-        <div><span>Supplier</span>
-          <p>{{ $stock->product->supplier->company_name }}</p>
-        </div>
-        <div><span>Qty</span>
-          <p>{{ $stock->quantity }}</p>
-        </div>
-        <div><span>Status</span>
-          <p>
-            @if($stock->quantity <= $stock->product->stock_alert)
-              <span style="color:#dc3545; font-weight: 600;">● Low Stock (Below {{ $stock->product->stock_alert
-                }})</span>
-              @else
-              <span style="color:#28a745; font-weight: 600;">Available</span>
-              @endif
-          </p>
-        </div>
-      </div>
-    </div>
-    @empty
-    <p class="text-center text-muted">No stock data found.</p>
-    @endforelse
+  <div class="manage-mobile-cards" id="stockMobile">
+    <p class="text-center text-muted py-5">
+      <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view stock inventory.
+    </p>
   </div>
 
 </div>
+
+<div class="mt-3" id="paginationWrapper"></div>
+
 @endsection
 
 @push('scripts')
-<script type="module">
-  $(document).ready(function () {
-    function filterStockTable() {
-      const searchVal = $('#stockSearchInput').val().toLowerCase().trim();
-      const statusVal = $('#stockStatusFilter').val();
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput       = document.getElementById('searchInput');
+    const statusFilter      = document.getElementById('statusFilter');
+    const resetBtn          = document.getElementById('resetBtn');
 
-      // Show/hide reset button dynamically
-      if (searchVal || statusVal) {
-        $('#resetBtnWrapper').show();
-      } else {
-        $('#resetBtnWrapper').hide();
-      }
+    const stockTable        = document.getElementById('stockTable');
+    const stockMobile       = document.getElementById('stockMobile');
+    const totalCountEl      = document.getElementById('totalStockCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-      // Filter Desktop Table Rows
-      $('.stock-item-row').each(function () {
-        const $row = $(this);
-        const productName  = $row.find('td:nth-child(2)').text().toLowerCase();
-        const supplierName = $row.find('td:nth-child(3)').text().toLowerCase();
-        const statusText   = $row.find('td:nth-child(6)').text().toLowerCase();
-        const isLowStock   = statusText.includes('low stock');
-
-        const matchesSearch = !searchVal || productName.includes(searchVal) || supplierName.includes(searchVal);
-        let matchesStatus = true;
-
-        if (statusVal === 'low_stock') {
-          matchesStatus = isLowStock;
-        } else if (statusVal === 'available') {
-          matchesStatus = !isLowStock;
+    function showLoadingState() {
+        if (stockTable) {
+            stockTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading stock inventory...
+                    </td>
+                </tr>`;
         }
-
-        if (matchesSearch && matchesStatus) {
-          $row.show();
-        } else {
-          $row.hide();
+        if (stockMobile) {
+            stockMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading stock inventory...
+                </p>`;
         }
-      });
-
-      // Filter Mobile Cards
-      $('.stock-item-card').each(function () {
-        const $card = $(this);
-        const productName  = $card.find('.card-body div:nth-child(1) p').text().toLowerCase();
-        const supplierName = $card.find('.card-body div:nth-child(2) p').text().toLowerCase();
-        const statusText   = $card.find('.card-body div:nth-child(4) p').text().toLowerCase();
-        const isLowStock   = statusText.includes('low stock');
-
-        const matchesSearch = !searchVal || productName.includes(searchVal) || supplierName.includes(searchVal);
-        let matchesStatus = true;
-
-        if (statusVal === 'low_stock') {
-          matchesStatus = isLowStock;
-        } else if (statusVal === 'available') {
-          matchesStatus = !isLowStock;
-        }
-
-        if (matchesSearch && matchesStatus) {
-          $card.show();
-        } else {
-          $card.hide();
-        }
-      });
     }
 
-    // Initial filter execution
-    filterStockTable();
+    function showErrorState() {
+        if (stockTable) {
+            stockTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (stockMobile) {
+            stockMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock data.
+                </p>`;
+        }
+    }
 
-    // Input & Change listeners
-    $('#stockSearchInput').on('keyup input', filterStockTable);
-    $('#stockStatusFilter').on('change', filterStockTable);
+    function clearAllFilterInputs() {
+        if (searchInput)  searchInput.value  = '';
+        if (statusFilter) statusFilter.value = '';
+    }
 
-    // Instant Reset
-    $('#resetStockFilterBtn').on('click', function () {
-      $('#stockSearchInput').val('');
-      $('#stockStatusFilter').val('');
-      filterStockTable();
-      if (window.history.pushState) {
-        window.history.pushState(null, '', '{{ route("manager.stock.index") }}');
-      }
-    });
-  });
+    function fetchFilteredStock(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
+            url = `{{ route('manager.stock.index.data') }}?search=${search}&status=${status}`;
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (stockTable)  stockTable.innerHTML  = data.table;
+            if (stockMobile) stockMobile.innerHTML = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if search/status/page parameters exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredStock();
+    }
+
+    // Debounce search input
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredStock(), 350);
+        });
+    }
+
+    // Status filter change listener
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => fetchFilteredStock());
+    }
+
+    // Reset button handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredStock();
+        });
+    }
+
+    // AJAX pagination handling
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredStock(link.href);
+            }
+        });
+    }
+});
 </script>
 @endpush

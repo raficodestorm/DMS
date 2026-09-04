@@ -3,43 +3,40 @@
 @section('content')
 <div class="manage-card">
 
-  <div class="card-header">
-    <div class="header-left">
-      <h2>Stock Transfer Requests</h2>
-      <p>Manage your branch's incoming and outgoing stock transfers</p>
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">Stock Transfer Requests</h2>
+      <p class="text-muted mb-0">Manage your branch's incoming and outgoing stock transfers</p>
     </div>
-    <div class="header-right mb-4">
-      <a href="{{ route('manager.stock-transfer.create') }}" class="btn-submit" style="text-decoration: none; padding: 10px 20px;">
-        <i class="fas fa-plus"></i> New Transfer Request
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+        <i class="fas fa-right-left me-1"></i> Total Transfers: <span id="totalTransferCount">0</span>
+      </div>
+      <a href="{{ route('manager.stock-transfer.create') }}" class="btn-smart btn-blue">
+        <i class="fas fa-plus me-1"></i> New Transfer Request
       </a>
     </div>
   </div>
 
   @include('components.alert')
 
-  {{-- Search and Filter Controls --}}
-  <form method="GET" action="{{ route('manager.stock-transfer.index') }}" class="mb-4" id="transferFilterForm">
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; background: var(--background); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
-      
-      {{-- Search Bar (ID or Branch) --}}
-      <div style="flex: 1; min-width: 180px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-6">
+
+      {{-- Search --}}
+      <div>
+        <label>Search</label>
         <div style="position: relative;">
-          <input type="text" 
-                 name="search" 
-                 id="transferSearchInput"
-                 class="input-form" 
-                 placeholder="ID or Branch name..." 
-                 value="{{ request('search') }}"
-                 style="margin-bottom: 0; padding-left: 36px; height: 42px;">
-          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          <input type="text" id="searchInput" class="input-form" placeholder="ID or Branch name..." value="{{ request('search') }}" style="padding-left: 32px;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
         </div>
       </div>
 
-      {{-- Transfer Type Filter --}}
-      <div style="min-width: 140px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Transfer Type</label>
-        <select name="transfer_type" id="typeFilter" class="input-form" style="padding: 5px; margin-bottom: 0; height: 42px;">
+      {{-- Transfer Type --}}
+      <div>
+        <label>Transfer Type</label>
+        <select id="typeFilter" class="input-form">
           <option value="">-- All Types --</option>
           <option value="outgoing" {{ request('transfer_type') == 'outgoing' ? 'selected' : '' }}>Outgoing</option>
           <option value="incoming" {{ request('transfer_type') == 'incoming' ? 'selected' : '' }}>Incoming</option>
@@ -47,9 +44,9 @@
       </div>
 
       {{-- Status Filter --}}
-      <div style="min-width: 140px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Filter Status</label>
-        <select name="status" id="statusFilter" class="input-form" style="padding: 5px; margin-bottom: 0; height: 42px;">
+      <div>
+        <label>Status</label>
+        <select id="statusFilter" class="input-form">
           <option value="">-- All Statuses --</option>
           <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
           <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
@@ -59,41 +56,26 @@
       </div>
 
       {{-- From Date --}}
-      <div style="min-width: 135px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
-        <input type="date" 
-               name="from_date" 
-               id="fromDate" 
-               class="input-form" 
-               value="{{ request('from_date') }}"
-               style="margin-bottom: 0; height: 42px;">
+      <div>
+        <label>From</label>
+        <input type="date" id="fromDate" class="input-form" value="{{ request('from_date') }}">
       </div>
 
       {{-- To Date --}}
-      <div style="min-width: 135px;">
-        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
-        <input type="date" 
-               name="to_date" 
-               id="toDate" 
-               class="input-form" 
-               value="{{ request('to_date') }}"
-               style="margin-bottom: 0; height: 42px;">
+      <div>
+        <label>To</label>
+        <input type="date" id="toDate" class="input-form" value="{{ request('to_date') }}">
       </div>
 
-      {{-- Action Buttons --}}
-      <div style="display: flex; gap: 8px;">
-        <button type="submit" class="btn-submit" style="padding: 0 1.2rem; height: 42px; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px;">
-          <i class="fas fa-filter"></i> Filter
+      {{-- Reset Button --}}
+      <div>
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
         </button>
-        @if(request('search') || request('transfer_type') || request('status') || request('from_date') || request('to_date'))
-        <a href="{{ route('manager.stock-transfer.index') }}" class="btn-submit" style="padding: 0 1rem; height: 42px; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #6c757d; color: #fff; border-radius: 8px;">
-          <i class="fas fa-undo"></i> Reset
-        </a>
-        @endif
       </div>
 
     </div>
-  </form>
+  </div>
 
   <div class="table-wrapper">
     <table>
@@ -107,185 +89,161 @@
           <th>Action</th>
         </tr>
       </thead>
-      <tbody class="desktop-table">
-        @forelse($transfers as $transfer)
-        @php
-          $isOutgoing = $transfer->from_branch_id == auth()->user()->branch_id;
-          $targetBranch = $isOutgoing ? $transfer->toBranch->name : $transfer->fromBranch->name;
-          $typeVal = $isOutgoing ? 'outgoing' : 'incoming';
-        @endphp
-        <tr class="transfer-item-row"
-            data-date="{{ $transfer->created_at->format('Y-m-d') }}"
-            data-type="{{ $typeVal }}"
-            data-status="{{ strtolower($transfer->status) }}"
-            data-search="brst{{ $transfer->id }} {{ strtolower($targetBranch) }}">
-          <td>BRST{{ $transfer->id }}</td>
-          <td>
-            @if($isOutgoing)
-              <span class="badge" style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px;">Outgoing</span>
-            @else
-              <span class="badge" style="background: #f1f8e9; color: #388e3c; padding: 4px 8px; border-radius: 4px;">Incoming</span>
-            @endif
-          </td>
-          <td>
-            @if($isOutgoing)
-              To: {{ $transfer->toBranch->name }}
-            @else
-              From: {{ $transfer->fromBranch->name }}
-            @endif
-          </td>
-          <td>
-            @if($transfer->status == 'pending')
-              <span class="status-pending-badge">Pending</span>
-            @elseif($transfer->status == 'approved')
-              <span class="status-approved-badge" style="background: #fff3e0; color: #ef6c00;">Approved</span>
-            @elseif($transfer->status == 'completed')
-              <span class="status-approved-badge">Completed</span>
-            @elseif($transfer->status == 'rejected')
-              <span class="status-rejected-badge">Rejected</span>
-            @endif
-          </td>
-          <td>{{ $transfer->created_at->format('d M Y') }}</td>
-          <td class="action-icons">
-            <a href="{{ route('manager.stock-transfer.show', $transfer->id) }}" class="icon-btn view-icon">
-              <i class="fa-solid fa-eye"></i>
-            </a>
-            @if($transfer->status == 'pending' && $isOutgoing)
-              <a href="{{ route('manager.stock-transfer.edit', $transfer->id) }}" class="icon-btn edit-icon">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </a>
-              <form action="{{ route('manager.stock-transfer.destroy', $transfer->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this request?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="icon-btn delete-icon">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </form>
-            @endif
-          </td>
-        </tr>
-        @empty
+      <tbody class="desktop-table" id="transferTable">
         <tr>
-          <td colspan="6" class="text-center text-muted">No stock transfers found.</td>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view stock transfers.
+          </td>
         </tr>
-        @endforelse
       </tbody>
     </table>
   </div>
 
-  <div class="manage-mobile-cards">
-    @forelse($transfers as $transfer)
-    @php
-      $isOutgoing = $transfer->from_branch_id == auth()->user()->branch_id;
-      $targetBranch = $isOutgoing ? $transfer->toBranch->name : $transfer->fromBranch->name;
-      $typeVal = $isOutgoing ? 'outgoing' : 'incoming';
-    @endphp
-    <div class="manage-card transfer-item-card"
-         data-date="{{ $transfer->created_at->format('Y-m-d') }}"
-         data-type="{{ $typeVal }}"
-         data-status="{{ strtolower($transfer->status) }}"
-         data-search="brst{{ $transfer->id }} {{ strtolower($targetBranch) }}">
-      <div class="card-body">
-        <div><span>ID</span><p>BRST{{ $transfer->id }}</p></div>
-        <div><span>Type</span>
-          <p>
-            @if($isOutgoing)
-              <span style="color: #1976d2;">Outgoing</span>
-            @else
-              <span style="color: #388e3c;">Incoming</span>
-            @endif
-          </p>
-        </div>
-        <div><span>Branch</span>
-          <p>
-            @if($isOutgoing)
-              To: {{ $transfer->toBranch->name }}
-            @else
-              From: {{ $transfer->fromBranch->name }}
-            @endif
-          </p>
-        </div>
-        <div><span>Status</span>
-          <p>
-            @if($transfer->status == 'pending')
-              <span style="color: #ffc107;">Pending</span>
-            @elseif($transfer->status == 'approved')
-              <span style="color: #fd7e14;">Approved</span>
-            @elseif($transfer->status == 'completed')
-              <span style="color: #28a745;">Completed</span>
-            @else
-              <span style="color: #dc3545;">Rejected</span>
-            @endif
-          </p>
-        </div>
-        <div><span>Date</span><p>{{ $transfer->created_at->format('d M Y') }}</p></div>
-      </div>
-      <div class="card-actions">
-        <a href="{{ route('manager.stock-transfer.show', $transfer->id) }}" class="icon-btn view-icon">
-          <i class="fa-solid fa-eye"></i>
-        </a>
-        @if($transfer->status == 'pending' && $isOutgoing)
-          <a href="{{ route('manager.stock-transfer.edit', $transfer->id) }}" class="icon-btn edit-icon">
-            <i class="fa-solid fa-pen-to-square"></i>
-          </a>
-          <form action="{{ route('manager.stock-transfer.destroy', $transfer->id) }}" method="POST" style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="icon-btn delete-icon" onclick="return confirm('Are you sure?')">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </form>
-        @endif
-      </div>
-    </div>
-    @empty
-    <p class="text-center text-muted">No stock transfers found.</p>
-    @endforelse
-  </div>
-
-  <div class="pagination-wrapper">
-    {{ $transfers->links() }}
+  <div class="manage-mobile-cards" id="transferMobile">
+    <p class="text-center text-muted py-5">
+      <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view stock transfers.
+    </p>
   </div>
 
 </div>
+
+<div class="mt-3" id="paginationWrapper"></div>
+
 @endsection
 
 @push('scripts')
-<script type="module">
-  $(document).ready(function () {
-    function liveFilterTransfers() {
-      const searchVal = $('#transferSearchInput').val().toLowerCase().trim();
-      const typeVal   = $('#typeFilter').val().toLowerCase();
-      const statusVal = $('#statusFilter').val().toLowerCase();
-      const fromDate  = $('#fromDate').val();
-      const toDate    = $('#toDate').val();
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput       = document.getElementById('searchInput');
+    const typeFilter        = document.getElementById('typeFilter');
+    const statusFilter      = document.getElementById('statusFilter');
+    const fromDate          = document.getElementById('fromDate');
+    const toDate            = document.getElementById('toDate');
+    const resetBtn          = document.getElementById('resetBtn');
 
-      $('.transfer-item-row, .transfer-item-card').each(function () {
-        const $el        = $(this);
-        const rowDate    = $el.data('date');     // YYYY-MM-DD
-        const rowType    = ($el.data('type') || '').toString().toLowerCase();
-        const rowStatus  = ($el.data('status') || '').toString().toLowerCase();
-        const searchData = ($el.data('search') || '').toString().toLowerCase();
+    const transferTable     = document.getElementById('transferTable');
+    const transferMobile    = document.getElementById('transferMobile');
+    const totalCountEl      = document.getElementById('totalTransferCount');
+    const paginationWrapper = document.getElementById('paginationWrapper');
 
-        let matchesDate = true;
-        if (fromDate && rowDate < fromDate) matchesDate = false;
-        if (toDate && rowDate > toDate) matchesDate = false;
-
-        let matchesType   = !typeVal || rowType === typeVal;
-        let matchesStatus = !statusVal || rowStatus === statusVal;
-        let matchesSearch = !searchVal || searchData.includes(searchVal);
-
-        if (matchesDate && matchesType && matchesStatus && matchesSearch) {
-          $el.show();
-        } else {
-          $el.hide();
+    function showLoadingState() {
+        if (transferTable) {
+            transferTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading stock transfers...
+                    </td>
+                </tr>`;
         }
-      });
+        if (transferMobile) {
+            transferMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading stock transfers...
+                </p>`;
+        }
     }
 
-    // Live JS filter as user types or picks inputs on current page
-    $('#transferSearchInput').on('keyup input', liveFilterTransfers);
-    $('#typeFilter, #statusFilter, #fromDate, #toDate').on('change', liveFilterTransfers);
-  });
+    function showErrorState() {
+        if (transferTable) {
+            transferTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock transfer data. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (transferMobile) {
+            transferMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load stock transfer data.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput)  searchInput.value  = '';
+        if (typeFilter)   typeFilter.value   = '';
+        if (statusFilter) statusFilter.value = '';
+        if (fromDate)     fromDate.value     = '';
+        if (toDate)       toDate.value       = '';
+    }
+
+    function fetchFilteredTransfers(fetchUrl = null) {
+        showLoadingState();
+
+        let url = fetchUrl;
+        if (!url) {
+            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const type   = encodeURIComponent(typeFilter ? typeFilter.value : '');
+            const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
+            const from   = encodeURIComponent(fromDate ? fromDate.value : '');
+            const to     = encodeURIComponent(toDate ? toDate.value : '');
+
+            url = `{{ route('manager.stock-transfer.index.data') }}?search=${search}&transfer_type=${type}&status=${status}&from_date=${from}&to_date=${to}`;
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (transferTable)  transferTable.innerHTML  = data.table;
+            if (transferMobile) transferMobile.innerHTML = data.mobile;
+            if (totalCountEl && data.total !== undefined) {
+                totalCountEl.innerText = data.total;
+            }
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if search/filters/page parameters exist in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredTransfers();
+    }
+
+    // Debounce search input
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredTransfers(), 350);
+        });
+    }
+
+    // Filter change listeners
+    if (typeFilter)   typeFilter.addEventListener('change',   () => fetchFilteredTransfers());
+    if (statusFilter) statusFilter.addEventListener('change', () => fetchFilteredTransfers());
+    if (fromDate)     fromDate.addEventListener('change',     () => fetchFilteredTransfers());
+    if (toDate)       toDate.addEventListener('change',       () => fetchFilteredTransfers());
+
+    // Reset button handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredTransfers();
+        });
+    }
+
+    // AJAX pagination handling
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredTransfers(link.href);
+            }
+        });
+    }
+});
 </script>
 @endpush

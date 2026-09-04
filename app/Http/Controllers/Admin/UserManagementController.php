@@ -21,7 +21,19 @@ class UserManagementController extends Controller
     $this->middleware(['auth', 'role:admin']);
   }
 
-  public function users(Request $request)
+  /**
+   * Load UI page only for Admin Users (no heavy query on page load).
+   */
+  public function users()
+  {
+    $branches = Branch::select('id', 'name')->orderBy('name', 'asc')->get();
+    return view('pages.admin.users.index', compact('branches'));
+  }
+
+  /**
+   * Fetch Users data via AJAX.
+   */
+  public function fetchUsersIndexData(Request $request)
   {
     $query = User::with('branch');
 
@@ -42,17 +54,13 @@ class UserManagementController extends Controller
     }
 
     $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
-    $branches = Branch::orderBy('name', 'asc')->get();
 
-    if ($request->ajax()) {
-      return response()->json([
-        'table'  => view('pages.admin.users.table', compact('users'))->render(),
-        'mobile' => view('pages.admin.users.mtable', compact('users'))->render(),
-        'total'  => $users->total(),
-      ]);
-    }
-
-    return view('pages.admin.users.index', compact('users', 'branches'));
+    return response()->json([
+      'table'      => view('pages.admin.users.table', compact('users'))->render(),
+      'mobile'     => view('pages.admin.users.mtable', compact('users'))->render(),
+      'total'      => $users->total(),
+      'pagination' => (string) $users->links(),
+    ]);
   }
 
   public function show(User $user)

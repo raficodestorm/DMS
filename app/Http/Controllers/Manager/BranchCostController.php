@@ -15,33 +15,53 @@ class BranchCostController extends Controller
      */
     public function index(Request $request)
     {
+        return view('pages.manager.cost.index');
+    }
+
+    /**
+     * Fetch branch costs data via AJAX with filters.
+     */
+    public function fetchCostsData(Request $request)
+    {
         $branchId = Auth::user()->branch_id;
         $query = BranchCost::where('branch_id', $branchId)->with('creator')->latest('cost_date');
 
-        // Filters
-        $month = $request->input('month', Carbon::now()->format('m'));
-        $year = $request->input('year', Carbon::now()->format('Y'));
-        
-        $query->whereMonth('cost_date', $month)
-              ->whereYear('cost_date', $year);
+        if ($request->filled('from_date')) {
+            $query->whereDate('cost_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('cost_date', '<=', $request->to_date);
+        }
+
+
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
         if ($request->filled('search')) {
-            $query->where('description', 'like', '%' . $request->search . '%');
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%')
+                  ->orWhere('category', 'like', '%' . $search . '%')
+                  ->orWhereHas('creator', function ($c) use ($search) {
+                      $c->where('username', 'like', '%' . $search . '%');
+                  });
+            });
         }
 
-        $costs = $query->paginate(15);
-        
-        // Summary for current filter
-        $totalCost = BranchCost::where('branch_id', $branchId)
-                               ->whereMonth('cost_date', $month)
-                               ->whereYear('cost_date', $year)
-                               ->sum('amount');
+        $totalCount = $query->count();
+        $totalAmount = (clone $query)->sum('amount');
+        $costs = $query->paginate(15)->withQueryString();
 
-        return view('pages.manager.cost.index', compact('costs', 'totalCost', 'month', 'year'));
+        return response()->json([
+            'table'        => view('pages.manager.cost.table', compact('costs'))->render(),
+            'mobile'       => view('pages.manager.cost.mtable', compact('costs'))->render(),
+            'pagination'   => $costs->links()->toHtml(),
+            'total_count'  => $totalCount,
+            'total_amount' => number_format($totalAmount, 2),
+        ]);
     }
 
     /**

@@ -6,13 +6,22 @@ use App\Models\Branch;
 use App\Models\Product;
 use App\Models\Stock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
+  /**
+   * Load UI page for Manager Branch Stock.
+   */
+  public function managerIndex()
+  {
+    return view('pages.manager.stock.index');
+  }
 
-  public function managerIndex(Request $request)
+  /**
+   * Fetch Manager Stock data via AJAX.
+   */
+  public function fetchManagerStockData(Request $request)
   {
     $query = Stock::with(['product.supplier'])
       ->select('stocks.*')
@@ -20,7 +29,7 @@ class StockController extends Controller
 
     $hasJoinedProducts = false;
 
-    // Search by product name OR supplier company name (using JOIN for fast DB execution)
+    // Search by product name OR supplier company name
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->join('products', 'stocks.product_id', '=', 'products.id')
@@ -46,11 +55,15 @@ class StockController extends Controller
       }
     }
 
-    $stocks = $query->get();
+    $stocks = $query->orderBy('stocks.id', 'desc')->paginate(20)->withQueryString();
 
-    return view('pages.manager.stock.index', compact('stocks'));
+    return response()->json([
+      'table'      => view('pages.manager.stock.table', compact('stocks'))->render(),
+      'mobile'     => view('pages.manager.stock.mtable', compact('stocks'))->render(),
+      'total'      => $stocks->total(),
+      'pagination' => (string) $stocks->links(),
+    ]);
   }
-
 
   // সব ব্রাঞ্চের বক্স ভিউ
   public function allStocksSummary()

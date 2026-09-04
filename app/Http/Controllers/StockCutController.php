@@ -22,8 +22,49 @@ class StockCutController extends Controller
 {
   public function index()
   {
-    $stockCuts = StockCut::with(['supplier', 'requestedBy'])->orderBy('created_at', 'desc')->get();
-    return view('pages.admin.stock-cut.index', compact('stockCuts'));
+    $suppliers = Supplier::orderBy('company_name', 'asc')->get();
+    return view('pages.admin.stock-cut.index', compact('suppliers'));
+  }
+
+  public function fetchStockCutsIndexData(Request $request)
+  {
+    $query = StockCut::with(['supplier', 'requestedBy'])->orderBy('created_at', 'desc');
+
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        $q->where('id', $search)
+          ->orWhereHas('supplier', function ($supplier) use ($search) {
+            $supplier->where('company_name', 'like', "%{$search}%")
+                     ->orWhere('name', 'like', "%{$search}%");
+          })
+          ->orWhereHas('requestedBy', function ($user) use ($search) {
+            $user->where('fullname', 'like', "%{$search}%")
+                 ->orWhere('username', 'like', "%{$search}%");
+          });
+      });
+    }
+
+    if ($request->filled('supplier_id')) {
+      $query->where('supplier_id', $request->supplier_id);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $stockCuts = $query->paginate(15)->withQueryString();
+
+    return response()->json([
+      'table'      => view('pages.admin.stock-cut.table', compact('stockCuts'))->render(),
+      'mobile'     => view('pages.admin.stock-cut.mtable', compact('stockCuts'))->render(),
+      'pagination' => (string) $stockCuts->links(),
+      'total'      => $stockCuts->total(),
+    ]);
   }
 
   public function createStockCut()

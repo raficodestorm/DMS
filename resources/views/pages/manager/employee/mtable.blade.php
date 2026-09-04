@@ -3,7 +3,7 @@
 
   <div class="card-body">
     <div><span>S.No</span>
-      <p>{{ $loop->iteration }}</p>
+      <p>{{ $employees->firstItem() ? $employees->firstItem() + $loop->index : $loop->iteration }}</p>
     </div>
     <div><span>Employee ID</span>
       <p>BRE100{{ $employee->id }}</p>
@@ -26,7 +26,6 @@
     <a href="{{ route('manager.employees.show', $employee) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>
-
   </div>
 
 </div>

@@ -18,6 +18,14 @@ class ReturnManagerController extends Controller
 {
     public function index(Request $request)
     {
+        return view('pages.manager.return.index');
+    }
+
+    /**
+     * Fetch manager returns data via AJAX with filters.
+     */
+    public function fetchReturnsData(Request $request)
+    {
         $user = auth()->user();
         $query = ProductReturn::with(['customer', 'sr', 'order'])
             ->where('branch_id', $user->branch_id)
@@ -48,16 +56,15 @@ class ReturnManagerController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
+        $totalCount = $query->count();
         $returns = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.manager.return.table', compact('returns'))->render(),
-                'mobile' => view('pages.manager.return.mtable', compact('returns'))->render(),
-            ]);
-        }
-
-        return view('pages.manager.return.index', compact('returns'));
+        return response()->json([
+            'table'       => view('pages.manager.return.table', compact('returns'))->render(),
+            'mobile'      => view('pages.manager.return.mtable', compact('returns'))->render(),
+            'pagination'  => $returns->links()->toHtml(),
+            'total_count' => $totalCount,
+        ]);
     }
 
 

@@ -61,14 +61,8 @@
           </li>
 
           <li>
-            <a href="{{ route('manager.index.srs') }}" class="sub-link {{ isActive('manager.index.srs') }}">
-              <i class="fas fa-user-gear me-1"></i> SR Accounts
-            </a>
-          </li>
-
-          <li>
             <a href="{{ route('manager.index.customers') }}" class="sub-link {{ isActive('manager.index.customers') }}">
-              <i class="fas fa-user-gear me-1"></i> Customer Accounts
+              <i class="fas fa-user-gear me-1"></i> All Customer Accounts
             </a>
           </li>
         </ul>

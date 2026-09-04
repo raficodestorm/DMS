@@ -18,6 +18,14 @@ class ReturnSrController extends Controller
 {
     public function index(Request $request)
     {
+        return view('pages.sr.return.index');
+    }
+
+    /**
+     * Fetch SR returns data via AJAX with filters.
+     */
+    public function fetchReturnsData(Request $request)
+    {
         $user = auth()->user();
         $query = ProductReturn::with(['customer', 'order'])
             ->where('sr_id', $user->id)
@@ -45,16 +53,15 @@ class ReturnSrController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
+        $totalCount = $query->count();
         $returns = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'table'  => view('pages.sr.return.table', compact('returns'))->render(),
-                'mobile' => view('pages.sr.return.mtable', compact('returns'))->render(),
-            ]);
-        }
-
-        return view('pages.sr.return.index', compact('returns'));
+        return response()->json([
+            'table'       => view('pages.sr.return.table', compact('returns'))->render(),
+            'mobile'      => view('pages.sr.return.mtable', compact('returns'))->render(),
+            'pagination'  => $returns->links()->toHtml(),
+            'total_count' => $totalCount,
+        ]);
     }
 
     public function create(Request $request)

@@ -1,7 +1,7 @@
 @forelse($customers as $customer)
 <tr>
   {{-- <td>{{ $user->id }}</td> --}}
-  <td scope="row">{{ $loop->iteration }}</td>
+  <td scope="row">{{ $customers->firstItem() ? $customers->firstItem() + $loop->index : $loop->iteration }}</td>
   <td>BRC200{{ $customer->id }}</td>
   <td class="name">{{ $customer->shop_name }}</td>
   <td>{{ $customer->manager }}</td>
@@ -16,6 +16,6 @@
 </tr>
 @empty
 <tr>
-  <td colspan="8" class="text-center text-muted">No records found.</td>
+  <td colspan="7" class="text-center text-muted">No records found.</td>
 </tr>
 @endforelse

@@ -23,8 +23,11 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
   Route::get('/manage-srs', [UserManagementController::class, 'sr'])->name('index.srs');
   Route::get('/manage-customers', [UserManagementController::class, 'customer'])->name('index.customers');
+  Route::get('/manage-customers/data', [UserManagementController::class, 'fetchCustomersData'])->name('index.customers.data');
 
+  Route::get('/employees/index/data', [EmployeeController::class, 'fetchEmployeesIndexData'])->name('employees.index.data');
   Route::resource('employees', EmployeeController::class);
+  Route::get('/costs/data', [BranchCostController::class, 'fetchCostsData'])->name('costs.index.data');
   Route::resource('costs', BranchCostController::class);
 
 
@@ -33,6 +36,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/stock/get-products/{supplier_id}', [StockRequestController::class, 'getProductsBySupplier'])->name('getProducts');
   Route::post('/stock/store', [StockRequestController::class, 'store'])->name('stock.store');
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForManager'])->name('stock.in.requests.index');
+  Route::get('/stock-in-requests/data', [StockRequestController::class, 'fetchStockInRequestsDataForManager'])->name('stock.in.requests.data');
 
   Route::get('/stock-in-request/{id}', [StockRequestController::class, 'showForManager'])->name('stock.in.request.show');
 
@@ -43,9 +47,11 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInUpdate'])->name('stock.in.update');
 
   Route::get('/stock', [StockController::class, 'managerIndex'])->name('stock.index');
+  Route::get('/stock/data', [StockController::class, 'fetchManagerStockData'])->name('stock.index.data');
 
   Route::get('/get-product-data/{id}', [OrderController::class, 'getProductData']);
   Route::get('/orders', [OrderManagerController::class, 'index'])->name('order.index');
+  Route::get('/orders/data', [OrderManagerController::class, 'fetchOrdersData'])->name('order.index.data');
   Route::get('/orders/show/{order}', [OrderManagerController::class, 'showForManager'])->name('order.show');
   Route::get('/orders/edit/{order}', [OrderController::class, 'edit'])->name('order.edit');
   Route::put('/orders/update/{order}', [OrderController::class, 'update'])->name('order.update');
@@ -59,6 +65,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/orders/allsrs', [OrderManagerController::class, 'allSrOrders'])->name('order.all.srs');
 
   Route::get('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'index'])->name('return.index');
+  Route::get('/return/data', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'fetchReturnsData'])->name('return.index.data');
   Route::get('/return/create', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'create'])->name('return.create');
   Route::post('/return', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'store'])->name('return.store');
   Route::get('/return/{id}/show', [\App\Http\Controllers\Manager\ReturnManagerController::class, 'show'])->name('return.show');
@@ -79,6 +86,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
 
   Route::get('/payments', [PaymentController::class, 'indexForManager'])->name('payments.index');
+  Route::get('/payments/data', [PaymentController::class, 'fetchManagerPaymentsData'])->name('payments.index.data');
   Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
   Route::post('/payments', [PaymentController::class, 'managerStore'])->name('payments.store');
   Route::get('/payments/show/{payment}', [PaymentController::class, 'show'])->name('payments.show');
@@ -87,6 +95,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
 
   // Stock Transfer Routes
   Route::get('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'index'])->name('stock-transfer.index');
+  Route::get('/stock-transfer/data', [\App\Http\Controllers\StockTransferController::class, 'fetchManagerTransfersIndexData'])->name('stock-transfer.index.data');
   Route::get('/stock-transfer/create', [\App\Http\Controllers\StockTransferController::class, 'create'])->name('stock-transfer.create');
   Route::post('/stock-transfer', [\App\Http\Controllers\StockTransferController::class, 'store'])->name('stock-transfer.store');
   Route::get('/stock-transfer/{id}/edit', [\App\Http\Controllers\StockTransferController::class, 'edit'])->name('stock-transfer.edit');
@@ -98,6 +107,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   // ── Retail Sales (Manager direct orders) ─────────────────────────────
   Route::prefix('retail')->name('retail.')->group(function () {
     Route::get('/',                          [RetailOrderController::class, 'index'])  ->name('index');
+    Route::get('/data',                      [RetailOrderController::class, 'fetchData'])->name('data');
     Route::get('/create',                    [RetailOrderController::class, 'create']) ->name('create');
     Route::post('/',                         [RetailOrderController::class, 'store'])  ->name('store');
     Route::get('/{id}',                      [RetailOrderController::class, 'show'])   ->name('show');

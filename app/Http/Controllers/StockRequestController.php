@@ -91,40 +91,67 @@ class StockRequestController extends Controller
     }
   }
 
-  // for showing all pending requests
-  public function stockInRequestIndexForAdmin(Request $request)
+  /**
+   * Load UI page only for Stock-In Requests (no heavy query on page load).
+   */
+  public function stockInRequestIndexForAdmin()
   {
-    $query = StockInRequest::with(['supplier', 'requestedBy.branch'])
+    $branches = \App\Models\Branch::select('id', 'name')->orderBy('name', 'asc')->get();
+    return view('pages.admin.stock.stock-in-requests-index', compact('branches'));
+  }
+
+  /**
+   * Fetch Stock-In Requests data via AJAX.
+   */
+  public function fetchStockInRequestsData(Request $request)
+  {
+    $query = StockInRequest::with(['supplier', 'requestedBy.branch', 'branch'])
       ->orderBy('created_at', 'desc');
 
-    // Branch filter — filter by the requesting user's branch
     if ($request->filled('branch_id')) {
-      $query->whereHas('requestedBy', function ($q) use ($request) {
-        $q->where('branch_id', $request->branch_id);
+      $branchId = $request->branch_id;
+      $query->where(function ($q) use ($branchId) {
+        $q->where('branch_id', $branchId)
+          ->orWhereHas('requestedBy', function ($userQ) use ($branchId) {
+            $userQ->where('branch_id', $branchId);
+          });
       });
     }
 
-    // Status filter
     if ($request->filled('status')) {
       $query->where('status', $request->status);
     }
 
-    // Date range filter
     if ($request->filled('from_date')) {
       $query->whereDate('created_at', '>=', $request->from_date);
     }
+
     if ($request->filled('to_date')) {
       $query->whereDate('created_at', '<=', $request->to_date);
     }
 
-    $requests = $query->get();
-    $branches = \App\Models\Branch::orderBy('name', 'asc')->get();
+    $requests = $query->paginate(15)->withQueryString();
 
-    return view('pages.admin.stock.stock-in-requests-index', compact('requests', 'branches'));
+    return response()->json([
+      'table'      => view('pages.admin.stock.stock-in-requests-table', compact('requests'))->render(),
+      'mobile'     => view('pages.admin.stock.stock-in-requests-mtable', compact('requests'))->render(),
+      'total'      => $requests->total(),
+      'pagination' => (string) $requests->links(),
+    ]);
   }
 
-  // for showing all pending requests
-  public function stockInRequestIndexForManager(Request $request)
+  /**
+   * Load UI page for Manager Stock-In Requests.
+   */
+  public function stockInRequestIndexForManager()
+  {
+    return view('pages.manager.stock.stock-in-requests-index');
+  }
+
+  /**
+   * Fetch Manager Stock-In Requests data via AJAX.
+   */
+  public function fetchStockInRequestsDataForManager(Request $request)
   {
     $query = StockInRequest::with(['supplier', 'requestedBy'])
       ->where('branch_id', auth()->user()->branch_id);
@@ -150,9 +177,14 @@ class StockRequestController extends Controller
       });
     }
 
-    $requests = $query->orderBy('created_at', 'desc')->get();
+    $requests = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
-    return view('pages.manager.stock.stock-in-requests-index', compact('requests'));
+    return response()->json([
+      'table'      => view('pages.manager.stock.stock-in-requests-table', compact('requests'))->render(),
+      'mobile'     => view('pages.manager.stock.stock-in-requests-mtable', compact('requests'))->render(),
+      'total'      => $requests->total(),
+      'pagination' => (string) $requests->links(),
+    ]);
   }
 
   // for showing request details
