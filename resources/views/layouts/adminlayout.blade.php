@@ -215,14 +215,14 @@
       <li class="nav-item {{ request()->routeIs('admin.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.return.*') }}">
           <i class="fas fa-undo"></i>
-          <span>Product Return</span>
+          <span>Order Return</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
         <ul class="sub-menu" style="{{ isOpen('admin.return.*') }}">
           <li>
             <a href="{{ route('admin.return.index') }}" class="sub-link {{ isActive('admin.return.index') }}">
-              <i class="fas fa-list me-1"></i> Return Dashboard
+              <i class="fas fa-list me-1"></i> All Returns
             </a>
           </li>
         </ul>
@@ -412,7 +412,7 @@
       <!-- Stock cut-->
       <li class="nav-item">
         <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.index') }}">
-          <i class="fas fa-handshake"></i> Stock Cut
+          <i class="fas fa-handshake"></i> Stock Return
         </a>
       </li>
 

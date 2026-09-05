@@ -14,32 +14,73 @@
       @endif
       <p class="text-muted mb-0">Viewing all orders</p>
     </div>
+    <div style="background: rgba(49,49,255,0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49,49,255,0.2);">
+      <i class="fas fa-shopping-cart me-1"></i> Total: <span id="visibleCount">{{ $orders->count() }}</span>
+    </div>
   </div>
 
-  {{-- Smart Search Bar --}}
-  <div class="smart-filter-wrapper my-3" style="background: var(--section-bg, #fff); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
-    <form method="GET" action="{{ url()->current() }}" id="searchForm" class="row g-2 align-items-center">
-      <div class="col-12 col-md-9">
+  @if(session('success'))
+  <div class="alert alert-success">{{ session('success') }}</div>
+  @endif
+
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-5">
+
+      {{-- Search --}}
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search</label>
         <div style="position: relative;">
-          @if(isset($sr))
-            <input type="text" name="search" id="searchInput" class="input-form" placeholder="Search by Customer shop name or Order ID..." value="{{ request('search') }}" style="padding-left: 35px; height: 42px; margin-bottom: 0;">
-          @elseif(isset($customer))
-            <input type="text" name="search" id="searchInput" class="input-form" placeholder="Search by SR name or Order ID..." value="{{ request('search') }}" style="padding-left: 35px; height: 42px; margin-bottom: 0;">
-          @else
-            <input type="text" name="search" id="searchInput" class="input-form" placeholder="Search by Customer shop name, SR name or Order ID..." value="{{ request('search') }}" style="padding-left: 35px; height: 42px; margin-bottom: 0;">
-          @endif
-          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          @php
+            $placeholder = "Search by Order ID...";
+            if(isset($sr)) {
+                $placeholder = "Customer shop name or Order ID...";
+            } elseif(isset($customer)) {
+                $placeholder = "SR name or Order ID...";
+            } else {
+                $placeholder = "Customer, SR or Order ID...";
+            }
+          @endphp
+          <input type="text" id="liveSearch" class="input-form" placeholder="{{ $placeholder }}" style="padding-left: 32px; margin-bottom: 0;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
         </div>
       </div>
-      <div class="col-12 col-md-3 d-flex gap-2">
-        <button type="submit" class="btn btn-primary flex-grow-1" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-          <i class="fas fa-search"></i> Search
-        </button>
-        <a href="{{ url()->current() }}" id="resetBtn" class="btn btn-outline-secondary" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; width: 42px; padding: 0;" title="Reset Search">
-          <i class="fas fa-undo"></i>
-        </a>
+
+      {{-- Status Filter --}}
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Status</label>
+        <select id="statusFilter" class="input-form" style="margin-bottom: 0;">
+          <option value="">-- All Statuses --</option>
+          <option value="pending_sr">Pending SR</option>
+          <option value="pending_manager">Pending Manager</option>
+          <option value="approved">Approved</option>
+          <option value="complete">Complete</option>
+          <option value="delivered">Delivered</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
-    </form>
+
+      {{-- From Date --}}
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">From Date</label>
+        <input type="date" id="fromDate" class="input-form" style="margin-bottom: 0;">
+      </div>
+
+      {{-- To Date --}}
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">To Date</label>
+        <input type="date" id="toDate" class="input-form" style="margin-bottom: 0;">
+      </div>
+
+      {{-- Reset Button --}}
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: transparent; margin-bottom: 4px; display: block;">Reset</label>
+        <button type="button" id="resetSearchBtn" class="btn btn-outline-secondary" title="Reset Filters" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <div class="table-wrapper">
@@ -58,7 +99,7 @@
       </thead>
       <tbody class="desktop-table">
         @forelse($orders as $order)
-        <tr>
+        <tr class="searchable-row" data-search="brs{{ $order->id }} {{ strtolower($order->status) }} {{ strtolower($order->customer->shop_name ?? '') }} {{ strtolower($order->sr->fullname ?? '') }}" data-status="{{ $order->status }}" data-date="{{ $order->created_at->format('Y-m-d') }}">
           <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
           <td>BRS{{ $order->id }}</td>
           <td>{{ $order->customer->shop_name ?? 'N/A' }}</td>
@@ -99,7 +140,7 @@
 
   <div class="manage-mobile-cards">
     @forelse($orders as $order)
-    <div class="manage-card">
+    <div class="manage-card searchable-card" data-search="brs{{ $order->id }} {{ strtolower($order->status) }} {{ strtolower($order->customer->shop_name ?? '') }} {{ strtolower($order->sr->fullname ?? '') }}" data-status="{{ $order->status }}" data-date="{{ $order->created_at->format('Y-m-d') }}">
       <div class="card-body">
         <div><span>S.No</span>
           <p>{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration }}</p>
@@ -162,24 +203,72 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('searchInput');
+    const liveSearch   = document.getElementById('liveSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const fromDate     = document.getElementById('fromDate');
+    const toDate       = document.getElementById('toDate');
+    const resetBtn     = document.getElementById('resetSearchBtn');
+    const visibleCount = document.getElementById('visibleCount');
+    const totalRows    = document.querySelectorAll('.searchable-row').length;
 
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function () {
-            const query = searchInput.value.toLowerCase().trim();
+    function applyFilters() {
+        const q      = liveSearch ? liveSearch.value.toLowerCase().trim() : '';
+        const status = statusFilter ? statusFilter.value : '';
+        const from   = fromDate ? fromDate.value : '';
+        const to     = toDate ? toDate.value : '';
 
-            const tableRows = document.querySelectorAll('.desktop-table tr');
-            tableRows.forEach(row => {
-                if (row.querySelector('td[colspan]')) return;
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
+        let count = 0;
 
-            const mobileCards = document.querySelectorAll('.manage-mobile-cards > .manage-card');
-            mobileCards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(query) ? '' : 'none';
-            });
+        // Desktop rows
+        document.querySelectorAll('.searchable-row').forEach(row => {
+            const text      = row.getAttribute('data-search') || '';
+            const rowStatus = row.getAttribute('data-status') || '';
+            const rowDate   = row.getAttribute('data-date') || '';
+
+            let match = true;
+
+            if (q && !text.includes(q)) match = false;
+            if (status && rowStatus !== status) match = false;
+            if (from && rowDate < from) match = false;
+            if (to && rowDate > to) match = false;
+
+            row.style.display = match ? '' : 'none';
+            if (match) count++;
+        });
+
+        // Mobile cards
+        document.querySelectorAll('.searchable-card').forEach(card => {
+            const text       = card.getAttribute('data-search') || '';
+            const cardStatus = card.getAttribute('data-status') || '';
+            const cardDate   = card.getAttribute('data-date') || '';
+
+            let match = true;
+
+            if (q && !text.includes(q)) match = false;
+            if (status && cardStatus !== status) match = false;
+            if (from && cardDate < from) match = false;
+            if (to && cardDate > to) match = false;
+
+            card.style.display = match ? '' : 'none';
+        });
+
+        if (visibleCount) {
+            visibleCount.innerText = (q || status || from || to) ? count : totalRows;
+        }
+    }
+
+    if (liveSearch)   liveSearch.addEventListener('input', applyFilters);
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (fromDate)     fromDate.addEventListener('change', applyFilters);
+    if (toDate)       toDate.addEventListener('change', applyFilters);
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (liveSearch)   liveSearch.value   = '';
+            if (statusFilter) statusFilter.value = '';
+            if (fromDate)     fromDate.value     = '';
+            if (toDate)       toDate.value       = '';
+            applyFilters();
         });
     }
 });

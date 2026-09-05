@@ -192,14 +192,14 @@
 
     <div class="invoice-box" id="printArea">
       
-      <!-- Watermark Logo -->
-      <img src="{{ asset('image/relectric-logo.png') }}" class="watermark-logo" alt="Watermark">
+      <!-- Watermark Logo (dynamic) -->
+      <img src="{{ $invoiceHeader['logo'] }}" class="watermark-logo" alt="Watermark">
 
       <div class="header">
         <div>
-          <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60x;">
+          <img src="{{ $invoiceHeader['logo'] }}" alt="Logo" class="sidebar-logo img-fluid" style="max-width: 220px; max-height: 70px; object-fit: contain;">
         </div>
-        <p>Double Mooring, Chattogram, Bangladesh  |  Contact: 01871923000</p>
+        <p>{{ $invoiceHeader['subtitle'] }}</p>
       </div>
 
 

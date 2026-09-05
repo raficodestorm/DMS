@@ -3,10 +3,64 @@
 @section('content')
 <div class="manage-card">
 
-  <div class="card-header">
-    <h2>My Transactions</h2>
-    <p>View all payment and purchase records</p>
-    @include('components.alert')
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">My Transactions</h2>
+      <p class="text-muted mb-0">View all payment and purchase records</p>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+        <i class="fas fa-exchange-alt me-1"></i> Total: <span id="totalPaymentCount">0</span>
+      </div>
+    </div>
+  </div>
+
+  @include('components.alert')
+
+  {{-- Smart Filter Bar --}}
+  <div class="smart-filter-wrapper">
+    <div class="smart-filter-grid-5">
+
+      {{-- Search --}}
+      <div>
+        <label>Search</label>
+        <div style="position: relative;">
+          <input type="text" id="searchInput" class="input-form" placeholder="Transaction ID..." style="padding-left: 32px;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+        </div>
+      </div>
+
+      {{-- Type Filter --}}
+      <div>
+        <label>Type</label>
+        <select id="typeFilter" class="input-form">
+          <option value="">-- All Types --</option>
+          <option value="pay">Payment</option>
+          <option value="buy">Purchase</option>
+          <option value="return">Return</option>
+        </select>
+      </div>
+
+      {{-- From Date --}}
+      <div>
+        <label>From Date</label>
+        <input type="date" id="fromDate" class="input-form">
+      </div>
+
+      {{-- To Date --}}
+      <div>
+        <label>To Date</label>
+        <input type="date" id="toDate" class="input-form">
+      </div>
+
+      {{-- Reset Button --}}
+      <div>
+        <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <div class="table-wrapper">
@@ -22,144 +76,176 @@
           <th>Action</th>
         </tr>
       </thead>
-
-      <tbody class="desktop-table">
-        @forelse($payments as $payment)
+      <tbody class="desktop-table" id="paymentTable">
         <tr>
-
-          <td>
-            {{ $payments->firstItem() ? $payments->firstItem() + $loop->index : $loop->iteration }}
-          </td>
-
-          <td>
-            BRT00{{ $payment->id }}
-          </td>
-
-          <td>
-            @if($payment->type == 'pay')
-            <span style="color:var(--primary); font-weight:600;">Payment</span>
-            @else
-            <span style="color:#7c3aed; font-weight:600;">Purchase</span>
-            @endif
-          </td>
-
-          <td>
-            <strong>{{ number_format($payment->amount, 2) }} TK</strong>
-          </td>
-
-          <td>
-            @if($payment->status == 'complete')
-
-            <span class="status-active-badge" style="background:#ecfdf5; color:#15803d; border:1px solid #bbf7d0;">
-              ● Completed
-            </span>
-
-            @else
-
-            <span class="status-inactive-badge" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a;">
-              ● Pending
-            </span>
-
-            @endif
-          </td>
-
-          <td>
-            {{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}
-          </td>
-
-          <td class="action-icons">
-            <a href="{{ route('customer.payments.show', $payment->id) }}" class="icon-btn view-icon">
-              <i class="fa-solid fa-eye"></i>
-            </a>
-          </td>
-
-        </tr>
-        @empty
-        <tr>
-          <td colspan="7" class="text-center text-muted">
-            No transaction records found.
+          <td colspan="7" class="text-center py-5 text-muted">
+            <div class="d-flex flex-column align-items-center justify-content-center gap-2">
+              <div><i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click below to view transactions.</div>
+              <button type="button" class="btn btn-sm btn-primary see-all-btn d-inline-flex align-items-center justify-content-center gap-1 px-3 py-1 mt-1" style="border-radius: 6px; font-weight: 500; width: auto !important; max-width: max-content; margin: 0 auto;">
+                <i class="fas fa-eye"></i> See All
+              </button>
+            </div>
           </td>
         </tr>
-        @endforelse
       </tbody>
     </table>
   </div>
 
-  {{-- Mobile Cards --}}
-  <div class="manage-mobile-cards">
-
-    @forelse($payments as $payment)
-
-    <div class="manage-card">
-
-      <div class="card-body">
-
-        <div>
-          <span>S.No</span>
-          <p>
-            {{ $payments->firstItem() ? $payments->firstItem() + $loop->index : $loop->iteration }}
-          </p>
-        </div>
-
-        <div>
-          <span>Transaction ID</span>
-          <p>BRT00{{ $payment->id }}</p>
-        </div>
-
-        <div>
-          <span>Type</span>
-          <p>
-            @if($payment->type == 'pay')
-            Payment
-            @else
-            Purchase
-            @endif
-          </p>
-        </div>
-
-        <div>
-          <span>Amount</span>
-          <p>{{ number_format($payment->amount, 2) }} TK</p>
-        </div>
-
-        <div>
-          <span>Status</span>
-          <p>
-            @if($payment->status == 'complete')
-            <span style="color:#16a34a;">● Completed</span>
-            @else
-            <span style="color:#f59e0b;">● Pending</span>
-            @endif
-          </p>
-        </div>
-
-        <div>
-          <span>Date</span>
-          <p>
-            {{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y') }}
-          </p>
-        </div>
-
-      </div>
-
-      <div class="card-actions">
-        <a href="{{ route('customer.payments.show', $payment->id) }}" class="icon-btn view-icon">
-          <i class="fa-solid fa-eye"></i>
-        </a>
-      </div>
-
+  <div class="manage-mobile-cards" id="paymentMobile">
+    <div class="text-center text-muted py-5 d-flex flex-column align-items-center justify-content-center gap-2">
+      <div><i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click below to view transactions.</div>
+      <button type="button" class="btn btn-sm btn-primary see-all-btn d-inline-flex align-items-center justify-content-center gap-1 px-3 py-1 mt-1" style="border-radius: 6px; font-weight: 500; width: auto !important; max-width: max-content; margin: 0 auto;">
+        <i class="fas fa-eye"></i> See All
+      </button>
     </div>
-
-    @empty
-    <p class="text-center text-muted">No transaction records found.</p>
-    @endforelse
-
   </div>
 
-</div>
+  <div id="paginationWrapper" class="mt-3"></div>
 
-<div class="mt-3">
-  {{ $payments->links() }}
 </div>
-
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput       = document.getElementById('searchInput');
+    const typeFilter        = document.getElementById('typeFilter');
+    const fromDate          = document.getElementById('fromDate');
+    const toDate            = document.getElementById('toDate');
+    const resetBtn          = document.getElementById('resetBtn');
+    const paymentTable      = document.getElementById('paymentTable');
+    const paymentMobile     = document.getElementById('paymentMobile');
+    const paginationWrapper = document.getElementById('paginationWrapper');
+    const totalPaymentCount = document.getElementById('totalPaymentCount');
+
+    let debounceTimer;
+
+    function showLoadingState() {
+        if (paymentTable) {
+            paymentTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Loading transactions...
+                    </td>
+                </tr>`;
+        }
+        if (paymentMobile) {
+            paymentMobile.innerHTML = `
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading transactions...
+                </p>`;
+        }
+    }
+
+    function showErrorState() {
+        if (paymentTable) {
+            paymentTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i> Failed to load transactions. Please try again.
+                    </td>
+                </tr>`;
+        }
+        if (paymentMobile) {
+            paymentMobile.innerHTML = `
+                <p class="text-center text-danger py-4">
+                    <i class="fas fa-exclamation-circle me-1"></i> Failed to load transactions.
+                </p>`;
+        }
+    }
+
+    function clearAllFilterInputs() {
+        if (searchInput) searchInput.value = '';
+        if (typeFilter)  typeFilter.value  = '';
+        if (fromDate)    fromDate.value    = '';
+        if (toDate)      toDate.value      = '';
+    }
+
+    function fetchFilteredPayments(pageUrl = null) {
+        showLoadingState();
+
+        const query  = searchInput ? searchInput.value.trim() : '';
+        const type   = typeFilter  ? typeFilter.value  : '';
+        const from   = fromDate    ? fromDate.value    : '';
+        const to     = toDate      ? toDate.value      : '';
+
+        let url = pageUrl || "{{ route('customer.payments.index.data') }}";
+        const params = new URLSearchParams();
+
+        if (query) params.append('search', query);
+        if (type)  params.append('type', type);
+        if (from)  params.append('from_date', from);
+        if (to)    params.append('to_date', to);
+
+        if (params.toString()) {
+            url += (url.includes('?') ? '&' : '?') + params.toString();
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
+        .then(data => {
+            if (paymentTable)      paymentTable.innerHTML      = data.table;
+            if (paymentMobile)     paymentMobile.innerHTML     = data.mobile;
+            if (paginationWrapper && data.pagination !== undefined) {
+                paginationWrapper.innerHTML = data.pagination;
+            }
+            if (totalPaymentCount && data.total_count !== undefined) {
+                totalPaymentCount.innerText = data.total_count;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            showErrorState();
+        });
+    }
+
+    // Initial Load: Only fetch if URL parameters exist
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString().length > 0) {
+        fetchFilteredPayments();
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchFilteredPayments(), 350);
+        });
+    }
+
+    if (typeFilter) typeFilter.addEventListener('change', () => fetchFilteredPayments());
+    if (fromDate)   fromDate.addEventListener('change',   () => fetchFilteredPayments());
+    if (toDate)     toDate.addEventListener('change',     () => fetchFilteredPayments());
+
+    // Click handler for See All button
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.see-all-btn')) {
+            clearAllFilterInputs();
+            fetchFilteredPayments();
+        }
+    });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            clearAllFilterInputs();
+            fetchFilteredPayments();
+        });
+    }
+
+    // AJAX pagination handling
+    if (paginationWrapper) {
+        paginationWrapper.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                e.preventDefault();
+                fetchFilteredPayments(link.href);
+            }
+        });
+    }
+});
+</script>
+@endpush

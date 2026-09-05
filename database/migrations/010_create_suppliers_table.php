@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email')->nullable();
             $table->text('address')->nullable();
+            $table->decimal('due', 10, 2)->default(0.00);
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

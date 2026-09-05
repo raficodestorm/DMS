@@ -137,6 +137,21 @@
       <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
     </div>
 
+    <div class="info-item">
+      <label>Order Type</label>
+      <p>
+        @if($order->order_type == "field_order")
+        <span class="emerald-type-badge">Field Order</span>
+        @elseif($order->order_type == 'retail')
+        <span class="pink-type-badge">Retail</span>
+        @elseif($order->order_type == 'online')
+        <span class="purple-type-badge">Online</span>
+        @else
+        <span class="status-undefined-badge">Undefined</span>
+        @endif
+      </p>
+    </div>
+
     @if($order->note)
     <div class="info-item" style="grid-column: span 2;">
       <label>Order Note</label>

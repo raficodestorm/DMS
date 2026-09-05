@@ -3,7 +3,7 @@
 @section('content')
 <div class="container justify-center">
   <div class="form-card">
-    <h2><i class="fas fa-file-invoice"></i> Cut your Stock</h2>
+    <h2><i class="fas fa-file-invoice"></i> Return your Stock</h2>
     @include('components.alert')
 
     <form method="POST" action="{{ route('admin.stockcut.store') }}" id="stockForm">

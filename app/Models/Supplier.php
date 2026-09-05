@@ -14,6 +14,8 @@ class Supplier extends Model
         'phone',
         'email',
         'address',
+        'due',
+        'image',
     ];
     public function products()
     {

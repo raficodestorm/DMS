@@ -499,7 +499,7 @@ class OrderController extends Controller
 
   public function viewInvoice(Order $order)
   {
-    $order->load(['items.product.category', 'customer', 'sr']);
+    $order->load(['items.product.category', 'items.product.supplier', 'customer', 'sr']);
 
     $items = $order->items->sortBy(function ($item) {
       return $item->product->category->name ?? 'General';
@@ -535,11 +535,40 @@ class OrderController extends Controller
       'current_due' => $currentDue
     ];
 
+    // ─── Dynamic Invoice Header Logic ────────────────────────────────────────
+    // Collect unique, non-null suppliers across all order items.
+    $suppliers = $items
+        ->map(fn($item) => $item->product?->supplier)
+        ->filter()
+        ->unique('id')
+        ->values();
+
+    $appName = config('app.name');
+
+    if ($suppliers->count() === 1) {
+        // All items share one supplier — use that supplier's logo & name.
+        $supplier      = $suppliers->first();
+        $invoiceHeader = [
+            'logo'     => $supplier->image
+                            ? asset($supplier->image)
+                            : asset('image/relectric-logo.png'),
+            'subtitle' => "Authorized Distributor of {$supplier->company_name} | {$appName} → 01871923000",
+        ];
+    } else {
+        // Mixed or unknown suppliers — fall back to the default company logo.
+        $invoiceHeader = [
+            'logo'     => asset('image/relectric-logo.png'),
+            'subtitle' => "Multi-Brand Authorized Distributor | {$appName} → 01871923000",
+        ];
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     return view("pages.manager.order.invoice", compact(
       'order',
       'customerData',
       'items',
-      'hasDiscount'
+      'hasDiscount',
+      'invoiceHeader'
     ));
   }
 }

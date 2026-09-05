@@ -1,8 +1,7 @@
 @forelse($orders as $order)
 <tr>
-  <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
+  <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration }}</td>
   <td>BRS{{ $order->id }}</td>
-  <td>{{ $order->customer->shop_name ?? 'N/A' }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
   <td>
     @if($order->status == "pending_sr")
@@ -22,15 +21,14 @@
     @endif
   </td>
   <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
-
   <td class="action-icons">
-    <a href="{{ route('sr.order.show', $order->id) }}" class="icon-btn view-icon">
+    <a href="{{ route('customer.orders.show', $order->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>
   </td>
 </tr>
 @empty
 <tr>
-  <td colspan="8" class="text-center text-muted">No orders found.</td>
+  <td colspan="6" class="text-center text-muted">No orders found.</td>
 </tr>
 @endforelse

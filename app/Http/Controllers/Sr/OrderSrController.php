@@ -66,6 +66,51 @@ class OrderSrController extends Controller
     return view('pages.sr.order.index', compact('orders'));
   }
 
+  public function fetchOrdersData(Request $request)
+  {
+    $user = auth()->user();
+
+    $query = Order::with(['customer', 'sr'])
+      ->where('sr_id', $user->id)
+      ->latest();
+
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        if (str_starts_with($search, 'BRS')) {
+          $id = str_replace('BRS', '', $search);
+          $q->where('id', $id);
+        } else {
+          $q->where('id', $search)
+            ->orWhereHas('customer', function ($customer) use ($search) {
+              $customer->where('shop_name', 'like', "%{$search}%");
+            });
+        }
+      });
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $orders = $query->paginate(20)->withQueryString();
+
+    return response()->json([
+      'table'       => view('pages.sr.order.table', compact('orders'))->render(),
+      'mobile'      => view('pages.sr.order.mtable', compact('orders'))->render(),
+      'pagination'  => $orders->links()->toHtml(),
+      'total_count' => $orders->total(),
+    ]);
+  }
+
 
   public function indexForCustomer()
   {
@@ -77,6 +122,48 @@ class OrderSrController extends Controller
           ->paginate(15);
 
       return view('pages.customer.order.index', compact('orders'));
+  }
+
+  public function fetchCustomerOrdersData(Request $request)
+  {
+      $user = auth()->user();
+
+      $query = Order::with(['customer', 'sr'])
+          ->where('customer_id', $user->customer_id)
+          ->latest();
+
+      if ($request->filled('search')) {
+          $search = trim($request->search);
+          $query->where(function ($q) use ($search) {
+              if (str_starts_with($search, 'BRS')) {
+                  $id = str_replace('BRS', '', $search);
+                  $q->where('id', $id);
+              } else {
+                  $q->where('id', $search);
+              }
+          });
+      }
+
+      if ($request->filled('status')) {
+          $query->where('status', $request->status);
+      }
+
+      if ($request->filled('from_date')) {
+          $query->whereDate('created_at', '>=', $request->from_date);
+      }
+
+      if ($request->filled('to_date')) {
+          $query->whereDate('created_at', '<=', $request->to_date);
+      }
+
+      $orders = $query->paginate(15)->withQueryString();
+
+      return response()->json([
+          'table'       => view('pages.customer.order.table', compact('orders'))->render(),
+          'mobile'      => view('pages.customer.order.mtable', compact('orders'))->render(),
+          'pagination'  => $orders->links()->toHtml(),
+          'total_count' => $orders->total(),
+      ]);
   }
 
   public function showForCustomer($id)

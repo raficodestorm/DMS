@@ -99,14 +99,37 @@
 </style>
 
 <div class="container-fluid">
-  <div class="card-header mb-4">
-    <h2 style="color: var(--text-main);">Customer Orders</h2>
-    <p style="color: var(--text-muted);">Select a customer to view order history</p>
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h2 style="color: var(--text-main); margin-bottom: 2px;">Customer Orders</h2>
+      <p style="color: var(--text-muted); margin-bottom: 0;">Select a customer to view order history</p>
+    </div>
+    <div style="background: rgba(49,49,255,0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49,49,255,0.2);">
+      <i class="fas fa-users me-1"></i> Showing: <span id="visibleCount">{{ count($customers) }}</span> / {{ count($customers) }}
+    </div>
   </div>
 
-  <div class="row g-4">
+  {{-- Live Search Bar --}}
+  <div class="smart-filter-wrapper">
+    <div style="display: flex; gap: 10px; align-items: flex-end;">
+      <div style="flex: 1;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block;">Search Customer</label>
+        <div style="position: relative;">
+          <input type="text" id="liveSearch" class="input-form" placeholder="Search by shop name or address..." style="padding-left: 32px; margin-bottom: 0;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+        </div>
+      </div>
+      <div>
+        <button type="button" id="resetSearchBtn" class="btn btn-outline-secondary" title="Reset Search" style="height: 36px; width: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4" id="customerGrid">
     @foreach($customers as $customer)
-    <div class="col-12 col-sm-6 col-md-4 animate__animated animate__fadeIn">
+    <div class="col-12 col-sm-6 col-md-4 animate__animated animate__fadeIn customer-col" data-search="{{ strtolower($customer->shop_name) }} {{ strtolower($customer->address ?? '') }}">
       <div class="branch-card" onclick="location.href='{{ route('sr.order.specific', $customer->id) }}'">
 
         <div class="customer-meta">
@@ -138,3 +161,41 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const liveSearch   = document.getElementById('liveSearch');
+    const resetBtn     = document.getElementById('resetSearchBtn');
+    const visibleCount = document.getElementById('visibleCount');
+    const total        = document.querySelectorAll('.customer-col').length;
+
+    function filterCards(query) {
+        const q = query.toLowerCase().trim();
+        let count = 0;
+
+        document.querySelectorAll('.customer-col').forEach(col => {
+            const text = col.getAttribute('data-search') || '';
+            const match = !q || text.includes(q);
+            col.style.display = match ? '' : 'none';
+            if (match) count++;
+        });
+
+        if (visibleCount) visibleCount.innerText = q ? count : total;
+    }
+
+    if (liveSearch) {
+        liveSearch.addEventListener('input', function () {
+            filterCards(this.value);
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (liveSearch) liveSearch.value = '';
+            filterCards('');
+        });
+    }
+});
+</script>
+@endpush

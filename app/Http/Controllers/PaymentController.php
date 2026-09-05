@@ -212,6 +212,48 @@ class PaymentController extends Controller
     );
   }
 
+  public function fetchCustomerPaymentsData(Request $request)
+  {
+    $customerId = auth()->user()->customer_id;
+
+    $query = Transaction::with(['customer', 'sr'])
+      ->where('customer_id', $customerId)
+      ->latest();
+
+    if ($request->filled('search')) {
+      $search = trim($request->search);
+      $query->where(function ($q) use ($search) {
+        $q->where('id', ltrim($search, 'BRT0'))
+          ->orWhere('id', 'like', "%{$search}%");
+      });
+    }
+
+    if ($request->filled('type')) {
+      $query->where('type', $request->type);
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    if ($request->filled('from_date')) {
+      $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+      $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $payments = $query->paginate(20)->withQueryString();
+
+    return response()->json([
+      'table'       => view('pages.customer.payment.table', compact('payments'))->render(),
+      'mobile'      => view('pages.customer.payment.mtable', compact('payments'))->render(),
+      'pagination'  => $payments->links()->toHtml(),
+      'total_count' => $payments->total(),
+    ]);
+  }
+
   public function create()
   {
     $customers = Customer::where('branch_id', auth()->user()->branch_id)

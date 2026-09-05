@@ -310,7 +310,7 @@ class OrderManagerController extends Controller
       });
 
       $order->refresh();
-      $order->load(['items.product.category', 'customer', 'sr']);
+      $order->load(['items.product.category', 'items.product.supplier', 'customer', 'sr']);
 
       $items = $order->items->sortBy(function ($item) {
         return $item->product->category->name ?? 'General';
@@ -319,11 +319,37 @@ class OrderManagerController extends Controller
         return (float) $item->discount_amount > 0;
       });
 
+      // ─── Dynamic Invoice Header Logic ────────────────────────────────────────
+      $suppliers = $items
+          ->map(fn($item) => $item->product?->supplier)
+          ->filter()
+          ->unique('id')
+          ->values();
+
+      $appName = config('app.name');
+
+      if ($suppliers->count() === 1) {
+          $supplier      = $suppliers->first();
+          $invoiceHeader = [
+              'logo'     => $supplier->image
+                              ? asset($supplier->image)
+                              : asset('image/relectric-logo.png'),
+              'subtitle' => "Authorized Distributor of {$supplier->company_name} | {$appName} → 01871923000",
+          ];
+      } else {
+          $invoiceHeader = [
+              'logo'     => asset('image/relectric-logo.png'),
+              'subtitle' => "Multi-Brand Authorized Distributor | {$appName} → 01871923000",
+          ];
+      }
+      // ─────────────────────────────────────────────────────────────────────────
+
       return view('pages.manager.order.invoice', compact(
         'order',
         'customerData',
         'items',
-        'hasDiscount'
+        'hasDiscount',
+        'invoiceHeader'
       ));
     } catch (\Throwable $e) {
       return back()->with('error', $e->getMessage());

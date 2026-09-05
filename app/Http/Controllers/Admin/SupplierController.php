@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
+use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SupplierController extends Controller
 {
+    use UploadHelper;
+
     /**
      * Display a listing of the resource.
      */
@@ -21,7 +24,6 @@ class SupplierController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-
     public function create()
     {
         return view('pages.admin.supplier.create');
@@ -36,13 +38,21 @@ class SupplierController extends Controller
             'name' => 'required|string|max:100',
             'company_name' => 'required|string|max:200',
             'phone' => 'required|string|max:200',
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:suppliers,email'],
-            'address' => 'required|string|max:200',
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:suppliers,email'],
+            'address' => 'nullable|string|max:500',
+            'due' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $this->uploadFile($request->file('image'), 'suppliers');
+        }
+
+        $validated['due'] = $request->input('due', 0.00);
 
         Supplier::create($validated);
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'supplier added successfully!');
+        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier added successfully!');
     }
 
     /**
@@ -56,7 +66,6 @@ class SupplierController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-
     public function edit($id)
     {
         $supplier = Supplier::findOrFail($id);
@@ -73,13 +82,24 @@ class SupplierController extends Controller
             'name' => 'required|string|max:100',
             'company_name' => 'required|string|max:200',
             'phone' => 'required|string|max:200',
-            'email' => ['required', 'string', 'email', Rule::unique('suppliers')->ignore($supplier->id),],
-            'address' => 'required|string|max:200',
+            'email' => ['nullable', 'string', 'email', Rule::unique('suppliers')->ignore($supplier->id)],
+            'address' => 'nullable|string|max:500',
+            'due' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $this->deleteFile($supplier->image);
+            $validated['image'] = $this->uploadFile($request->file('image'), 'suppliers');
+        }
+
+        if ($request->has('due')) {
+            $validated['due'] = $request->input('due', 0.00);
+        }
 
         $supplier->update($validated);
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'supplier updated successfully!');
+        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier updated successfully!');
     }
 
     /**
@@ -87,7 +107,8 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
+        $this->deleteFile($supplier->image);
         $supplier->delete();
-        return redirect()->route('admin.suppliers.index')->with('success', 'supplier deleted successfully!');
+        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier deleted successfully!');
     }
 }

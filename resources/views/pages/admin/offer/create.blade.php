@@ -11,16 +11,16 @@
 
         <form class="adduser-form" method="POST" action="{{ route('admin.offers.store') }}">
             @csrf
-
+            <div class="row">
             {{-- Offer Name --}}
-            <div class="input-box">
+            <div class="col-md-6">
                 <label>Offer Name</label>
                 <input class="input-form" name="name" placeholder="e.g. Eid Dhamaka" required value="{{ old('name') }}">
                 @error('name')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
             {{-- Product Selection --}}
-            <div>
+            <div class="col-md-6">
                 <label>Select Product</label>
                 <select class="input-form" name="product_id" required>
                     <option value="">--Select Product--</option>
@@ -34,7 +34,7 @@
             </div>
 
             {{-- Offer Type (Percentage or Fixed) --}}
-            <div>
+            <div class="col-md-6">
                 <label>Offer Type</label>
                 <select class="input-form" name="type" required>
                     <option value="percentage" {{ old('type')=='percentage' ? 'selected' : '' }}>Percentage (%)</option>
@@ -44,7 +44,7 @@
             </div>
 
             {{-- Discount Amount --}}
-            <div class="input-box">
+            <div class="col-md-6">
                 <label>Discount Amount</label>
                 <input type="number" step="0.01" class="input-form" name="discount_amount" placeholder="0.00" required
                     value="{{ old('discount_amount') }}">
@@ -67,7 +67,7 @@
             </div>
 
             {{-- Status --}}
-            <div>
+            <div class="col-md-6">
                 <label>Status</label>
                 <select class="input-form" name="status">
                     <option value="1" {{ old('status')=='1' ? 'selected' : '' }}>Active</option>
@@ -75,6 +75,8 @@
                 </select>
                 @error('status')<div class="error-text">{{ $message }}</div>@enderror
             </div>
+
+</div>
 
             <div class="mt-4">
                 <button class="btn-submit" type="submit">Save Offer</button>
