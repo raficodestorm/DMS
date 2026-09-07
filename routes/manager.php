@@ -8,6 +8,8 @@ use App\Http\Controllers\Manager\UserManagementController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
+use App\Http\Controllers\StockCutController;
+use App\Http\Controllers\SupplierTransactionController;
 use App\Models\StockInRequest;
 use App\Http\Controllers\Manager\BranchCostController;
 use Illuminate\Support\Facades\Route;
@@ -30,8 +32,6 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/costs/data', [BranchCostController::class, 'fetchCostsData'])->name('costs.index.data');
   Route::resource('costs', BranchCostController::class);
 
-
-
   Route::get('/stock-in-create', [StockRequestController::class, 'createStockRequest'])->name('stock.in.create');
   Route::get('/stock/get-products/{supplier_id}', [StockRequestController::class, 'getProductsBySupplier'])->name('getProducts');
   Route::post('/stock/store', [StockRequestController::class, 'store'])->name('stock.store');
@@ -39,12 +39,20 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/stock-in-requests/data', [StockRequestController::class, 'fetchStockInRequestsDataForManager'])->name('stock.in.requests.data');
 
   Route::get('/stock-in-request/{id}', [StockRequestController::class, 'showForManager'])->name('stock.in.request.show');
-
   Route::delete('/stock-in-request/{id}', [StockRequestController::class, 'stockInDestroy'])->name('stock.in.request.destroy');
-
   Route::get('/stock-in-request/{id}/edit', [StockRequestController::class, 'stockInEdit'])->name('stock.in.request.edit');
-
   Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInUpdate'])->name('stock.in.update');
+
+  // Stock Return (Stock Cut) for Manager
+  Route::get('/stock-cut-create', [StockCutController::class, 'managerCreate'])->name('stock.cut.create');
+  Route::get('/stock-cut/get-products/{supplier_id}', [StockCutController::class, 'managerGetProductsBySupplier'])->name('stock.cut.getProducts');
+  Route::post('/stock-cut/store', [StockCutController::class, 'managerStore'])->name('stock.cut.store');
+  Route::get('/stock-cuts/index', [StockCutController::class, 'managerIndex'])->name('stock.cut.index');
+  Route::get('/stock-cuts/data', [StockCutController::class, 'fetchManagerStockCutsData'])->name('stock.cut.data');
+  Route::get('/stock-cut/{id}', [StockCutController::class, 'managerShow'])->name('stock.cut.show');
+  Route::get('/stock-cut/{id}/edit', [StockCutController::class, 'managerEdit'])->name('stock.cut.edit');
+  Route::put('/stock-cut/{id}', [StockCutController::class, 'managerUpdate'])->name('stock.cut.update');
+  Route::delete('/stock-cut/{id}', [StockCutController::class, 'managerDestroy'])->name('stock.cut.destroy');
 
   Route::get('/stock', [StockController::class, 'managerIndex'])->name('stock.index');
   Route::get('/stock/data', [StockController::class, 'fetchManagerStockData'])->name('stock.index.data');
@@ -116,5 +124,10 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
     Route::delete('/{id}',                   [RetailOrderController::class, 'destroy'])->name('destroy');
     Route::get('/product-data/{id}',         [RetailOrderController::class, 'getProductData'])->name('product.data');
   });
+
+  // Supplier Transactions for Manager
+  Route::get('/supplier-transactions', [SupplierTransactionController::class, 'indexForManager'])->name('supplier-transactions.index');
+  Route::get('/supplier-transactions/data', [SupplierTransactionController::class, 'fetchManagerSupplierTransactionsData'])->name('supplier-transactions.index.data');
+  Route::get('/supplier-transactions/{id}', [SupplierTransactionController::class, 'showForManager'])->name('supplier-transactions.show');
 
 });

@@ -147,11 +147,11 @@
         @forelse($request->items as $item)
         <tr>
           <td scope="row">{{ $loop->iteration }}</td>
-          <td>{{ $item->product->name }}</td>
+          <td>{{ $item->product->name ?? 'N/A' }}</td>
           <td>{{ number_format($item->cost_price, 2) }} TK</td>
           <td>{{ $item->quantity }}</td>
           <td>{{ $item->tree_deduction}}%</td>
-          <td>{{ number_format($item->cost_price * $item->quantity, 2) }} TK</td>
+          <td>{{ number_format($item->total, 2) }} TK</td>
 
         </tr>
         @empty
@@ -174,7 +174,7 @@
           <p>{{ $loop->iteration }}</p>
         </div>
         <div><span>Product</span>
-          <p>{{ $item->product->name }}</p>
+          <p>{{ $item->product->name ?? 'N/A' }}</p>
         </div>
         <div><span>Rate</span>
           <p>{{ number_format($item->cost_price, 2) }} TK</p>
@@ -183,7 +183,7 @@
           <p>{{ $item->quantity }}</p>
         </div>
         <div><span>Subtotal</span>
-          <p>{{ number_format($item->cost_price * $item->quantity, 2) }} TK</p>
+          <p>{{ number_format($item->total, 2) }} TK</p>
         </div>
 
       </div>

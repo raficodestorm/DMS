@@ -1,34 +1,38 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 <div class="container justify-center">
   <div class="form-card">
-    <h2><i class="fas fa-scissors"></i> Return Stock to Supplier</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2><i class="fas fa-scissors"></i> Edit Return Request</h2>
+      <a href="{{ route('manager.stock.cut.index') }}" class="btn-submit" style="width: auto; padding: 8px 15px; background: #6c757d; text-decoration: none;">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+
     @include('components.alert')
 
-    <form method="POST" action="{{ route('admin.stockcut.store') }}" id="stockForm"
+    <form method="POST" action="{{ route('manager.stock.cut.update', $stockCut->id) }}" id="stockForm"
           onsubmit="return validateProducts(event)">
       @csrf
+      @method('PUT')
 
-      {{-- ── Supplier & Branch Selection Row ─────────────────────── --}}
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="mb-3 supplier-branch-grid">
+      {{-- ── Supplier & Branch Display Row ─────────────────────── --}}
+      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px;" class="mb-3 supplier-branch-grid">
         <div>
           <label>Select Supplier <span style="color:red">*</span></label>
           <select name="supplier_id" class="input-form" required>
             <option value="">--Choose a Supplier--</option>
             @foreach($suppliers as $supplier)
-            <option value="{{ $supplier->id }}">{{ $supplier->company_name }}</option>
+            <option value="{{ $supplier->id }}" {{ $stockCut->supplier_id == $supplier->id ? 'selected' : '' }}>
+              {{ $supplier->company_name }}
+            </option>
             @endforeach
           </select>
         </div>
         <div>
-          <label>Select Branch <span style="color:red">*</span></label>
-          <select name="branch_id" class="input-form" required>
-            <option value="">--Choose a Branch--</option>
-            @foreach($branches as $branch)
-            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-            @endforeach
-          </select>
+          <label>Branch</label>
+          <input type="text" class="input-form" value="{{ auth()->user()->branch->name ?? 'Head Office' }}" readonly style="background: var(--background, #f8fafc); font-weight: 600; cursor: not-allowed;">
         </div>
       </div>
 
@@ -46,22 +50,74 @@
         <span></span>
       </div>
 
-      <div id="product-wrapper"></div>
+      <div id="product-wrapper">
+        @foreach($stockCut->items as $i => $item)
+        <div class="product-row animate__animated animate__fadeIn"
+             style="grid-template-columns: 2.5fr 1fr 1fr 1.2fr 50px;">
+          <div>
+            <div class="product-search-wrapper">
+              <input type="hidden"
+                     name="products[{{ $i }}][product_id]"
+                     class="ps-hidden-id"
+                     value="{{ $item->product_id }}">
+              <input type="text"
+                     class="input-form product-search-input"
+                     placeholder="-- Choose Product --"
+                     autocomplete="off"
+                     data-idx="{{ $i }}"
+                     value="{{ $item->product->name ?? '' }}">
+              <div class="product-search-dropdown">
+                <div class="ps-no-result">Type 2 chars or 2 spaces to search…</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <input type="number" class="input-form rate"
+                   value="{{ number_format($item->price, 2, '.', '') }}"
+                   readonly tabindex="-1"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <input type="number" name="products[{{ $i }}][qty]"
+                   class="input-form qty"
+                   value="{{ $item->quantity }}"
+                   min="1" required oninput="updateRow(this)"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <input type="number" class="input-form subtotal"
+                   value="{{ number_format($item->total ?? ($item->price * $item->quantity), 2, '.', '') }}"
+                   readonly tabindex="-1"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <button type="button" class="icon-btn delete-icon" onclick="removeRow(this)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        @endforeach
+      </div>
 
-      <button type="button" class="p-add-more-btn" id="addMoreBtn" onclick="addRow()" disabled>
+      <button type="button" class="p-add-more-btn" id="addMoreBtn" onclick="addRow()">
         <i class="fas fa-plus-circle"></i> Add New Product Row
       </button>
+
+      <div class="mb-3 mt-3">
+        <label>Reason / Note (Optional)</label>
+        <textarea name="note" class="input-form" rows="2" placeholder="Enter return reason or notes...">{{ $stockCut->note }}</textarea>
+      </div>
 
       <div class="p-summary-card">
         <div class="p-net-total-box">
           <span>Total Amount</span>
-          <h3 id="netTotalDisplay">0.00</h3>
-          <input type="hidden" name="net_total" id="netTotalInput">
+          <h3 id="netTotalDisplay">{{ number_format($stockCut->net_total, 2) }}</h3>
+          <input type="hidden" name="net_total" id="netTotalInput" value="{{ $stockCut->net_total }}">
         </div>
       </div>
 
       <button type="submit" class="btn-submit">
-        Submit Return <i class="fas fa-paper-plane"></i>
+        Update Return Request <i class="fas fa-save"></i>
       </button>
     </form>
   </div>
@@ -240,67 +296,75 @@
     }
 
     .dqt {
-        color: var(--primary);
-        font-weight: 600;
+      color: var(--primary);
+      font-weight: 600;
     }
     .dqt:hover {
-        color: white;
+      color: white;
     }
   }
 </style>
 
 <script type="module">
-  let index = 0;
+  let index = {{ count($stockCut->items) }};
   let currentSupplierProducts = [];
 
   $(document).ready(function () {
 
-    /* ── Shared helper: load products when BOTH supplier + branch are set ── */
-    function loadProductsForBranch() {
+    function loadProducts(shouldReset = true) {
       const supplierId = $('select[name="supplier_id"]').val();
-      const branchId   = $('select[name="branch_id"]').val();
       const productWrapper = $('#product-wrapper');
 
-      // Clear existing rows and reset state whenever either select changes
-      productWrapper.empty();
-      index = 0;
-      currentSupplierProducts = [];
-      $('#addMoreBtn').prop('disabled', true);
-      window.calculateNetTotal();
+      if (shouldReset) {
+        productWrapper.empty();
+        index = 0;
+        currentSupplierProducts = [];
+        $('#addMoreBtn').prop('disabled', true);
+        window.calculateNetTotal();
+      }
 
-      if (!supplierId || !branchId) {
-        // One of the selects is empty — don't load yet
+      if (!supplierId) {
         return;
       }
 
       $.ajax({
-        url: '/admin/stock/get-products/' + supplierId + '/' + branchId,
+        url: '/manager/stock-cut/get-products/' + supplierId,
         type: 'GET',
         success: function (data) {
           currentSupplierProducts = data;
 
-          if (data.length > 0) {
-            $('#addMoreBtn').prop('disabled', false);
-            window.addRow();
+          if (shouldReset) {
+            if (data.length > 0) {
+              $('#addMoreBtn').prop('disabled', false);
+              window.addRow();
+            } else {
+              $('#addMoreBtn').prop('disabled', true);
+              alert('This supplier has no returnable stock in your branch!');
+            }
           } else {
-            $('#addMoreBtn').prop('disabled', true);
-            alert('This supplier has no returnable stock in the selected branch!');
+            $('#addMoreBtn').prop('disabled', false);
           }
           window.calculateNetTotal();
         },
         error: function (xhr) {
           console.error(xhr.responseText);
-          $('#addMoreBtn').prop('disabled', true);
-          alert('Error loading products.');
+          if (shouldReset) {
+            $('#addMoreBtn').prop('disabled', true);
+            alert('Error loading products.');
+          }
         }
       });
     }
 
-    /* ── Trigger on supplier change ────────────────── */
-    $('select[name="supplier_id"]').on('change', loadProductsForBranch);
+    // Initial load
+    const initialSupplierId = $('select[name="supplier_id"]').val();
+    if (initialSupplierId) {
+      loadProducts(false);
+    }
 
-    /* ── Trigger on branch change ───────────────────── */
-    $('select[name="branch_id"]').on('change', loadProductsForBranch);
+    $('select[name="supplier_id"]').on('change', function () {
+      loadProducts(true);
+    });
 
     /* ── Focus & input listener to elevate active row ─────── */
     $(document).on('focus input', '.product-search-input', function () {
@@ -348,7 +412,7 @@
   /* ── Render dropdown options ─────────────────────── */
   function renderOptions($dropdown, query) {
     const $wrapper  = $dropdown.closest('.product-search-wrapper');
-    const isShowAll = query === '  ';               // two spaces → show all
+    const isShowAll = query === '  ';
     const trimmed   = query.trim().toLowerCase();
     const results   = isShowAll
       ? currentSupplierProducts
@@ -406,7 +470,7 @@
     const $input    = $(this);
     const $wrapper  = $input.closest('.product-search-wrapper');
     const $dropdown = $wrapper.find('.product-search-dropdown');
-    const query     = $input.val();                  // raw, preserve spaces
+    const query     = $input.val();
 
     renderOptions($dropdown, query);
     $dropdown.addClass('open');
@@ -424,9 +488,9 @@
     const $wrapper = $option.closest('.product-search-wrapper');
     const $row     = $option.closest('.product-row');
 
-    const id         = $option.data('id');
-    const price      = parseFloat($option.data('price')) || 0;
-    const name       = $option.data('name') || $option.text();
+    const id          = $option.data('id');
+    const price       = parseFloat($option.data('price')) || 0;
+    const name        = $option.data('name') || $option.text();
     const branchStock = parseInt($option.data('stock')) || 0;
 
     if ($option.hasClass('ps-already-added')) {
@@ -444,7 +508,6 @@
     currentHidden.val(id);
     $wrapper.find('.product-search-input').val(name).css('border', '');
 
-    // Set qty max to branch stock so user can't return more than available
     const $qty = $row.find('.qty');
     $qty.attr('max', branchStock);
     $row.data('branch-stock', branchStock);
@@ -460,7 +523,7 @@
   /* ── addRow ──────────────────────────────────────── */
   window.addRow = function () {
     if (currentSupplierProducts.length === 0) {
-      alert('Please select both supplier and branch first!');
+      alert('Please select a supplier first!');
       return;
     }
 
@@ -503,8 +566,8 @@
     const maxStock   = parseInt($row.find('.qty').attr('max')) || Infinity;
     let   qty        = parseFloat($row.find('.qty').val()) || 0;
 
-    // Clamp: cannot return more than what's in the branch
-    if (qty > maxStock) {
+    // Clamp: cannot return more than available
+    if (maxStock !== Infinity && qty > maxStock) {
       qty = maxStock;
       $row.find('.qty').val(maxStock)
           .css({ border: '1.5px solid var(--primary)', background: '#fff8e1' });
@@ -540,9 +603,9 @@
 
   /* ── validateProducts ────────────────────────────── */
   window.validateProducts = function (e) {
-    let valid       = true;
+    let valid        = true;
     let hasDuplicate = false;
-    const seenIds   = new Set();
+    const seenIds    = new Set();
 
     $('.ps-hidden-id').each(function () {
       const val    = $(this).val();

@@ -543,7 +543,7 @@ class OrderController extends Controller
         ->unique('id')
         ->values();
 
-    $appName = config('app.name');
+    $appName = config('app.name'); 
 
     if ($suppliers->count() === 1) {
         // All items share one supplier — use that supplier's logo & name.
@@ -552,13 +552,13 @@ class OrderController extends Controller
             'logo'     => $supplier->image
                             ? asset($supplier->image)
                             : asset('image/relectric-logo.png'),
-            'subtitle' => "Authorized Distributor of {$supplier->company_name} | {$appName} → 01871923000",
+            'subtitle' => "Authorized Distributor of {$supplier->company_name}",
         ];
     } else {
         // Mixed or unknown suppliers — fall back to the default company logo.
         $invoiceHeader = [
             'logo'     => asset('image/relectric-logo.png'),
-            'subtitle' => "Multi-Brand Authorized Distributor | {$appName} → 01871923000",
+            'subtitle' => "Multi-Brand Authorized Distributor",
         ];
     }
     // ─────────────────────────────────────────────────────────────────────────

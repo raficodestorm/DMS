@@ -12,6 +12,7 @@ class StockInItem extends Model
         'quantity',
         'cost_price',
         'tree_deduction',
+        'total',
 
     ];
     // ১. এই আইটেমটি কোন প্রোডাক্ট

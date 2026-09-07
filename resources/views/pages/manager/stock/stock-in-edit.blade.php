@@ -36,7 +36,9 @@
 
       <div id="product-wrapper">
         @foreach($request->items as $key => $item)
-        <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
+        <div class="product-row animate__animated animate__fadeIn"
+             style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;"
+             data-base-price="{{ (float) ($item->product->price ?? 0) }}">
           <div>
             {{-- Pre-filled live-search widget for existing items --}}
             <div class="product-search-wrapper">
@@ -104,15 +106,48 @@
 
 @push('scripts')
 <style>
-  /* ── Live Product Search Dropdown ─────────────────────────────── */
+  /* ── Compact & Balanced Form Fields ───────────────────────────── */
+  .input-form {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.88rem !important;
+    border-radius: 8px !important;
+  }
+
+
+  .product-table-header {
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 6px !important;
+  }
+
   .product-row {
     position: relative;
     z-index: 1;
+    padding: 5px 8px !important;
+    margin-bottom: 5px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
   }
   .product-row:focus-within,
   .product-row.active-row {
     z-index: 99999 !important;
   }
+
+  .p-add-more-btn {
+    padding: 8px 16px !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+  }
+  .p-summary-card {
+    margin-top: 18px !important;
+    padding: 12px 18px !important;
+    border-radius: 10px !important;
+  }
+  .p-net-total-box h3 {
+    font-size: 1.5rem !important;
+  }
+
+  /* ── Live Product Search Dropdown ─────────────────────────────── */
   .product-search-wrapper {
     position: relative;
     z-index: 2;
@@ -233,6 +268,16 @@
 </style>
 
 <script type="module">
+  /*
+   * ── Deduction constants from PurchasePriceCalculator ──────────────────────
+   * Mirrors: Step 1 → base_price
+   *          Step 2 → after_customer_cut = base × (1 - customer_deduction%)
+   *          Step 3 → after_tree_cut    = after_customer × (1 - tree_deduction%)
+   *          Step 4 → purchase_price    = after_tree × (1 - my_deduction%)
+   */
+  const CUSTOMER_DEDUCTION_PCT = {{ (float) ($deduction->customer_deduction ?? 0) }};
+  const MY_DEDUCTION_PCT       = {{ (float) ($deduction->my_deduction ?? 0) }};
+
   let index = {{ count($request->items) }};
   let currentSupplierProducts = [];
 
@@ -341,11 +386,12 @@
 
     results.forEach(p => {
       const isAlreadyAdded = selectedIds.includes(p.id.toString());
+      const basePrice = p.price || p.purchase_price || 0;
       if (isAlreadyAdded) {
         $dropdown.append(
           `<div class="ps-option ps-already-added"
                 data-id="${p.id}"
-                data-price="${p.price || 0}"
+                data-price="${basePrice}"
                 data-name="${p.name}"
                 style="opacity: 0.6; cursor: not-allowed; background: #fff0f0; color: #dc3545;">
             ${p.name} <small style="font-weight: 700; float: right; color: #dc3545;">(Already Added)</small>
@@ -355,7 +401,7 @@
         $dropdown.append(
           `<div class="ps-option"
                 data-id="${p.id}"
-                data-price="${p.price || 0}"
+                data-price="${basePrice}"
                 data-name="${p.name}">${p.name}</div>`
         );
       }
@@ -377,15 +423,29 @@
     if ($wrapper.find('.ps-option').length) $dropdown.addClass('open');
   });
 
+  /* ── PurchasePriceCalculator (client-side mirror) ────────────────────────
+   *  Exact same formula as App\Services\PurchasePriceCalculator::calculate()
+   *  Step 1 → base_price         = product.price
+   *  Step 2 → after_customer_cut = base_price × (1 − customer_deduction%)
+   *  Step 3 → after_tree_cut     = after_customer × (1 − tree_deduction%)
+   *  Step 4 → purchase_price     = after_tree × (1 − my_deduction%)
+   */
+  function calculatePurchaseRate(basePrice, treePct) {
+    const afterCustomer = basePrice * (1 - CUSTOMER_DEDUCTION_PCT / 100);
+    const afterTree     = afterCustomer * (1 - treePct / 100);
+    const purchasePrice = afterTree * (1 - MY_DEDUCTION_PCT / 100);
+    return Math.max(0, Math.round(purchasePrice * 100) / 100);
+  }
+
   /* ── Option selected ─────────────────────────────── */
   $(document).on('click', '.ps-option', function () {
     const $option  = $(this);
     const $wrapper = $option.closest('.product-search-wrapper');
     const $row     = $option.closest('.product-row');
 
-    const id    = $option.data('id');
-    const price = parseFloat($option.data('price')) || 0;
-    const name  = $option.data('name') || $option.text();
+    const id        = $option.data('id');
+    const basePrice = parseFloat($option.data('price')) || 0;
+    const name      = $option.data('name') || $option.text();
 
     // Prevent selecting duplicate products
     if ($option.hasClass('ps-already-added')) {
@@ -403,11 +463,33 @@
     currentHidden.val(id);
     $wrapper.find('.product-search-input').val(name).css('border', '');
 
-    const qty = parseFloat($row.find('.qty').val()) || 0;
-    $row.find('.rate').val(price.toFixed(2));
-    $row.find('.subtotal').val((price * qty).toFixed(2));
+    // Store base price on the row for tree-deduction recalculation
+    $row.data('base-price', basePrice);
+
+    // Calculate purchase rate using same formula as PurchasePriceCalculator
+    const treePct = parseFloat($row.find('.tree-ded').val()) || 0;
+    const rate    = calculatePurchaseRate(basePrice, treePct);
+    const qty     = parseFloat($row.find('.qty').val()) || 0;
+
+    $row.find('.rate').val(rate.toFixed(2));
+    $row.find('.subtotal').val((rate * qty).toFixed(2));
 
     $wrapper.find('.product-search-dropdown').removeClass('open');
+    window.calculateNetTotal();
+  });
+
+  /* ── Tree deduction changed → recalculate rate for that row ─────────────── */
+  $(document).on('input change', '.tree-ded', function () {
+    const $row      = $(this).closest('.product-row');
+    const basePrice = parseFloat($row.data('base-price')) || 0;
+    if (basePrice === 0) return;            // no product selected yet
+
+    const treePct = parseFloat($(this).val()) || 0;
+    const rate    = calculatePurchaseRate(basePrice, treePct);
+    const qty     = parseFloat($row.find('.qty').val()) || 0;
+
+    $row.find('.rate').val(rate.toFixed(2));
+    $row.find('.subtotal').val((rate * qty).toFixed(2));
     window.calculateNetTotal();
   });
 
@@ -452,12 +534,13 @@
     index++;
   };
 
-  /* ── updateRow ───────────────────────────────────── */
+  /* ── updateRow (qty changed) ─────────────────────── */
   window.updateRow = function (el) {
     const $row  = $(el).closest('.product-row');
-    const price = parseFloat($row.find('.rate').val()) || 0;
-    const qty   = parseFloat($row.find('.qty').val())  || 0;
-    $row.find('.subtotal').val((price * qty).toFixed(2));
+    // Rate already holds the calculated purchase price — just recompute subtotal
+    const rate = parseFloat($row.find('.rate').val()) || 0;
+    const qty  = parseFloat($row.find('.qty').val())  || 0;
+    $row.find('.subtotal').val((rate * qty).toFixed(2));
     window.calculateNetTotal();
   };
 

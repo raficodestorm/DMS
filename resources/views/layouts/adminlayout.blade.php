@@ -151,7 +151,7 @@
           <li>
             <a href="{{ route('admin.stock.in.requests.index') }}"
               class="sub-link {{ isActive('admin.stock.in.requests.index') }}">
-              <i class="fas fa-clipboard-list me-1"></i> Stock-in Request
+              <i class="fas fa-clipboard-list me-1"></i> Stock-in History
             </a>
           </li>
 
@@ -411,8 +411,15 @@
 
       <!-- Stock cut-->
       <li class="nav-item">
-        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.index') }}">
+        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.*') }}">
           <i class="fas fa-handshake"></i> Stock Return
+        </a>
+      </li>
+
+      <!-- Supplier Transactions -->
+      <li class="nav-item">
+        <a href="{{ route('admin.supplier-transactions.index') }}" class="nav-link {{ isActive('admin.supplier-transactions.*') }}">
+          <i class="fas fa-file-invoice-dollar"></i> Supplier Ledger
         </a>
       </li>
 

@@ -123,7 +123,7 @@
           <li>
             <a href="{{ route('manager.stock.in.requests.index') }}"
               class="sub-link {{ isActive('manager.stock.in.requests.index') }}">
-              <i class="fas fa-clipboard-list me-1"></i> Stock-in Requests
+              <i class="fas fa-clipboard-list me-1"></i> Stock-in History
             </a>
           </li>
 
@@ -131,6 +131,13 @@
             <a href="{{ route('manager.stock-transfer.index') }}"
               class="sub-link {{ isActive('manager.stock-transfer.*') }}">
               <i class="fas fa-truck-moving me-1"></i> Stock Transfer
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.stock.cut.index') }}"
+              class="sub-link {{ isActive('manager.stock.cut.*') }}">
+              <i class="fas fa-scissors me-1"></i> Stock Return
             </a>
           </li>
         </ul>
@@ -191,14 +198,14 @@
       </li>
 
       <!-- payments -->
-      <li class="nav-item {{ request()->routeIs('manager.payments.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('manager.payments.*') }}">
+      <li class="nav-item {{ request()->routeIs('manager.payments.*', 'manager.supplier-transactions.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive(['manager.payments.*', 'manager.supplier-transactions.*']) }}">
           <i class="fas fa-money-bill-transfer"></i>
           <span>Transactions</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('manager.payments.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['manager.payments.*', 'manager.supplier-transactions.*']) }}">
           <li>
             <a href="{{ route('manager.payments.create') }}" class="sub-link {{ isActive('manager.payments.create') }}">
               <i class="fas fa-plus me-1"></i> Make Payment
@@ -208,6 +215,12 @@
           <li>
             <a href="{{ route('manager.payments.index') }}" class="sub-link {{ isActive('manager.payments.index') }}">
               <i class="fas fa-list-ul me-1"></i> All Transactions
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.supplier-transactions.index') }}" class="sub-link {{ isActive('manager.supplier-transactions.*') }}">
+              <i class="fas fa-file-invoice-dollar me-1"></i> Supplier Transactions
             </a>
           </li>
         </ul>

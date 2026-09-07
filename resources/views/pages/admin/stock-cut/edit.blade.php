@@ -4,28 +4,52 @@
 <div class="container justify-center">
   <div class="form-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2><i class="fas fa-edit"></i> Edit Stock Cut</h2>
-        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="btn-submit" style="width: auto; padding: 8px 15px; background: #6c757d; text-decoration: none;">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+      <h2><i class="fas fa-scissors"></i> Edit Return Stock</h2>
+      <a href="{{ route('admin.stock.cut.cuts.index') }}" class="btn-submit" style="width: auto; padding: 8px 15px; background: #6c757d; text-decoration: none;">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
     </div>
+
     @include('components.alert')
 
-    <form method="POST" action="{{ route('admin.stock.cut.update', $stockCut->id) }}" id="stockForm">
+    <form method="POST" action="{{ route('admin.stock.cut.update', $stockCut->id) }}" id="stockForm"
+          onsubmit="return validateProducts(event)">
       @csrf
       @method('PUT')
 
-      <div class="mb-3">
-        <label>Select Supplier</label>
-        <select name="supplier_id" class="input-form" required>
-          <option value="">--Choose a Supplier--</option>
-          @foreach($suppliers as $supplier)
-          <option value="{{ $supplier->id }}" {{ $stockCut->supplier_id == $supplier->id ? 'selected' : '' }}>{{ $supplier->company_name }}</option>
-          @endforeach
-        </select>
+      {{-- ── Supplier & Branch Selection Row ─────────────────────── --}}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="mb-3 supplier-branch-grid">
+        <div>
+          <label>Select Supplier <span style="color:red">*</span></label>
+          <select name="supplier_id" class="input-form" required>
+            <option value="">--Choose a Supplier--</option>
+            @foreach($suppliers as $supplier)
+            <option value="{{ $supplier->id }}" {{ $stockCut->supplier_id == $supplier->id ? 'selected' : '' }}>
+              {{ $supplier->company_name }}
+            </option>
+            @endforeach
+          </select>
+        </div>
+        <div>
+          <label>Select Branch <span style="color:red">*</span></label>
+          <select name="branch_id" class="input-form" required>
+            <option value="">--Choose a Branch--</option>
+            @foreach($branches as $branch)
+            <option value="{{ $branch->id }}" {{ ($stockCut->branch_id ?? ($stockCut->requestedBy->branch_id ?? 1)) == $branch->id ? 'selected' : '' }}>
+              {{ $branch->name }}
+            </option>
+            @endforeach
+          </select>
+        </div>
       </div>
 
-      <div class="product-table-header" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
+      <style>
+        @media (max-width: 600px) {
+          .supplier-branch-grid { grid-template-columns: 1fr !important; }
+        }
+      </style>
+
+      <div class="product-table-header" style="grid-template-columns: 2.5fr 1fr 1fr 1.2fr 50px;">
         <span>Product</span>
         <span>Rate</span>
         <span>Qty</span>
@@ -34,27 +58,52 @@
       </div>
 
       <div id="product-wrapper">
-          @foreach($stockCut->items as $i => $item)
-          <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
-              <div>
-                  <select name="products[{{ $i }}][product_id]" class="input-form" required onchange="updateRow(this)">
-                      <option value="{{ $item->product_id }}" data-price="{{ $item->price }}">{{ $item->product->name }}</option>
-                  </select>
+        @foreach($stockCut->items as $i => $item)
+        <div class="product-row animate__animated animate__fadeIn"
+             style="grid-template-columns: 2.5fr 1fr 1fr 1.2fr 50px;">
+          <div>
+            <div class="product-search-wrapper">
+              <input type="hidden"
+                     name="products[{{ $i }}][product_id]"
+                     class="ps-hidden-id"
+                     value="{{ $item->product_id }}">
+              <input type="text"
+                     class="input-form product-search-input"
+                     placeholder="-- Choose Product --"
+                     autocomplete="off"
+                     data-idx="{{ $i }}"
+                     value="{{ $item->product->name ?? '' }}">
+              <div class="product-search-dropdown">
+                <div class="ps-no-result">Type 2 chars or 2 spaces to search…</div>
               </div>
-              <div>
-                  <input type="number" class="input-form rate" value="{{ number_format($item->price, 2, '.', '') }}" readonly tabindex="-1">
-              </div>
-              <div>
-                  <input type="number" name="products[{{ $i }}][qty]" class="input-form qty" value="{{ $item->quantity }}" min="1" required oninput="updateRow(this)">
-              </div>
-              <div>
-                  <input type="number" class="input-form subtotal" value="{{ number_format($item->price * $item->quantity, 2, '.', '') }}" readonly tabindex="-1">
-              </div>
-              <div>
-                  <button type="button" class="icon-btn delete-icon" onclick="removeRow(this)"><i class="fas fa-trash"></i></button>
-              </div>
+            </div>
           </div>
-          @endforeach
+          <div>
+            <input type="number" class="input-form rate"
+                   value="{{ number_format($item->price, 2, '.', '') }}"
+                   readonly tabindex="-1"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <input type="number" name="products[{{ $i }}][qty]"
+                   class="input-form qty"
+                   value="{{ $item->quantity }}"
+                   min="1" required oninput="updateRow(this)"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <input type="number" class="input-form subtotal"
+                   value="{{ number_format($item->total ?? ($item->price * $item->quantity), 2, '.', '') }}"
+                   readonly tabindex="-1"
+                   style="-moz-appearance:textfield;">
+          </div>
+          <div>
+            <button type="button" class="icon-btn delete-icon" onclick="removeRow(this)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        @endforeach
       </div>
 
       <button type="button" class="p-add-more-btn" id="addMoreBtn" onclick="addRow()">
@@ -63,14 +112,14 @@
 
       <div class="p-summary-card">
         <div class="p-net-total-box">
-          <span>Total Amount (Estimated)</span>
+          <span>Total Amount</span>
           <h3 id="netTotalDisplay">{{ number_format($stockCut->net_total, 2) }}</h3>
           <input type="hidden" name="net_total" id="netTotalInput" value="{{ $stockCut->net_total }}">
         </div>
       </div>
 
       <button type="submit" class="btn-submit">
-        Update Record <i class="fas fa-save"></i>
+        Update Return <i class="fas fa-save"></i>
       </button>
     </form>
   </div>
@@ -78,132 +127,527 @@
 @endsection
 
 @push('scripts')
+<style>
+  /* ── Compact & Balanced Form Fields ─────────────────────────────── */
+  .input-form {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.88rem !important;
+    border-radius: 8px !important;
+  }
+
+  .product-table-header {
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  .product-row {
+    position: relative;
+    z-index: 1;
+    padding: 5px 8px !important;
+    margin-bottom: 5px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+  .product-row:focus-within,
+  .product-row.active-row {
+    z-index: 99999 !important;
+  }
+
+  .p-add-more-btn {
+    padding: 8px 16px !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+  }
+  .p-summary-card {
+    margin-top: 18px !important;
+    padding: 12px 18px !important;
+    border-radius: 10px !important;
+  }
+  .p-net-total-box h3 {
+    font-size: 1.5rem !important;
+  }
+
+  /* ── Live Product Search Dropdown ──────────────────────────────── */
+  .product-search-wrapper {
+    position: relative;
+    z-index: 2;
+  }
+  .product-search-input {
+    width: 100%;
+    cursor: text;
+  }
+  .product-search-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--section-bg, #fff);
+    border: 1.5px solid var(--border-color, #e0e0e0);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    z-index: 99999;
+    padding: 4px 0;
+    animation: dropIn .15s ease;
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .product-search-dropdown.open { display: block; }
+  .ps-option {
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: .875rem;
+    color: var(--text-main, #222);
+    transition: background .12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ps-option:hover, .ps-option.active {
+    background: var(--primary, #6c47ff);
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .ps-no-result {
+    padding: 10px 14px;
+    color: var(--text-muted, #999);
+    font-size: .85rem;
+    text-align: center;
+  }
+  .dqt {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+  .ps-option:hover .dqt,
+  .ps-option.active .dqt {
+    color: #fff;
+  }
+
+  /* ── Mobile Product Row Card Layout ────────────────────────────── */
+  @media (max-width: 768px) {
+    .product-table-header {
+      display: none !important;
+    }
+    .product-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      grid-template-areas:
+        "product  product"
+        "rate     qty"
+        "subtotal subtotal" !important;
+      gap: 12px !important;
+      padding: 14px !important;
+      padding-top: 48px !important;
+      position: relative !important;
+      background: var(--background) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px !important;
+      margin-bottom: 14px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .product-row > div:nth-child(5) {
+      position: absolute !important;
+      top: 10px !important;
+      right: 10px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .product-row > div:nth-child(1) { grid-area: product  !important; width: 100% !important; }
+    .product-row > div:nth-child(2) { grid-area: rate     !important; width: 100% !important; }
+    .product-row > div:nth-child(3) { grid-area: qty      !important; width: 100% !important; }
+    .product-row > div:nth-child(4) { grid-area: subtotal !important; width: 100% !important; }
+
+    .product-row .product-search-wrapper,
+    .product-row .product-search-input,
+    .product-row .input-form {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      margin-bottom: 0 !important;
+    }
+
+    .product-row > div:nth-child(1)::before { content: "Product";  color: var(--primary);    }
+    .product-row > div:nth-child(2)::before { content: "Rate";     color: var(--text-muted); }
+    .product-row > div:nth-child(3)::before { content: "Quantity"; color: var(--text-muted); }
+    .product-row > div:nth-child(4)::before { content: "Subtotal"; color: var(--text-muted); }
+
+    .product-row > div:nth-child(1)::before,
+    .product-row > div:nth-child(2)::before,
+    .product-row > div:nth-child(3)::before,
+    .product-row > div:nth-child(4)::before {
+      display: block !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: .5px !important;
+      margin-bottom: 5px !important;
+    }
+
+    .dqt {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .dqt:hover {
+      color: white;
+    }
+  }
+</style>
+
 <script type="module">
   let index = {{ count($stockCut->items) }};
-    let currentSupplierProducts = []; 
+  let currentSupplierProducts = [];
 
-    $(document).ready(function() {
-        // Load initial supplier products
-        let initialSupplierId = $('select[name="supplier_id"]').val();
-        if (initialSupplierId) {
-            loadProducts(initialSupplierId);
-        }
+  $(document).ready(function () {
 
-        // Supplier change event
-        $('select[name="supplier_id"]').on('change', function() {
-            let supplierId = $(this).val();
-            let productWrapper = $('#product-wrapper');
-            
-            if (supplierId) {
-                loadProducts(supplierId, true);
-            } else {
-                productWrapper.empty();
-                window.calculateNetTotal();
-            }
-        });
-    });
+    /* ── Shared helper: load products when BOTH supplier + branch are set ── */
+    function loadProductsForBranch(shouldReset = true) {
+      const supplierId = $('select[name="supplier_id"]').val();
+      const branchId   = $('select[name="branch_id"]').val();
+      const productWrapper = $('#product-wrapper');
 
-    function loadProducts(supplierId, clearWrapper = false) {
-        $.ajax({
-            url: "/admin/stock/get-products/" + supplierId, 
-            type: "GET",
-            success: function(data) {
-                currentSupplierProducts = data; 
-                if (clearWrapper) {
-                    $('#product-wrapper').empty(); 
-                    index = 0; 
-                    if (data.length > 0) {
-                        $('#addMoreBtn').prop('disabled', false);
-                        window.addRow();
-                    } else {
-                        $('#addMoreBtn').prop('disabled', true);
-                        alert("This supplier has no products available!");
-                    }
-                } else {
-                     $('#addMoreBtn').prop('disabled', false);
-                     // Update existing selects with options
-                     $('.product-row select').each(function(){
-                         let currentVal = $(this).val();
-                         let options = `<option value="">-- Choose Product --</option>`;
-                         currentSupplierProducts.forEach(p => {
-                            options += `<option value="${p.id}" data-price="${p.purchase_price || 0}" ${p.id == currentVal ? 'selected' : ''}>${p.name}</option>`;
-                         });
-                         $(this).html(options);
-                     });
-                }
-                window.calculateNetTotal(); 
-            }
-        });
-    }
+      if (shouldReset) {
+        // Clear existing rows and reset state whenever select changes
+        productWrapper.empty();
+        index = 0;
+        currentSupplierProducts = [];
+        $('#addMoreBtn').prop('disabled', true);
+        window.calculateNetTotal();
+      }
 
-    window.addRow = function() {
-    if (currentSupplierProducts.length === 0) {
-        alert("Please select a supplier first!");
+      if (!supplierId || !branchId) {
         return;
+      }
+
+      $.ajax({
+        url: '/admin/stock/get-products/' + supplierId + '/' + branchId,
+        type: 'GET',
+        success: function (data) {
+          currentSupplierProducts = data;
+
+          if (shouldReset) {
+            if (data.length > 0) {
+              $('#addMoreBtn').prop('disabled', false);
+              window.addRow();
+            } else {
+              $('#addMoreBtn').prop('disabled', true);
+              alert('This supplier has no returnable stock in the selected branch!');
+            }
+          } else {
+            // Initial load for edit page
+            $('#addMoreBtn').prop('disabled', false);
+          }
+          window.calculateNetTotal();
+        },
+        error: function (xhr) {
+          console.error(xhr.responseText);
+          if (shouldReset) {
+            $('#addMoreBtn').prop('disabled', true);
+            alert('Error loading products.');
+          }
+        }
+      });
     }
 
-    let options = `<option value="">-- Choose Product --</option>`;
-    currentSupplierProducts.forEach(p => {
-        options += `<option value="${p.id}" data-price="${p.purchase_price || 0}">${p.name}</option>`;
+    // Initial load of supplier products without wiping existing rows
+    const initialSupplierId = $('select[name="supplier_id"]').val();
+    const initialBranchId   = $('select[name="branch_id"]').val();
+    if (initialSupplierId && initialBranchId) {
+      loadProductsForBranch(false);
+    }
+
+    /* ── Trigger on supplier change ────────────────── */
+    $('select[name="supplier_id"]').on('change', function () {
+      loadProductsForBranch(true);
     });
 
-    let html = `
-    <div class="product-row animate__animated animate__fadeIn" style="grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 50px;">
-        <div>
-            <select name="products[${index}][product_id]" class="input-form" required onchange="updateRow(this)">
-                ${options}
-            </select>
+    /* ── Trigger on branch change ───────────────────── */
+    $('select[name="branch_id"]').on('change', function () {
+      loadProductsForBranch(true);
+    });
+
+    /* ── Focus & input listener to elevate active row ─────── */
+    $(document).on('focus input', '.product-search-input', function () {
+      $('.product-row').removeClass('active-row').css('z-index', '');
+      $(this).closest('.product-row').addClass('active-row').css('z-index', 99999);
+    });
+
+    /* ── Global click: close any open dropdowns ──────── */
+    $(document).on('click', function (e) {
+      if (!$(e.target).closest('.product-search-wrapper').length) {
+        $('.product-search-dropdown').removeClass('open');
+        $('.product-row').removeClass('active-row').css('z-index', '');
+      }
+    });
+  });
+
+  /* ── Build one product-search widget ──────────────── */
+  function buildSearchWidget(idx) {
+    return `
+      <div class="product-search-wrapper">
+        <input type="hidden"
+               name="products[${idx}][product_id]"
+               class="ps-hidden-id">
+        <input type="text"
+               class="input-form product-search-input"
+               placeholder="-- Choose Product --"
+               autocomplete="off"
+               data-idx="${idx}">
+        <div class="product-search-dropdown">
+          <div class="ps-no-result">Type 2 chars or 2 spaces to search…</div>
         </div>
-        <div>
-            <input type="number" class="input-form rate" placeholder="0.00" readonly tabindex="-1">
-        </div>
-        <div>
-            <input type="number" name="products[${index}][qty]" class="input-form qty" placeholder="Qty" min="1" required oninput="updateRow(this)">
-        </div>
-        <div>
-            <input type="number" class="input-form subtotal" placeholder="0.00" readonly tabindex="-1">
-        </div>
-        <div>
-            <button type="button" class="icon-btn delete-icon" onclick="removeRow(this)"><i class="fas fa-trash"></i></button>
-        </div>
-    </div>
-    `;
+      </div>`;
+  }
+
+  /* ── Helper to get already selected product IDs ──── */
+  function getSelectedProductIds($currentHidden) {
+    const selected = [];
+    $('.ps-hidden-id').not($currentHidden).each(function () {
+      const val = $(this).val();
+      if (val) selected.push(val.toString());
+    });
+    return selected;
+  }
+
+  /* ── Render dropdown options ─────────────────────── */
+  function renderOptions($dropdown, query) {
+    const $wrapper  = $dropdown.closest('.product-search-wrapper');
+    const isShowAll = query === '  ';               // two spaces → show all
+    const trimmed   = query.trim().toLowerCase();
+    const results   = isShowAll
+      ? currentSupplierProducts
+      : (trimmed.length >= 2
+          ? currentSupplierProducts.filter(p =>
+              p.name.toLowerCase().includes(trimmed))
+          : null);
+
+    $dropdown.empty();
+
+    if (results === null) {
+      $dropdown.append('<div class="ps-no-result">Type at least 2 characters…</div>');
+      return;
+    }
+    if (results.length === 0) {
+      $dropdown.append('<div class="ps-no-result">No products found.</div>');
+      return;
+    }
+
+    const selectedIds = getSelectedProductIds($wrapper.find('.ps-hidden-id'));
+
+    results.forEach(p => {
+      const isAlreadyAdded = selectedIds.includes(p.id.toString());
+      const displayPrice   = parseFloat(p.purchase_price || p.price || 0).toFixed(2);
+      const branchStock    = parseInt(p.branch_stock || 0);
+
+      if (isAlreadyAdded) {
+        $dropdown.append(
+          `<div class="ps-option ps-already-added"
+                data-id="${p.id}"
+                data-price="${p.purchase_price || p.price || 0}"
+                data-stock="${branchStock}"
+                data-name="${p.name}"
+                style="opacity: 0.6; cursor: not-allowed; background: #fff0f0; color: #dc3545;">
+            ${p.name} <small style="font-weight: 700; float: right; color: #dc3545;">(Already Added)</small>
+           </div>`
+        );
+      } else {
+        $dropdown.append(
+          `<div class="ps-option"
+                data-id="${p.id}"
+                data-price="${p.purchase_price || p.price || 0}"
+                data-stock="${branchStock}"
+                data-name="${p.name}">
+            <span>${p.name}</span>
+            <span class="dqt">Qty: ${branchStock}</span>
+          </div>`
+        );
+      }
+    });
+  }
+
+  /* ── Live-search events (delegated) ─────────────── */
+  $(document).on('input', '.product-search-input', function () {
+    const $input    = $(this);
+    const $wrapper  = $input.closest('.product-search-wrapper');
+    const $dropdown = $wrapper.find('.product-search-dropdown');
+    const query     = $input.val();                  // raw, preserve spaces
+
+    renderOptions($dropdown, query);
+    $dropdown.addClass('open');
+  });
+
+  $(document).on('focus', '.product-search-input', function () {
+    const $wrapper  = $(this).closest('.product-search-wrapper');
+    const $dropdown = $wrapper.find('.product-search-dropdown');
+    if ($wrapper.find('.ps-option').length) $dropdown.addClass('open');
+  });
+
+  /* ── Option selected ─────────────────────────────── */
+  $(document).on('click', '.ps-option', function () {
+    const $option  = $(this);
+    const $wrapper = $option.closest('.product-search-wrapper');
+    const $row     = $option.closest('.product-row');
+
+    const id          = $option.data('id');
+    const price       = parseFloat($option.data('price')) || 0;
+    const name        = $option.data('name') || $option.text();
+    const branchStock = parseInt($option.data('stock')) || 0;
+
+    if ($option.hasClass('ps-already-added')) {
+      alert(`"${name}" is already added in another row!`);
+      return;
+    }
+
+    const currentHidden = $wrapper.find('.ps-hidden-id');
+    const selectedIds   = getSelectedProductIds(currentHidden);
+    if (selectedIds.includes(id.toString())) {
+      alert(`"${name}" is already added in another row!`);
+      return;
+    }
+
+    currentHidden.val(id);
+    $wrapper.find('.product-search-input').val(name).css('border', '');
+
+    // Set qty max to branch stock so user can't return more than available
+    const $qty = $row.find('.qty');
+    $qty.attr('max', branchStock);
+    $row.data('branch-stock', branchStock);
+
+    const qty = parseFloat($qty.val()) || 0;
+    $row.find('.rate').val(price.toFixed(2));
+    $row.find('.subtotal').val((price * qty).toFixed(2));
+
+    $wrapper.find('.product-search-dropdown').removeClass('open');
+    window.calculateNetTotal();
+  });
+
+  /* ── addRow ──────────────────────────────────────── */
+  window.addRow = function () {
+    if (currentSupplierProducts.length === 0) {
+      alert('Please select both supplier and branch first!');
+      return;
+    }
+
+    const html = `
+    <div class="product-row animate__animated animate__fadeIn"
+         style="grid-template-columns: 2.5fr 1fr 1fr 1.2fr 50px;">
+      <div>${buildSearchWidget(index)}</div>
+      <div>
+        <input type="number" class="input-form rate"
+               placeholder="0.00" readonly tabindex="-1"
+               style="-moz-appearance:textfield;">
+      </div>
+      <div>
+        <input type="number" name="products[${index}][qty]"
+               class="input-form qty" placeholder="Qty"
+               min="1" required oninput="updateRow(this)"
+               style="-moz-appearance:textfield;">
+      </div>
+      <div>
+        <input type="number" class="input-form subtotal"
+               placeholder="0.00" readonly tabindex="-1"
+               style="-moz-appearance:textfield;">
+      </div>
+      <div>
+        <button type="button" class="icon-btn delete-icon"
+                onclick="removeRow(this)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>`;
 
     $('#product-wrapper').append(html);
     index++;
-};
+  };
 
-    window.updateRow = function(el) {
-        let row = $(el).closest('.product-row');
-        let selectedOption = row.find('select option:selected');
-        let price = parseFloat(selectedOption.data('price')) || 0;
-        let qty = parseFloat(row.find('.qty').val()) || 0;
+  /* ── updateRow (qty changed) ─────────────────────── */
+  window.updateRow = function (el) {
+    const $row       = $(el).closest('.product-row');
+    const rate       = parseFloat($row.find('.rate').val()) || 0;
+    const maxStock   = parseInt($row.find('.qty').attr('max')) || Infinity;
+    let   qty        = parseFloat($row.find('.qty').val()) || 0;
 
-        row.find('.rate').val(price.toFixed(2));
-        let subtotal = price * qty;
-        row.find('.subtotal').val(subtotal.toFixed(2));
+    // Clamp: cannot return more than what's in the branch
+    if (maxStock !== Infinity && qty > maxStock) {
+      qty = maxStock;
+      $row.find('.qty').val(maxStock)
+          .css({ border: '1.5px solid var(--primary)', background: '#fff8e1' });
+    } else {
+      $row.find('.qty').css({ border: '', background: '' });
+    }
 
-        window.calculateNetTotal();
-    };
+    $row.find('.subtotal').val((rate * qty).toFixed(2));
+    window.calculateNetTotal();
+  };
 
-    window.removeRow = function(btn) {
-        if ($('.product-row').length > 1) {
-            $(btn).closest('.product-row').remove();
-            window.calculateNetTotal();
-        } else {
-            alert('At least one product is required.');
-        }
-    };
+  /* ── removeRow ───────────────────────────────────── */
+  window.removeRow = function (btn) {
+    if ($('.product-row').length > 1) {
+      $(btn).closest('.product-row').remove();
+      window.calculateNetTotal();
+    } else {
+      alert('At least one product is required.');
+    }
+  };
 
-    window.calculateNetTotal = function() {
-        let total = 0;
-        $('.subtotal').each(function() {
-            let val = parseFloat($(this).val()) || 0;
-            total += val;
-        });
+  /* ── calculateNetTotal ───────────────────────────── */
+  window.calculateNetTotal = function () {
+    let total = 0;
+    $('.subtotal').each(function () {
+      total += parseFloat($(this).val()) || 0;
+    });
+    $('#netTotalDisplay').text(
+      total.toLocaleString(undefined, { minimumFractionDigits: 2 })
+    );
+    $('#netTotalInput').val(total.toFixed(2));
+  };
 
-        $('#netTotalDisplay').text(total.toLocaleString(undefined, {minimumFractionDigits: 2}));
-        $('#netTotalInput').val(total.toFixed(2));
-    };
+  /* ── validateProducts ────────────────────────────── */
+  window.validateProducts = function (e) {
+    let valid        = true;
+    let hasDuplicate = false;
+    const seenIds    = new Set();
+
+    $('.ps-hidden-id').each(function () {
+      const val    = $(this).val();
+      const $input = $(this).siblings('.product-search-input');
+
+      if (!val) {
+        valid = false;
+        $input.css({ border: '1.5px solid red' }).attr('placeholder', '⚠ Please select a product');
+      } else if (seenIds.has(val)) {
+        valid = false;
+        hasDuplicate = true;
+        $input.css({ border: '1.5px solid red' });
+      } else {
+        seenIds.add(val);
+        $input.css({ border: '' });
+      }
+    });
+
+    if (!valid) {
+      e.preventDefault();
+      if (hasDuplicate) {
+        alert('Duplicate products detected! Each product can only be added once.');
+      } else {
+        alert('Please select a product for every row before submitting.');
+      }
+      return false;
+    }
+    return true;
+  };
 </script>
 @endpush

@@ -11,6 +11,7 @@ class StockCutItem extends Model
         'product_id',
         'quantity',
         'price',
+        'total',
     ];
 
     public function stockCut()

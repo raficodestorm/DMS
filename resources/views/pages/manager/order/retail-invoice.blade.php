@@ -217,7 +217,7 @@
         <div class="fixed-col-6">
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
-            Order ID: BRS{{ $order->id }}<br>
+            Invoice No: BRS{{ $order->id }}<br>
             Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
             Reference : {{ $order->manager->fullname ?? 'N/A' }}
           </div>
@@ -328,8 +328,10 @@
 
 
       <div class="footer-note">
-        www.relectric.com </br>
-        Software Developed & Maintained by S A Rafi | Contact: 01877100096
+        R Electric থেকে কেনাকাটা করার জন্য আপনাকে আন্তরিক ধন্যবাদ। </br>
+        মানসম্মত পণ্য ও সেরা সেবা নিয়ে R Electric সবসময় আপনার পাশে। </br>
+        পণ্য ফেরত বা পরিবর্তনের ক্ষেত্রে অবশ্যই এই ইনভয়েসটি সঙ্গে রাখুন। ইনভয়েস ছাড়া কোনো পণ্য ফেরত বা পরিবর্তন গ্রহণযোগ্য নয়। </br>
+        www.relectricbd.com
       </div>
 
     </div>

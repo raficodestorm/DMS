@@ -50,6 +50,7 @@
     font-weight: 700;
     text-transform: uppercase;
   }
+  
 
   .info-card {
     border: 1px solid var(--border-color);
@@ -199,7 +200,8 @@
         <div>
           <img src="{{ $invoiceHeader['logo'] }}" alt="Logo" class="sidebar-logo img-fluid" style="max-width: 220px; max-height: 70px; object-fit: contain;">
         </div>
-        <p>{{ $invoiceHeader['subtitle'] }}</p>
+        <p style="margin-bottom: 0px;"><strong>{{ config('app.name') }}</strong> | {{ $invoiceHeader['subtitle'] }}</p>
+        <p>Double Mooring, Chattogram, Bangladesh  |  Contact: 01871923000</p>
       </div>
 
 
@@ -216,7 +218,7 @@
         <div class="fixed-col-6">
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
-            Order ID: BRS{{ $order->id }}<br>
+            Invoice No: BRS{{ $order->id }}<br>
             Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
             Reference (SR): {{ $order->sr->fullname ?? 'N/A' }}
           </div>
@@ -334,8 +336,9 @@
 
 
       <div class="footer-note">
-        www.relectricbd.com </br>
-        Software Developed & Maintained by S A Rafi | Contact: 01877100096
+        আপনার অর্ডার, লেনদেন ও হিসাবের সকল তথ্য এখন এক জায়গায় </br>
+        R Electric Online Platform-এ লগইন করে যেকোনো সময় দেখুন আপনার অর্ডার, পেমেন্ট ও হিসাবের বিস্তারিত তথ্য। </br>
+        www.relectricbd.com
       </div>
 
     </div>

@@ -1,4 +1,4 @@
-@extends('layouts.adminlayout')
+@extends('layouts.managerlayout')
 
 @section('content')
 
@@ -73,7 +73,7 @@
 
   <div class="card-header">
     <div class="request-header-box">
-      <h3 style="margin:0; color:var(--primary);"><i class="fas fa-scissors me-2"></i>Stock Cut Detail</h3>
+      <h3 style="margin:0; color:var(--primary);"><i class="fas fa-scissors me-2"></i>Stock Return Request Details</h3>
       <div>
         @if($stockCut->status === 'approved')
           <span class="request-status-badge" style="background: #dcfce7; color: #15803d;">
@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <h4 style="color:var(--text-muted); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 12px;">Stock Cut Products</h4>
+  <h4 style="color:var(--text-muted); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 12px;">Returned Products</h4>
 
   <div class="table-wrapper">
     <table>
@@ -166,49 +166,33 @@
 
   @if($stockCut->note)
   <div style="margin-top: 20px; padding: 15px; background: #fffbeb; border-radius: 8px; border-left: 4px solid #d97706;">
-    <label style="color: #d97706; font-size: 0.8rem; display: block; font-weight: bold;">Note:</label>
+    <label style="color: #d97706; font-size: 0.8rem; display: block; font-weight: bold;">Note / Reason:</label>
     <p style="margin: 0; color: #92400e;">{{ $stockCut->note }}</p>
   </div>
   @endif
 
   <div class="action-bar">
     @if($stockCut->status === 'pending')
-      <form action="{{ route('admin.stock.cut.approve', $stockCut->id) }}" method="POST"
-            onsubmit="return confirm('Are you sure you want to approve this stock return? Branch stock and supplier ledger will be updated.')" style="display:inline;">
-        @csrf
-        <button type="submit" class="btn-smart btn-green">
-          <i class="fas fa-check-circle"></i> Approve Return
-        </button>
-      </form>
-
-      <form action="{{ route('admin.stock.cut.reject', $stockCut->id) }}" method="POST"
-            onsubmit="return confirm('Are you sure you want to reject this stock return request?')" style="display:inline;">
-        @csrf
-        <button type="submit" class="btn-smart btn-red">
-          <i class="fas fa-times-circle"></i> Reject
-        </button>
-      </form>
-    @endif
-
-    <a href="{{ route('admin.stock.cut.cut.edit', $stockCut->id) }}" class="btn-smart btn-blue">
-      <i class="fas fa-edit"></i> Edit Record
+    <a href="{{ route('manager.stock.cut.edit', $stockCut->id) }}" class="btn-smart btn-blue">
+      <i class="fas fa-edit"></i> Edit Request
     </a>
 
-    <form action="{{ route('admin.stock.cut.cut.destroy', $stockCut->id) }}" method="POST"
-      onsubmit="return confirm('Are you sure you want to delete this record?')" style="display:inline;">
+    <form action="{{ route('manager.stock.cut.destroy', $stockCut->id) }}" method="POST"
+      onsubmit="return confirm('Are you sure you want to delete this pending return request?')" style="display:inline;">
       @csrf
       @method('DELETE')
       <button type="submit" class="btn-smart btn-red">
-        <i class="fas fa-trash"></i> Delete Record
+        <i class="fas fa-trash"></i> Delete Request
       </button>
     </form>
+    @endif
   </div>
 
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
-  <a href="{{ route('admin.stock.cut.cuts.index') }}" style="color: var(--text-muted); text-decoration: none;">
-    <i class="fas fa-arrow-left"></i> Back to List
+  <a href="{{ route('manager.stock.cut.index') }}" style="color: var(--text-muted); text-decoration: none;">
+    <i class="fas fa-arrow-left"></i> Back to Return Requests
   </a>
 </div>
 

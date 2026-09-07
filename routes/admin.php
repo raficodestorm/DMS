@@ -20,6 +20,7 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
 use App\Http\Controllers\StockCutController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SupplierTransactionController;
 use App\Http\Controllers\Manager\RetailOrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -137,6 +138,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
 
   Route::get('/stock/get-products/{supplier_id}', [StockCutController::class, 'getProductsBySupplier'])->name('getProducts');
+  Route::get('/stock/get-products/{supplier_id}/{branch_id}', [StockCutController::class, 'getProductsBySupplierAndBranch'])->name('getProductsByBranch');
   Route::post('/stock/store', [StockCutController::class, 'store'])->name('stockcut.store');
   Route::get('/stock-cut-cuts/index', [StockCutController::class, 'index'])->name('stock.cut.cuts.index');
   Route::get('/stock-cut/index/data', [StockCutController::class, 'fetchStockCutsIndexData'])->name('stock.cut.index.data');
@@ -148,6 +150,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/stock-cut-cut/{id}/edit', [StockCutController::class, 'edit'])->name('stock.cut.cut.edit');
 
   Route::put('stock-cut/cut/{id}', [StockCutController::class, 'update'])->name('stock.cut.update');
+  Route::post('/stock-cut-cut/{id}/approve', [StockCutController::class, 'approve'])->name('stock.cut.approve');
+  Route::post('/stock-cut-cut/{id}/reject', [StockCutController::class, 'reject'])->name('stock.cut.reject');
+
+  // Supplier Transactions (Ledger View)
+  Route::get('/supplier-transactions', [SupplierTransactionController::class, 'indexForAdmin'])->name('supplier-transactions.index');
+  Route::get('/supplier-transactions/data', [SupplierTransactionController::class, 'fetchSupplierTransactionsIndexData'])->name('supplier-transactions.index.data');
+  Route::get('/supplier-transactions/{id}', [SupplierTransactionController::class, 'showForAdmin'])->name('supplier-transactions.show');
 
 });
 

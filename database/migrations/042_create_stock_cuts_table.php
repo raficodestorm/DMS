@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('stock_cuts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('requested_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
+            $table->foreignId('requested_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->decimal('net_total', 10, 2);
             $table->text('note')->nullable();
+            $table->string('status')->default('pending');
+            // 'pending', 'approved', 'rejected', 
             $table->timestamps();
         });
     }

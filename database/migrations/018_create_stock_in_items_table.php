@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('stock_in_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stock_in_request_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('quantity');
             $table->decimal('cost_price', 10, 2);
             $table->decimal('tree_deduction', 10, 2)->default(0);
+            $table->decimal('total', 10, 2)->default(0);
             $table->timestamps();
         });
     }
