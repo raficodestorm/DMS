@@ -34,8 +34,7 @@ class OrderManagerController extends Controller
     $user = auth()->user();
 
     $query = Order::with(['customer', 'sr'])
-      ->where('manager_id', $user->id)
-      ->whereNotNull('sr_id') // Exclude retail orders (manager acting as SR)
+      ->where('branch_id', $user->branch_id)
       ->latest();
 
     // Date Range Filter
@@ -56,12 +55,8 @@ class OrderManagerController extends Controller
       $search = trim($request->search);
 
       $query->where(function ($q) use ($search) {
-        if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
-          $q->where('id', $match[1]);
-          return;
-        }
-
-        $q->where('id', $search)
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
             $customer->where('shop_name', 'like', "%{$search}%");
           });

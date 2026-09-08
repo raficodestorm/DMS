@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->foreignId('stock_in_request_id')->nullable()->constrained('stock_in_requests')->nullOnDelete();
-            
+            $table->foreignId('stock_cut_id')->nullable()->constrained('stock_cuts')->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->string('type');
             // 'pay', 'buy', 'return', adjustment 'opening_balance'

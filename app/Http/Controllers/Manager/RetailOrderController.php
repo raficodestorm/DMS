@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Stock;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Services\OrderIdGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -34,8 +35,8 @@ class RetailOrderController extends Controller
     $user = auth()->user();
 
     $query = Order::with(['customer'])
-      ->where('manager_id', $user->id)
-      ->whereNull('sr_id') // Retail orders: manager is creator, no SR assigned
+      ->where('branch_id', $user->branch_id)
+      ->where('order_type', 'retail')
       ->latest();
 
     // Date Range Filter
@@ -55,12 +56,9 @@ class RetailOrderController extends Controller
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-        if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
-          $q->where('id', $match[1]);
-        } else {
-          $q->where('id', $search)
-            ->orWhereHas('customer', fn($c) => $c->where('shop_name', 'like', "%{$search}%"));
-        }
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search)
+          ->orWhereHas('customer', fn($c) => $c->where('shop_name', 'like', "%{$search}%"));
       });
     }
 
@@ -111,81 +109,101 @@ class RetailOrderController extends Controller
 
     try {
       return DB::transaction(function () use ($request) {
-        $user     = auth()->user();
+        $user      = auth()->user();
         $managerId = $user->id;
+        $branchId  = $user->branch_id;
 
         // Retail: only custom deduction
-        $customRate = (float) ($request->applied_custom_deduction ?? 0);
+        $customRate            = (float) ($request->applied_custom_deduction ?? 0);
         $totalDeductionPercent = min($customRate, 100);
 
+        $orderId = app(OrderIdGeneratorService::class)->generate();
+
         $order = Order::create([
-          'sr_id'                     => null, // Retail orders don't have an SR
+          'order_id'                  => $orderId,
+          'sr_id'                     => null,
           'manager_id'                => $managerId,
-          'branch_id'                 => $user->branch_id,
-          'status'                    => 'delivered', // auto-approved
+          'branch_id'                 => $branchId,
+          'status'                    => 'delivered',
           'special_discount'          => $request->special_discount ?? 0,
           'discount_amount'           => $request->total_discount ?? 0,
           'net_total'                 => $request->net_total,
           'applied_deduction_percent' => $totalDeductionPercent,
           'note'                      => $request->note,
-          'order_type'                => 'retail'
+          'order_type'                => 'retail',
         ]);
-        $branchId = auth()->user()->branch_id;
+
+        // Pre-fetch all products in one query for purchase_price lookup
+        $productIds = collect($request->products)
+            ->pluck('product_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
         foreach ($request->products as $item) {
+
           // Stock Check & Update
-            $stock = Stock::where([
-                'product_id' => $item['product_id'],
-                'branch_id'  => $branchId
-            ])->lockForUpdate()->first();
+          $stock = Stock::where([
+              'product_id' => $item['product_id'],
+              'branch_id'  => $branchId,
+          ])->lockForUpdate()->first();
 
-            if (!$stock) {
-                throw new \Exception("Stock not found.");
-            }
+          if (!$stock) {
+              throw new \Exception("Stock not found for product ID {$item['product_id']}.");
+          }
 
-            if ($stock->quantity < $item['qty']) {
-                throw new \Exception("Insufficient stock.");
-            }
+          if ($stock->quantity < $item['qty']) {
+              throw new \Exception("Insufficient stock for product ID {$item['product_id']}.");
+          }
 
-            $stock->decrement('quantity', $item['qty']);
+          $stock->decrement('quantity', $item['qty']);
 
+          $qty             = (int) $item['qty'];
           $basePrice       = (float) $item['price'];
-          $deductionAmount = $basePrice * $totalDeductionPercent / 100;
-          $sellingRate     = $basePrice - $deductionAmount;
+          $deductionAmount = round($basePrice * $totalDeductionPercent / 100, 2);
+          $sellingRate     = round($basePrice - $deductionAmount, 2);
+          $offerDiscount   = (float) ($item['discount'] ?? 0);
+          $itemNetTotal    = round(($sellingRate - $offerDiscount) * $qty, 2);
+
+          // Profit = Revenue - Cost  (mirrors OrderSrController logic)
+          $product           = $products->get($item['product_id']);
+          $purchasePrice     = (float) ($product->purchase_price ?? 0);
+          $totalPurchaseCost = round($purchasePrice * $qty, 2);
+          $profit            = round($itemNetTotal - $totalPurchaseCost, 2);
 
           OrderItem::create([
             'order_id'              => $order->id,
             'product_id'            => $item['product_id'],
-            'quantity'              => $item['qty'],
+            'quantity'              => $qty,
             'price'                 => $basePrice,
             'unit_deduction_amount' => $deductionAmount,
             'selling_rate'          => $sellingRate,
-            'discount_amount'       => $item['discount'] ?? 0,
-            'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty'],
+            'discount_amount'       => $offerDiscount,
+            'net_total'             => $itemNetTotal,
+            'profit'                => $profit,
           ]);
+        }
 
-          
-          }
-
-        // Send Notification To Admin After Everything Stored
+        // Notify admins
         $notificationData = [
             'title'   => 'New Retail Order Done',
             'message' => [
                 'text' => 'A new retail order has been created by',
-                'from' => Auth::user()->branch->name ?? 'Unknown Branch'
+                'from' => Auth::user()->branch->name ?? 'Unknown Branch',
             ],
             'url'  => route('admin.order.show', $order->id),
-            'type' => 'retail_order'
+            'type' => 'retail_order',
         ];
 
-        $admins = \App\Models\User::where('role', 'admin')->get();
-
-        foreach ($admins as $admin) {
+        foreach (\App\Models\User::where('role', 'admin')->get() as $admin) {
             $admin->notify(new \App\Notifications\SystemNotification($notificationData));
         }
 
         return redirect()
           ->route('manager.order.view_retail_invoice', $order->id)
-          ->with('success', "Retail Order #BRS{$order->id} created successfully!");
+          ->with('success', "Retail Order #{$orderId} created successfully!");
       });
     } catch (\Exception $e) {
       return redirect()->back()->with('error', 'Something went wrong! ' . $e->getMessage());

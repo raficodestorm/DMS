@@ -15,9 +15,14 @@
   </td>
   <td>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
   <td class="action-icons">
-    <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon">
+    <a href="{{ route('admin.stock.in.request.show', $request->id) }}" class="icon-btn view-icon" title="View Details">
       <i class="fa-solid fa-eye"></i>
     </a>
+    @if($request->status == 'approved')
+    <a href="{{ route('admin.stock.in.request.invoice', $request->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
+      <i class="fa-solid fa-file-invoice"></i>
+    </a>
+    @endif
   </td>
 </tr>
 @empty

@@ -20,7 +20,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-0">Return Request BRET{{ $return->id }}</h2>
-                <p class="text-muted">Order Ref: BRS{{ $return->order_id }} | Date: {{ $return->created_at->format('d M Y, h:i A') }}</p>
+                <p class="text-muted">Order Ref: {{ $order->order_id ?? ('BRS' . $order->id) }} | Date: {{ $return->created_at->format('d M Y, h:i A') }}</p>
             </div>
             <div>
                 @if($return->status == 'pending_sr')

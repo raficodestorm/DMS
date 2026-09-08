@@ -16,7 +16,8 @@ class Product extends Model
         'price',
         'purchase_price',
         'stock_alert',
-        'description',
+        'short_description',
+        'long_description',
         'status',
         'image',
         'is_featured',
@@ -48,5 +49,11 @@ class Product extends Model
     public function stockItems()
     {
         return $this->hasMany(StockInItem::class);
+
+    }
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)
+            ->orderBy('sort_order');
     }
 }

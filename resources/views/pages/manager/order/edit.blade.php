@@ -294,7 +294,7 @@
 <div class="container py-4">
   <div class="form-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="m-0"><i class="fas fa-shopping-bag text-primary"></i> Edit Order BRS{{ $order->id }}</h2>
+      <h2 class="m-0"><i class="fas fa-shopping-bag text-primary"></i> Edit Order {{ $order->order_id ?? ('BRS' . $order->id) }}</h2>
     </div>
 
     @include('components.alert')

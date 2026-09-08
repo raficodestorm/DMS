@@ -33,7 +33,7 @@
     </p>
 
     <div class="rank-pill">
-      SBT{{ str_pad($transaction->id, 4, '0', STR_PAD_LEFT) }}
+      BRST00{{ $transaction->id }}
     </div>
 
     <div class="info-list">
@@ -48,7 +48,7 @@
       <div class="info-group">
         <span class="i-label">Contact Person</span>
         <span class="i-value">
-          {{ $transaction->supplier->contact_person ?? 'N/A' }}
+          {{ $transaction->supplier->name ?? 'N/A' }}
           @if($transaction->supplier?->phone)
             <small class="text-muted">({{ $transaction->supplier->phone }})</small>
           @endif
@@ -56,7 +56,7 @@
       </div>
 
       <div class="info-group">
-        <span class="i-label">Branch</span>
+        <span class="i-label">Reference Branch</span>
         <span class="i-value">
           {{ $transaction->branch->name ?? 'N/A' }}
         </span>
@@ -148,6 +148,26 @@
   </div>
 
   <div class="card-footer-actions d-flex justify-content-end gap-2 p-3">
+    @if($isPayment)
+      <a href="{{ route('supplier-transactions.slip', $transaction->id) }}" class="btn-smart btn-blue">
+        <i class="fa-solid fa-file-invoice"></i> View Slip
+      </a>
+    @endif
+
+    @if($isPayment && (!isset($hasLaterTransaction) || !$hasLaterTransaction))
+      <a href="{{ route('admin.supplier-transactions.edit', $transaction->id) }}" class="btn-smart btn-edit">
+        <i class="fa-solid fa-pen-to-square"></i> Edit
+      </a>
+      <form action="{{ route('admin.supplier-transactions.destroy', $transaction->id) }}" method="POST" class="d-inline"
+        onsubmit="return confirm('Are you sure you want to delete this payment (BRST00{{ $transaction->id }})? The supplier due balance will be restored.')">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn-smart btn-red" style="border: none; cursor: pointer;">
+          <i class="fa-solid fa-trash"></i> Delete
+        </button>
+      </form>
+    @endif
+
     @if($isPurchase && $transaction->stock_in_request_id)
       <a href="{{ route('admin.stock.in.request.show', $transaction->stock_in_request_id) }}" class="btn-smart btn-purple">
         <i class="fa-solid fa-boxes-stacked"></i> View Stock-In Request (BRSK{{ $transaction->stock_in_request_id }})

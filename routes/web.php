@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupplierTransactionController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,7 @@ Route::get('/notifications/{id}/mark-as-read', function ($id) {
 Route::get('/our/employee/{id}', [EmployeeController::class, 'see'])->name('relectric.employee');
 
 Route::get('/payments/proof/{payment}', [PaymentController::class, 'publicShow'])->name('payments.show.public');
+Route::get('/supplier-transactions/proof/{transaction}', [SupplierTransactionController::class, 'publicShow'])->name('supplier-transactions.show.public');
 
 // dashboards (protected)
 Route::middleware(['auth'])->group(function () {
@@ -72,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('customers', CustomerController::class);
 
     Route::get('/payments/{payment}/slip', [PaymentController::class, 'viewSlip'])->name('payments.slip');
+    Route::get('/supplier-transactions/{transaction}/slip', [SupplierTransactionController::class, 'viewSlip'])->name('supplier-transactions.slip');
 
     Route::get('/notifications/poll', function () {
         $user = auth()->user();

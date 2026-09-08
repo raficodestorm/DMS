@@ -20,7 +20,8 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->decimal('purchase_price', 10, 2)->nullable();
             $table->integer('stock_alert')->default(0);
-            $table->text('description')->nullable();
+            $table->string('short_description')->nullable();
+            $table->text('long_description')->nullable();
             $table->boolean('status')->default(1);
             $table->boolean('is_featured')->default(false)->index();  //----new
             $table->string('image')->nullable();

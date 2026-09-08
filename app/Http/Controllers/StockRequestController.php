@@ -1019,4 +1019,63 @@ public function stockInAdminEdit($id)
             );
     }
 }
+
+    public function viewInvoice($id)
+    {
+        $stockInRequest = StockInRequest::with([
+            'supplier',
+            'branch',
+            'items.product.category',
+            'requestedBy',
+            'approvedBy',
+        ])->findOrFail($id);
+
+        if ($stockInRequest->status !== 'approved') {
+            return back()->with('error', 'Purchase invoice is only available for approved stock-in requests.');
+        }
+
+        // Sort items by Category name
+        $items = $stockInRequest->items->sortBy(function ($item) {
+            return $item->product->category->name ?? 'General';
+        });
+
+        $hasTreeDeduction = $items->contains(function ($item) {
+            return (float) ($item->tree_deduction ?? 0) > 0;
+        });
+
+        // Find supplier ledger transaction associated with this stock-in request
+        $supplierTransaction = SupplierTransaction::where('stock_in_request_id', $stockInRequest->id)
+            ->where('type', 'buy')
+            ->latest('id')
+            ->first();
+
+        if ($supplierTransaction) {
+            $previousDue = round((float) ($supplierTransaction->due_before_transaction ?? 0), 2);
+            $currentDue  = round((float) ($supplierTransaction->due_after_transaction ?? 0), 2);
+        } else {
+            $currentDue  = round((float) ($stockInRequest->supplier->due ?? 0), 2);
+            $previousDue = round($currentDue - (float) $stockInRequest->net_total, 2);
+        }
+
+        $supplierData = [
+            'details'      => $stockInRequest->supplier,
+            'previous_due' => $previousDue,
+            'current_due'  => $currentDue,
+        ];
+
+        $invoiceHeader = [
+            'logo'         => $stockInRequest->supplier?->image ? asset($stockInRequest->supplier->image) : asset('image/relectric-logo.png'),
+            'company_logo' => asset('image/relectric-logo.png'),
+            'subtitle'     => 'Official Purchase Invoice / Goods Received Note',
+            'title'        => 'PURCHASE INVOICE',
+        ];
+
+        return view('pages.common.stock.purchase-invoice', compact(
+            'stockInRequest',
+            'items',
+            'hasTreeDeduction',
+            'supplierData',
+            'invoiceHeader'
+        ));
+    }
 }

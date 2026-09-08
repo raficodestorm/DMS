@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\User;
+use App\Services\OrderIdGeneratorService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,15 +31,11 @@ class OrderSrController extends Controller
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-        if (str_starts_with($search, 'BRS')) {
-          $id = str_replace('BRS', '', $search);
-          $q->where('id', $id);
-        } else {
-          $q->where('id', $search)
-            ->orWhereHas('customer', function ($customer) use ($search) {
-              $customer->where('shop_name', 'like', "%{$search}%");
-            });
-        }
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search)
+          ->orWhereHas('customer', function ($customer) use ($search) {
+            $customer->where('shop_name', 'like', "%{$search}%");
+          });
       });
     }
 
@@ -77,15 +74,11 @@ class OrderSrController extends Controller
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-        if (str_starts_with($search, 'BRS')) {
-          $id = str_replace('BRS', '', $search);
-          $q->where('id', $id);
-        } else {
-          $q->where('id', $search)
-            ->orWhereHas('customer', function ($customer) use ($search) {
-              $customer->where('shop_name', 'like', "%{$search}%");
-            });
-        }
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search)
+          ->orWhereHas('customer', function ($customer) use ($search) {
+            $customer->where('shop_name', 'like', "%{$search}%");
+          });
       });
     }
 
@@ -135,12 +128,8 @@ class OrderSrController extends Controller
       if ($request->filled('search')) {
           $search = trim($request->search);
           $query->where(function ($q) use ($search) {
-              if (str_starts_with($search, 'BRS')) {
-                  $id = str_replace('BRS', '', $search);
-                  $q->where('id', $id);
-              } else {
-                  $q->where('id', $search);
-              }
+              $q->where('order_id', 'like', "%{$search}%")
+                ->orWhere('id', $search);
           });
       }
 
@@ -439,7 +428,10 @@ class OrderSrController extends Controller
              * 5. Create Order
              * ---------------------------------------------------------
              */
+            $orderId = app(OrderIdGeneratorService::class)->generate();
+
             $order = Order::create([
+                'order_id'                    => $orderId,
                 'customer_id'                 => $request->customer_id,
                 'sr_id'                       => $user->id,
                 'manager_id'                  => $manager?->id,

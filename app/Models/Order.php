@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+        'order_id',
         'customer_id',
         'sr_id',
         'manager_id',
@@ -19,6 +20,11 @@ class Order extends Model
         'branch_id',
         'order_type',
     ];
+
+    public function getDisplayOrderIdAttribute(): string
+    {
+        return $this->order_id ?? ('BRS' . $this->id);
+    }
     public function customer()
     {
         return $this->belongsTo(Customer::class);
@@ -45,5 +51,9 @@ class Order extends Model
     public function returns()
     {
         return $this->hasMany(ProductReturn::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

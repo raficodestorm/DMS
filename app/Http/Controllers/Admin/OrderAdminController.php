@@ -42,11 +42,8 @@ class OrderAdminController extends Controller
     if ($request->filled('search')) {
       $search = trim($request->search);
       $query->where(function ($q) use ($search) {
-        if (preg_match('/^BRS(\d+)$/i', $search, $match)) {
-          $q->where('id', $match[1]);
-          return;
-        }
-        $q->where('id', $search)
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search)
           ->orWhereHas('customer', function ($customer) use ($search) {
             $customer->where('shop_name', 'like', "%{$search}%");
           });

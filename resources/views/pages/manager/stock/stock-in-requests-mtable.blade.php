@@ -27,9 +27,14 @@
   </div>
 
   <div class="card-actions">
-    <a href="{{ route('manager.stock.in.request.show', $req->id) }}" class="icon-btn view-icon">
+    <a href="{{ route('manager.stock.in.request.show', $req->id) }}" class="icon-btn view-icon" title="View Details">
       <i class="fa-solid fa-eye"></i>
     </a>
+    @if($req->status == 'approved')
+    <a href="{{ route('manager.stock.in.request.invoice', $req->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
+      <i class="fa-solid fa-file-invoice"></i>
+    </a>
+    @endif
   </div>
 </div>
 @empty

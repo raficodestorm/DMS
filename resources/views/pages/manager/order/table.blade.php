@@ -1,7 +1,7 @@
 @forelse($orders as $order)
 <tr>
   <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
-  <td>BRS{{ $order->id }}</td>
+  <td>{{ $order->order_id ?? ('BRS' . $order->id) }}</td>
   <td>{{ $order->customer->shop_name ?? 'N/A' }}</td>
   <td>{{ $order->sr->fullname ?? 'N/A' }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
@@ -28,6 +28,20 @@
     <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>
+    @if($order->status == 'complete' || $order->status == 'delivered')
+    @if($order->order_type == "field_order")
+            <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
+              <i class="fa-solid fa-file-invoice"></i>
+            </a>
+
+        @elseif($order->order_type == "retail")
+            <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
+              <i class="fa-solid fa-file-invoice"></i>
+            </a>
+
+        @endif
+    
+    @endif
   </td>
 </tr>
 @empty

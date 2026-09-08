@@ -67,7 +67,7 @@
 <div class="manage-card">
   <div class="card-header">
     <div class="request-header-box">
-      <h3 style="margin:0; color:var(--primary);">Order Detail (BRS{{ $order->id }})</h3>
+      <h3 style="margin:0; color:var(--primary);">Order Detail ({{ $order->order_id ?? ('BRS' . $order->id) }})</h3>
       @php
       $bg = '#f3f4f6';
       $color = '#6b7280';

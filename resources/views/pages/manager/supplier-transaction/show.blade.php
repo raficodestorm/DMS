@@ -125,6 +125,12 @@
   </div>
 
   <div class="card-footer-actions d-flex justify-content-end gap-2 p-3">
+    @if($isPayment)
+      <a href="{{ route('supplier-transactions.slip', $transaction->id) }}" class="btn-smart btn-blue">
+        <i class="fa-solid fa-file-invoice"></i> View Slip
+      </a>
+    @endif
+
     @if($isPurchase && $transaction->stock_in_request_id)
       <a href="{{ route('manager.stock.in.request.show', $transaction->stock_in_request_id) }}" class="btn-smart btn-purple">
         <i class="fa-solid fa-boxes-stacked"></i> View Stock-In Request (BRSK{{ $transaction->stock_in_request_id }})

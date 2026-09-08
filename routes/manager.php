@@ -39,6 +39,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/stock-in-requests/data', [StockRequestController::class, 'fetchStockInRequestsDataForManager'])->name('stock.in.requests.data');
 
   Route::get('/stock-in-request/{id}', [StockRequestController::class, 'showForManager'])->name('stock.in.request.show');
+  Route::get('/stock-in-request/invoice/{id}', [StockRequestController::class, 'viewInvoice'])->name('stock.in.request.invoice');
   Route::delete('/stock-in-request/{id}', [StockRequestController::class, 'stockInDestroy'])->name('stock.in.request.destroy');
   Route::get('/stock-in-request/{id}/edit', [StockRequestController::class, 'stockInEdit'])->name('stock.in.request.edit');
   Route::put('stock-in/request/{id}', [StockRequestController::class, 'stockInUpdate'])->name('stock.in.update');

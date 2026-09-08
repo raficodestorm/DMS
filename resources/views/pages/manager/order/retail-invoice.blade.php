@@ -217,7 +217,7 @@
         <div class="fixed-col-6">
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
-            Invoice No: BRS{{ $order->id }}<br>
+            Invoice No: {{ $order->order_id ?? ('BRS' . $order->id) }}<br>
             Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
             Reference : {{ $order->manager->fullname ?? 'N/A' }}
           </div>
@@ -380,7 +380,7 @@
 
     const opt = {
         margin: [2, 1, 2, 3],
-        filename: 'Invoice_BRS{{ $order->id }}.pdf',
+        filename: 'Invoice_{{ $order->order_id ?? ('BRS' . $order->id) }}.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 

@@ -205,9 +205,18 @@
         </ul>
       </li>
 
+  
+      <!-- customer Ledger -->
       <li class="nav-item">
-        <a href="{{ route('admin.payments.index') }}" class="nav-link {{ isActive('admin.payments.index') }}">
-          <i class="fas fa-wallet"></i> Transactions
+        <a href="{{ route('admin.payments.index') }}" class="nav-link {{ isActive('admin.payments.*') }}">
+          <i class="fas fa-file-invoice-dollar"></i> Customer Ledger
+        </a>
+      </li>
+
+      <!-- Supplier Ledger -->
+      <li class="nav-item">
+        <a href="{{ route('admin.supplier-transactions.index') }}" class="nav-link {{ isActive('admin.supplier-transactions.*') }}">
+          <i class="fas fa-wallet"></i> Supplier Ledger
         </a>
       </li>
 
@@ -416,12 +425,7 @@
         </a>
       </li>
 
-      <!-- Supplier Transactions -->
-      <li class="nav-item">
-        <a href="{{ route('admin.supplier-transactions.index') }}" class="nav-link {{ isActive('admin.supplier-transactions.*') }}">
-          <i class="fas fa-file-invoice-dollar"></i> Supplier Ledger
-        </a>
-      </li>
+      
 
 
 

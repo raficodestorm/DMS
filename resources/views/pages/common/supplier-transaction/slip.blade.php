@@ -5,16 +5,16 @@
 <div class="container d-flex flex-column align-items-center" id="invoice-scale-target">
   {{-- The Slip Card --}}
   <div class="receipt-card" id="printArea">
-    
+
     <!-- Watermark Logo -->
     <img src="{{ asset('image/relectric-logo.png') }}" class="watermark-logo" alt="Watermark">
 
     <div class="receipt-header">
       <div class="brand-info">
         <div>
-          <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60x;">
+          <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: auto;">
         </div>
-        <p>Customer Payment Receipt</p>
+        <p>Supplier Payment Voucher</p>
       </div>
       <div class="receipt-status">
         <img src="{{ asset('image/paid.png') }}" alt="Paid" class="paid-stamp-img">
@@ -24,68 +24,81 @@
     <div class="receipt-body">
       <div class="amount-section">
         <span class="amount-label">Amount Paid</span>
-        <h1 class="amount-value">৳ {{ number_format($payment->amount, 2) }}</h1>
+        <h1 class="amount-value">৳ {{ number_format($transaction->amount, 2) }}</h1>
       </div>
 
       <div class="divider"></div>
 
       <div class="receipt-details">
         <div class="receipt-row">
-          <span class="label">Transaction ID</span>
-          <span class="value">BRT00{{ $payment->id }}</span>
+          <span class="label">Voucher / Txn ID</span>
+          <span class="value">BRST00{{ $transaction->id }}</span>
         </div>
         <div class="receipt-row">
           <span class="label">Payment Method</span>
-          <span class="value">{{ ucfirst($payment->payment_method) ?? 'N/A' }}</span>
+          <span class="value" style="text-transform: capitalize;">{{ $transaction->payment_method ?? 'Cash' }}</span>
         </div>
         <div class="receipt-row">
-          <span class="label">Date</span>
-          <span class="value">{{ $payment->created_at->format('d M Y, h:i A') }}</span>
+          <span class="label">Date &amp; Time</span>
+          <span class="value">{{ $transaction->created_at->format('d M Y, h:i A') }}</span>
         </div>
         <div class="receipt-row">
-          <span class="label">Customer / Shop</span>
-          <span class="value">{{ $payment->customer->shop_name }}</span>
+          <span class="label">Supplier Company</span>
+          <span class="value">{{ $transaction->supplier->company_name ?? 'N/A' }}</span>
         </div>
         <div class="receipt-row">
-          <span class="label">Collected By</span>
-          <span class="value">{{ $payment->sr->fullname ?? 'Branch manager' }}</span>
+          <span class="label">Contact Person</span>
+          <span class="value">{{ $transaction->supplier->name ?? 'N/A' }}</span>
         </div>
+        <div class="receipt-row">
+          <span class="label">Reference Branch</span>
+          <span class="value">{{ $transaction->branch->name ?? 'Main / Head Office' }}</span>
+        </div>
+        @if($transaction->note)
+        <div class="receipt-row">
+          <span class="label">Note / Remarks</span>
+          <span class="value" style="font-weight: 500; font-size: 0.88rem;">{{ $transaction->note }}</span>
+        </div>
+        @endif
       </div>
 
       <div class="divider"></div>
 
       <div class="receipt-row">
         <span class="label">Due before payment</span>
-        <span class="value">{{ number_format($payment->due_before_transaction, 2) }} TK</span>
+        <span class="value">{{ number_format($transaction->due_before_transaction, 2) }} TK</span>
       </div>
       <div class="receipt-row text-success">
         <span class="label">Due after payment</span>
-        <span class="value"><strong>{{ number_format($payment->due_after_transaction, 2) }} TK</strong></span>
+        <span class="value"><strong>{{ number_format($transaction->due_after_transaction, 2) }} TK</strong></span>
       </div>
     </div>
 
     <div class="receipt-footer">
       <div class="qr-section">
         <img
-          src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ route('payments.show.public', $payment->id) }}"
+          src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(route('supplier-transactions.show.public', $transaction->id)) }}"
           alt="QR Code" class="qr-code">
-        <p class="qr-text">Scan to verify transaction</p>
+        <p class="qr-text">Scan to verify voucher</p>
       </div>
       <div class="footer-note">
-        <p>Thank you for choosing our service!</p>
+        <p>Thank you for partnering with us!</p>
         <p class="system-name">{{ config('app.name') }} Automated Billing</p>
       </div>
     </div>
   </div>
 </div>
 
-<div class="action-bar d-flex justify-content-center no-print mt-3">
+<div class="action-bar d-flex justify-content-center no-print mt-3 mb-4">
   <button onclick="downloadPDF()" class="btn-smart btn-green me-3">
     <i class="fas fa-download me-1"></i> Download PDF
   </button>
-  <button onclick="window.print()" class="btn-smart btn-blue">
-    <i class="fas fa-print me-1"></i> Print Invoice
+  <button onclick="window.print()" class="btn-smart btn-blue me-3">
+    <i class="fas fa-print me-1"></i> Print Voucher
   </button>
+  <a href="{{ url()->previous() }}" class="btn-smart" style="background:#64748b; color:#fff;">
+    <i class="fas fa-arrow-left me-1"></i> Back
+  </a>
 </div>
 
 <style>
@@ -93,10 +106,10 @@
   .receipt-card {
     background: #fff !important;
     width: 100%;
-    max-width: 450px;
+    max-width: 460px;
     padding: 40px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
     position: relative;
     overflow: hidden;
     border: 1px solid #eee;
@@ -128,28 +141,21 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
-  }
-
-  .brand-info h2 {
-    color: #3131ff;
-    font-weight: 800;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-bottom: 25px;
   }
 
   .brand-info p {
-    margin: 0;
-    color: #777;
-    font-size: 0.9rem;
+    margin: 4px 0 0 0;
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 600;
   }
 
   .paid-stamp-img {
-    width: 150px;
+    width: 140px;
     height: auto;
-    margin-right: -25px;
-    opacity: 0.8;
+    margin-right: -20px;
+    opacity: 0.85;
     transform: rotate(-12deg);
     display: inline-block;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
@@ -157,85 +163,81 @@
 
   .amount-section {
     text-align: center;
-    margin: 35px 0;
+    margin: 25px 0;
   }
 
   .amount-label {
-    font-size: 0.9rem;
-    color: #777;
-    font-weight: 500;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .amount-value {
-    font-size: 2.3rem;
-    font-weight: 600;
+    font-size: 2.2rem;
+    font-weight: 700;
     color: #090766;
-    margin-top: 5px;
+    margin-top: 4px;
+    letter-spacing: -0.5px;
   }
 
   .divider {
-    border-top: 2px dashed #eee;
-    margin: 20px 0;
+    border-top: 2px dashed #e2e8f0;
+    margin: 18px 0;
   }
 
   .receipt-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .receipt-row .label {
-    color: #666;
+    color: #64748b;
   }
 
   .receipt-row .value {
-    color: #333;
+    color: #1e293b;
     font-weight: 600;
     text-align: right;
   }
 
   .receipt-footer {
     text-align: center;
-    margin-top: 40px;
-  }
-
-  .receipt-footer {
-    text-align: center;
-    margin-top: 40px;
+    margin-top: 30px;
   }
 
   .qr-code {
     background: #fff;
-    padding: 8px;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    width: 80px;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    width: 88px;
+    height: 88px;
   }
 
   .qr-text {
     font-size: 0.75rem;
-    color: #aaa;
-    margin-bottom: 20px;
+    color: #94a3b8;
+    margin-bottom: 16px;
   }
 
   .footer-note p {
     margin: 0;
     font-size: 0.8rem;
-    color: #777;
+    color: #64748b;
   }
 
   .system-name {
     font-weight: 700;
     color: #3131ff;
-    margin-top: 5px !important;
+    margin-top: 4px !important;
   }
 
-
   @media print {
-
-    /* 1. Browser-er default margin zero kora */
     @page {
       margin: 0;
       size: auto;
@@ -243,7 +245,6 @@
 
     body {
       margin: 1.5cm;
-      /* Print page-er charpashe koto tuku jayga thakbe */
       background: #fff !important;
     }
 
@@ -256,25 +257,20 @@
       display: none !important;
     }
 
-    /* 2. Container-ke upore force kora */
     .container {
       padding-top: 0 !important;
       margin-top: 0 !important;
       display: block !important;
     }
 
-    /* 3. Slip card-er position fix kora */
     .receipt-card {
       box-shadow: none;
       border: 1px solid #eee;
-      /* Print-e choto border thakle sundor lage */
       width: 100%;
       max-width: 100%;
       padding: 20px;
-      /* Padding ektu komiye deya jate kete na jay */
       margin: 0 auto;
       page-break-inside: avoid;
-      /* Jate majhkhan diye kete na jay */
     }
   }
 </style>
@@ -286,20 +282,18 @@
     const element = document.getElementById('printArea');
     const wrapper = document.getElementById("invoice-scale-target");
 
-    // 1. PDF capture korar age temporary-vabe transform bondho kora
     const originalTransform = wrapper ? wrapper.style.transform : "none";
     if(wrapper) wrapper.style.transform = "none";
 
     const opt = {
-        margin: [10, 5, 10, 5], // Top, Left, Bottom, Right margin
-        filename: 'Invoice_BRT00{{ $payment->id }}.pdf',
+        margin: [10, 5, 10, 5],
+        filename: 'Supplier_Voucher_BRST00{{ $transaction->id }}.pdf',
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: { 
             scale: 2, 
             useCORS: true, 
             logging: false,
             letterRendering: true,
-            // Scroll position fix kora jate cut na hoy
             scrollY: 0,
             scrollX: 0,
             windowWidth: document.documentElement.offsetWidth,
@@ -312,9 +306,7 @@
         }
     };
 
-    // 3. Process start kora
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
-        // PDF generation sesh hole transform abar ager moto kore deya
         if(wrapper) wrapper.style.transform = originalTransform;
     }).save();
 }

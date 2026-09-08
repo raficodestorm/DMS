@@ -5,8 +5,8 @@
 
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
-      <h2 class="mb-0">All Transactions</h2>
-      <p class="text-muted mb-0">View all payment and purchase records of your customers</p>
+      <h2 class="mb-0">Customer Ledger</h2>
+      <p class="text-muted mb-0">View all payment, purchase and return records of your customers</p>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">

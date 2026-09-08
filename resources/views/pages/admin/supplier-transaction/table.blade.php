@@ -14,6 +14,8 @@
       $viewUrl = route('admin.stock.cut.cut.show', $m[1]);
     }
   }
+
+  $canModify = (isset($latestTxIds) && in_array($tx->id, $latestTxIds) && $tx->type === 'pay');
 @endphp
 <tr>
 
@@ -51,8 +53,6 @@
     <strong>{{ number_format($tx->amount, 2) }} TK</strong>
   </td>
 
-  
-
   <td>
     {{ $tx->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}
   </td>
@@ -61,6 +61,24 @@
     <a href="{{ $viewUrl }}" class="icon-btn view-icon" title="View Details">
       <i class="fa-solid fa-eye"></i>
     </a>
+    @if($tx->type == 'pay')
+      <a href="{{ route('supplier-transactions.slip', $tx->id) }}" class="icon-btn slip-icon" title="View Slip">
+      <i class="fa-solid fa-file-invoice"></i>
+    </a>
+    @endif
+    @if($canModify)
+      <a href="{{ route('admin.supplier-transactions.edit', $tx->id) }}" class="icon-btn edit-icon" title="Edit Payment">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </a>
+      <form action="{{ route('admin.supplier-transactions.destroy', $tx->id) }}" method="POST" class="d-inline"
+        onsubmit="return confirm('Are you sure you want to delete this payment (BRST00{{ $tx->id }})? The supplier due balance will be restored.')">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="icon-btn delete-icon" style="border: none; cursor: pointer;" title="Delete Payment">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </form>
+    @endif
   </td>
 
 </tr>

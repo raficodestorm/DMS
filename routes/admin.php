@@ -66,6 +66,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
   // রিকোয়েস্টের ডিটেইল দেখার জন্য
   Route::get('/stock-in-request/show/{id}', [StockRequestController::class, 'showForAdmin'])->name('stock.in.request.show');
+  Route::get('/stock-in-request/invoice/{id}', [StockRequestController::class, 'viewInvoice'])->name('stock.in.request.invoice');
 
   // এপ্রুভ এবং রিজেক্ট অ্যাকশন
   Route::post('/stock-in-requests/{id}/approve', [StockRequestController::class, 'approve'])->name('stock.in.approve');
@@ -153,10 +154,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::post('/stock-cut-cut/{id}/approve', [StockCutController::class, 'approve'])->name('stock.cut.approve');
   Route::post('/stock-cut-cut/{id}/reject', [StockCutController::class, 'reject'])->name('stock.cut.reject');
 
-  // Supplier Transactions (Ledger View)
+  // Supplier Transactions (Ledger View & Payment)
   Route::get('/supplier-transactions', [SupplierTransactionController::class, 'indexForAdmin'])->name('supplier-transactions.index');
+  Route::get('/supplier-transactions/create', [SupplierTransactionController::class, 'createForAdmin'])->name('supplier-transactions.create');
+  Route::post('/supplier-transactions', [SupplierTransactionController::class, 'storeForAdmin'])->name('supplier-transactions.store');
   Route::get('/supplier-transactions/data', [SupplierTransactionController::class, 'fetchSupplierTransactionsIndexData'])->name('supplier-transactions.index.data');
   Route::get('/supplier-transactions/{id}', [SupplierTransactionController::class, 'showForAdmin'])->name('supplier-transactions.show');
+  Route::get('/supplier-transactions/{id}/edit', [SupplierTransactionController::class, 'editForAdmin'])->name('supplier-transactions.edit');
+  Route::put('/supplier-transactions/{id}', [SupplierTransactionController::class, 'updateForAdmin'])->name('supplier-transactions.update');
+  Route::delete('/supplier-transactions/{id}', [SupplierTransactionController::class, 'destroyForAdmin'])->name('supplier-transactions.destroy');
 
 });
 

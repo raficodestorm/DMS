@@ -1,7 +1,7 @@
 @forelse($orders as $order)
 <tr>
   <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration }}</td>
-  <td>BRS{{ $order->id }}</td>
+  <td>{{ $order->order_id ?? ('BRS' . $order->id) }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
   <td>
     @if($order->status == "pending_sr")

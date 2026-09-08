@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\Supplier;
 use App\Traits\UploadHelper;
 use Illuminate\Http\Request;
@@ -48,11 +49,10 @@ class ProductController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-
     public function create()
     {
         $categories = Category::orderBy('name', 'asc')->get();
-        $suppliers = Supplier::orderBy('name', 'asc')->get();
+        $suppliers  = Supplier::orderBy('name', 'asc')->get();
         return view('pages.admin.product.create', compact('categories', 'suppliers'));
     }
 
@@ -62,19 +62,41 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'sku' => 'required|string|max:200|unique:products,sku',
-            'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'price' => 'required|numeric|min:0',
-            'stock_alert' => 'required|integer|min:0',
-            'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|max:2048',
+            'name'              => 'required|string|max:100',
+            'sku'               => 'required|string|max:200|unique:products,sku',
+            'category_id'       => 'nullable|exists:categories,id',
+            'supplier_id'       => 'required|exists:suppliers,id',
+            'price'             => 'required|numeric|min:0',
+            'stock_alert'       => 'required|integer|min:0',
+            'short_description' => 'nullable|string|max:500',
+            'long_description'  => 'nullable|string',
+            'is_featured'       => 'nullable|boolean',
+            'image'             => 'nullable|image|max:2048',
+            'gallery.*'         => 'nullable|image|max:2048',
         ]);
+
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['purchase_price'] = 0; // Set to 0 by default; updated later via edit
+
+        // Main thumbnail
         if ($request->hasFile('image')) {
             $validated['image'] = $this->uploadFile($request->file('image'), 'products');
         }
-        Product::create($validated);
+
+        $product = Product::create($validated);
+
+        // Gallery images
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $index => $file) {
+                $path = $this->uploadFile($file, 'products/gallery');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image'      => $path,
+                    'sort_order' => $index,
+                    'is_active'  => true,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.products.index')->with('success', 'Product added successfully!');
     }
@@ -84,17 +106,18 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        $product->load(['images', 'category', 'supplier']);
         return view('pages.admin.product.show', compact('product'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-
     public function edit(Product $product)
     {
         $categories = Category::orderBy('name', 'asc')->get();
-        $suppliers = Supplier::orderBy('name', 'asc')->get();
+        $suppliers  = Supplier::orderBy('name', 'asc')->get();
+        $product->load('images');
         return view('pages.admin.product.edit', compact('product', 'categories', 'suppliers'));
     }
 
@@ -104,57 +127,89 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'sku' => ['required', 'string', 'max:200', Rule::unique('products')->ignore($product->id),],
-            'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'price' => 'required|numeric|min:0',
-            'stock_alert' => 'required|integer|min:0',
-            'description' => 'nullable|string|max:1000',
-            'status' => 'required|in:0,1',
-            'image' => 'nullable|image|max:2048',
+            'name'              => 'required|string|max:100',
+            'sku'               => ['required', 'string', 'max:200', Rule::unique('products')->ignore($product->id)],
+            'category_id'       => 'nullable|exists:categories,id',
+            'supplier_id'       => 'required|exists:suppliers,id',
+            'price'             => 'required|numeric|min:0',
+            'purchase_price'    => 'nullable|numeric|min:0',
+            'stock_alert'       => 'required|integer|min:0',
+            'short_description' => 'nullable|string|max:500',
+            'long_description'  => 'nullable|string',
+            'status'            => 'required|in:0,1',
+            'is_featured'       => 'nullable|boolean',
+            'image'             => 'nullable|image|max:2048',
+            'gallery.*'         => 'nullable|image|max:2048',
         ]);
+
+        $validated['is_featured']    = $request->boolean('is_featured');
+        $validated['purchase_price'] = 0;
+
+        // Replace main thumbnail
         if ($request->hasFile('image')) {
             $this->deleteFile($product->image);
             $validated['image'] = $this->uploadFile($request->file('image'), 'products');
         }
+
         $product->update($validated);
 
-        return redirect()->route('admin.products.index')->with('success', 'product updated successfully!');
+        // Delete selected gallery images
+        if ($request->filled('delete_gallery')) {
+            foreach ($request->delete_gallery as $imgId) {
+                $img = ProductImage::where('id', $imgId)->where('product_id', $product->id)->first();
+                if ($img) {
+                    $this->deleteFile($img->image);
+                    $img->delete();
+                }
+            }
+        }
+
+        // Add new gallery images
+        if ($request->hasFile('gallery')) {
+            $nextOrder = $product->images()->max('sort_order') + 1;
+            foreach ($request->file('gallery') as $index => $file) {
+                $path = $this->uploadFile($file, 'products/gallery');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image'      => $path,
+                    'sort_order' => $nextOrder + $index,
+                    'is_active'  => true,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Product updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Product $product)
-{
-    if ($product->orderItems()->exists()) {
+    {
+        if ($product->orderItems()->exists()) {
+            return redirect()
+                ->route('admin.products.index')
+                ->with('error', 'This product cannot be deleted because it is associated with existing orders.');
+        }
+
+        if ($product->stockItems()->exists()) {
+            return redirect()
+                ->route('admin.products.index')
+                ->with('error', 'This product cannot be deleted because stock-in records exist for this product.');
+        }
+
+        // Delete gallery images
+        foreach ($product->images as $img) {
+            $this->deleteFile($img->image);
+            $img->delete();
+        }
+
+        $image = $product->image;
+        $product->delete();
+        $this->deleteFile($image);
+
         return redirect()
             ->route('admin.products.index')
-            ->with(
-                'error',
-                'This product cannot be deleted because it is associated with existing orders.'
-            );
+            ->with('success', 'Product deleted successfully!');
     }
-
-    if ($product->stockItems()->exists()) {
-        return redirect()
-            ->route('admin.products.index')
-            ->with(
-                'error',
-                'This product cannot be deleted because stock-in records exist for this product.'
-            );
-    }
-
-    $image = $product->image;
-
-    $product->delete();
-
-    // Delete image only after successful product deletion
-    $this->deleteFile($image);
-
-    return redirect()
-        ->route('admin.products.index')
-        ->with('success', 'Product deleted successfully!');
-}
 }

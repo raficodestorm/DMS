@@ -5,7 +5,7 @@
       <p>{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration }}</p>
     </div>
     <div><span>Order ID</span>
-      <p>BRS{{ $order->id }}</p>
+      <p>{{ $order->order_id ?? ('BRS' . $order->id) }}</p>
     </div>
     <div><span>Amount</span>
       <p>{{ number_format($order->net_total, 2) }} TK</p>

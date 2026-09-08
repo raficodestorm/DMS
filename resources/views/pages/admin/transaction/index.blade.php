@@ -5,8 +5,8 @@
 
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
-      <h2 class="mb-0">All Transactions</h2>
-      <p class="text-muted mb-0">View all payment, return and purchase records</p>
+      <h2 class="mb-0">Customer Ledger</h2>
+      <p class="text-muted mb-0">View all purchase, payment and return records</p>
     </div>
     <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
       <i class="fas fa-receipt me-1"></i> Total Transactions: <span id="totalTransactionCount">0</span>

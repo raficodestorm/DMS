@@ -197,33 +197,20 @@
         </ul>
       </li>
 
-      <!-- payments -->
-      <li class="nav-item {{ request()->routeIs('manager.payments.*', 'manager.supplier-transactions.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive(['manager.payments.*', 'manager.supplier-transactions.*']) }}">
-          <i class="fas fa-money-bill-transfer"></i>
-          <span>Transactions</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
+      
 
-        <ul class="sub-menu" style="{{ isOpen(['manager.payments.*', 'manager.supplier-transactions.*']) }}">
-          <li>
-            <a href="{{ route('manager.payments.create') }}" class="sub-link {{ isActive('manager.payments.create') }}">
-              <i class="fas fa-plus me-1"></i> Make Payment
-            </a>
-          </li>
+      <!-- customer ledger -->
+      <li class="nav-item">
+        <a href="{{ route('manager.payments.index') }}" class="nav-link {{ isActive('manager.payments.*') }}">
+          <i class="fas fa-file-invoice-dollar"></i> Customer Ledger
+        </a>
+      </li>
 
-          <li>
-            <a href="{{ route('manager.payments.index') }}" class="sub-link {{ isActive('manager.payments.index') }}">
-              <i class="fas fa-list-ul me-1"></i> All Transactions
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('manager.supplier-transactions.index') }}" class="sub-link {{ isActive('manager.supplier-transactions.*') }}">
-              <i class="fas fa-file-invoice-dollar me-1"></i> Supplier Transactions
-            </a>
-          </li>
-        </ul>
+      <!-- supplier ledger -->
+      <li class="nav-item">
+        <a href="{{ route('manager.supplier-transactions.index') }}" class="nav-link {{ isActive('manager.supplier-transactions.*') }}">
+          <i class="fas fa-wallet"></i> Supplier Ledger
+        </a>
       </li>
 
       <!-- Product Return -->

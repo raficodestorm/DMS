@@ -46,7 +46,7 @@
             </div>
             <div class="col-md-6 text-md-end">
                 <h5 class="fw-bold mb-3">Return Context</h5>
-                <p class="mb-1">Original Order: <strong>BRS{{ $return->order_id }}</strong></p>
+                <p class="mb-1">Original Order: <strong>{{ $return->order_id ?? 'N/A' }}</strong></p>
                 <p class="mb-1">Reason: <span class="italic text-muted">{{ $return->reason ?? 'None' }}</span></p>
             </div>
         </div>

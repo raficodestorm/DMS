@@ -38,82 +38,77 @@
     flex-wrap: wrap;
   }
 
-  .btn-smart {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-  }
-
-  /* Button Variants */
-  .btn-edit {
-    background: var(--primary-soft);
-    color: var(--primary);
-    border: 1px solid var(--primary);
-  }
-
-  .btn-edit:hover {
-    background: var(--primary);
-    color: white;
-  }
-
-  .btn-reject {
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fca5a5;
-  }
-
-  .btn-reject:hover {
-    background: #dc2626;
-    color: white;
-  }
-
-  .btn-admin {
-    background: #e0e7ff;
-    color: #4338ca;
-    border: 1px solid #a5b4fc;
-  }
-
-  .btn-admin:hover {
-    background: #4338ca;
-    color: white;
-  }
-
-  .btn-confirm {
-    background: var(--success);
-    color: white;
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
-  }
-
-  .btn-confirm:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-  }
-
-  .btn-delete {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fca5a5;
-  }
-
-  .btn-delete:hover {
-    background: #dc2626;
-    color: white;
-  }
-
   .request-status-badge {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
     text-transform: uppercase;
+  }
+
+  /* Profit Reveal */
+  .profit-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  #btn-see-profit {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  #btn-see-profit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  }
+
+  #profit-reveal {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 1.5px solid #34d399;
+    border-radius: 12px;
+    padding: 10px 20px;
+    animation: profitPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #profit-reveal .profit-label {
+    font-size: 13px;
+    color: #065f46;
+    font-weight: 600;
+  }
+
+  #profit-reveal .profit-amount {
+    font-size: 22px;
+    font-weight: 800;
+    color: #065f46;
+    letter-spacing: -0.5px;
+  }
+
+  #profit-reveal .profit-timer {
+    font-size: 11px;
+    color: #6ee7b7;
+    margin-left: 4px;
+    font-weight: 600;
+  }
+
+  @keyframes profitPop {
+    from { opacity: 0; transform: scale(0.85) translateY(6px); }
+    to   { opacity: 1; transform: scale(1)   translateY(0); }
   }
 
   @media (max-width: 600px) {
@@ -125,9 +120,9 @@
       flex-direction: column;
     }
 
-    .btn-smart {
-      width: 100%;
-      justify-content: center;
+    .profit-wrapper {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
@@ -135,7 +130,7 @@
 <div class="manage-card">
   <div class="card-header">
     <div class="request-header-box">
-      <h3 style="margin:0; color:var(--primary);">Order Detail (BRS{{ $order->id }})</h3>
+      <h3 style="margin:0; color:var(--primary);">Order Details ({{ $order->order_id ?? ('BRS' . $order->id) }})</h3>
       @php
       $bg = '#f3f4f6';
       $color = '#6b7280';
@@ -184,11 +179,11 @@
   <div class="info-grid">
     <div class="info-item">
       <label>Customer</label>
-      <p>{{ $order->customer->shop_name ?? 'N/A' }}</p>
+      <p>{{ $order->customer->shop_name ?? 'Retail' }}</p>
     </div>
     <div class="info-item">
       <label>Reference</label>
-      <p>{{ $order->sr->fullname ?? 'N/A' }} <span class="text-primary"> ({{ $order->sr->branch->name ?? 'N/A' }}
+      <p>{{ $order->sr->fullname ?? $order->manager->fullname }} <span class="text-primary"> ({{ $order->branch->name ?? 'N/A' }}
           branch)</span>
       </p>
     </div>
@@ -307,7 +302,54 @@
     <small class="mb-1 text-success">Special Discount: {{ number_format($order->special_discount, 2) }} ৳</small>
     <p class="mb-1" style="color: red;">Total Discount: {{ number_format($order->discount_amount, 2) }} ৳</p>
     <h3 style="color: var(--primary); font-weight: 800;">Net Total: {{ number_format($order->net_total, 2) }} ৳</h3>
+
+    @php $totalProfit = $order->items->sum('profit'); @endphp
+
+    <div class="profit-wrapper" >
+      <button id="btn-see-profit" onclick="revealProfit()">
+        <i class="fas fa-chart-line"></i> See Profit
+      </button>
+
+      <div id="profit-reveal">
+        <i class="fas fa-sack-dollar" style="color:#059669; font-size:20px;"></i>
+        <div>
+          <div class="profit-label">Order Profit</div>
+          <div class="profit-amount">৳ {{ number_format($totalProfit, 2) }}</div>
+        </div>
+        <span class="profit-timer" id="profit-countdown"></span>
+      </div>
+    </div>
   </div>
+
+  <script>
+    function revealProfit() {
+      var btn    = document.getElementById('btn-see-profit');
+      var reveal = document.getElementById('profit-reveal');
+      var countdown = document.getElementById('profit-countdown');
+      var seconds = 2;
+
+      btn.style.display = 'none';
+      reveal.style.display = 'flex';
+      countdown.textContent = '(' + seconds + 's)';
+
+      var timer = setInterval(function () {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(timer);
+          reveal.style.transition = 'opacity 0.4s';
+          reveal.style.opacity = '0';
+          setTimeout(function () {
+            reveal.style.display = 'none';
+            reveal.style.opacity = '1';
+            reveal.style.transition = '';
+            btn.style.display = 'inline-flex';
+          }, 400);
+        } else {
+          countdown.textContent = '(' + seconds + 's)';
+        }
+      }, 1000);
+    }
+  </script>
 
 
   <div class="action-bar">

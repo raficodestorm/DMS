@@ -37,41 +37,6 @@
     justify-content: flex-end;
   }
 
-  .btn-smart {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .btn-edit {
-    background: var(--primary-soft);
-    color: var(--primary);
-    border: 1px solid var(--primary);
-  }
-
-  .btn-edit:hover {
-    background: var(--primary);
-    color: white;
-  }
-
-  .btn-delete {
-    background: var(--danger);
-    color: #dc2626;
-    border: 1px solid #fca5a5;
-  }
-
-  .btn-delete:hover {
-    background: #dc2626;
-    color: white;
-  }
-
   .request-status-badge {
     padding: 4px 12px;
     border-radius: 20px;
@@ -203,10 +168,12 @@
   
     @if($request->status == 'approved')
   <div class="action-bar">
-    <a href="{{ route('admin.stock.in.request.edit', $request->id) }}" class="btn-smart btn-edit">
+    <a href="{{ route('admin.stock.in.request.invoice', $request->id) }}" class="btn-smart btn-purple">
+      <i class="fas fa-file-invoice"></i> View Invoice
+    </a>
+    <a href="{{ route('admin.stock.in.request.edit', $request->id) }}" class="btn-smart btn-blue">
       <i class="fas fa-edit"></i> Edit
     </a>
-
   </div>
   @endif
 
@@ -215,7 +182,7 @@
     <form action="{{ route('admin.stock.in.approve', $request->id) }}" method="POST"
       onsubmit="return confirm('Approve and update stock?')">
       @csrf
-      <button type="submit" class="btn-smart btn-edit">
+      <button type="submit" class="btn-smart btn-green">
         <i class="fas fa-check-circle"></i> Approve
       </button>
     </form>
@@ -223,12 +190,10 @@
     <form action="{{ route('admin.stock.in.reject', $request->id) }}" method="POST"
       onsubmit="return confirm('Reject this request?')">
       @csrf
-      <button type="submit" class="btn-smart btn-delete">
+      <button type="submit" class="btn-smart btn-red">
         <i class="fas fa-times-circle"></i> Reject
       </button>
     </form>
-
-
   </div>
   @endif
 

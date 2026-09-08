@@ -5,7 +5,7 @@
 
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
-      <h2 class="mb-0">Supplier Transactions</h2>
+      <h2 class="mb-0">Supplier Ledger</h2>
       <p class="text-muted mb-0">View all branch supplier purchase, payment &amp; return transactions</p>
     </div>
     <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">

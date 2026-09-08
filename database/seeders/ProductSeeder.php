@@ -23,7 +23,7 @@ class ProductSeeder extends Seeder
                 'price' => 193,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 1 gang 1 way switch for basic lighting control.',
+                'short_description' => 'Walton brand 1 gang 1 way switch for basic lighting control.',
             ],
             [
                 'name' => 'TW1G2S',
@@ -33,7 +33,7 @@ class ProductSeeder extends Seeder
                 'price' => 310,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Walton brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'TW2G1S',
@@ -43,7 +43,7 @@ class ProductSeeder extends Seeder
                 'price' => 380,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Walton brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'TW2G2S',
@@ -53,7 +53,7 @@ class ProductSeeder extends Seeder
                 'price' => 380,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Walton brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'TW3G1S',
@@ -63,7 +63,7 @@ class ProductSeeder extends Seeder
                 'price' => 500,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Walton brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'TW4G1S',
@@ -73,7 +73,7 @@ class ProductSeeder extends Seeder
                 'price' => 525,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 4 gang 1 way switch for centralized control of four lighting circuits.',
+                'short_description' => 'Walton brand 4 gang 1 way switch for centralized control of four lighting circuits.',
             ],
             [
                 'name' => 'TW2PS',
@@ -83,7 +83,7 @@ class ProductSeeder extends Seeder
                 'price' => 495,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 2 gang power switch for appliance control.',
+                'short_description' => 'Walton brand 2 gang power switch for appliance control.',
             ],
             [
                 'name' => 'TW3PS13A',
@@ -93,7 +93,7 @@ class ProductSeeder extends Seeder
                 'price' => 540,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 3 gang 13A power switch for heavy-duty appliances.',
+                'short_description' => 'Walton brand 3 gang 13A power switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'TW5PS',
@@ -103,7 +103,7 @@ class ProductSeeder extends Seeder
                 'price' => 630,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 5 gang power switch for multi-appliance control.',
+                'short_description' => 'Walton brand 5 gang power switch for multi-appliance control.',
             ],
             [
                 'name' => 'TWDBS',
@@ -113,7 +113,7 @@ class ProductSeeder extends Seeder
                 'price' => 370,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand double pole switch for complete circuit isolation.',
+                'short_description' => 'Walton brand double pole switch for complete circuit isolation.',
             ],
             [
                 'name' => 'TW3PRS',
@@ -123,7 +123,7 @@ class ProductSeeder extends Seeder
                 'price' => 670,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 3 gang push button switch for momentary contact applications.',
+                'short_description' => 'Walton brand 3 gang push button switch for momentary contact applications.',
             ],
             [
                 'name' => 'TWTVS',
@@ -133,7 +133,7 @@ class ProductSeeder extends Seeder
                 'price' => 550,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand TV/antenna switch for signal routing.',
+                'short_description' => 'Walton brand TV/antenna switch for signal routing.',
             ],
             [
                 'name' => 'TWTS',
@@ -143,7 +143,7 @@ class ProductSeeder extends Seeder
                 'price' => 550,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand telephone/communication line switch.',
+                'short_description' => 'Walton brand telephone/communication line switch.',
             ],
             [
                 'name' => 'TWDPSS20A',
@@ -153,7 +153,7 @@ class ProductSeeder extends Seeder
                 'price' => 910,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 20A double pole switch for high-current appliances like water heaters.',
+                'short_description' => 'Walton brand 20A double pole switch for high-current appliances like water heaters.',
             ],
             [
                 'name' => 'TWDPSS45A',
@@ -163,7 +163,7 @@ class ProductSeeder extends Seeder
                 'price' => 1145,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand 45A double pole switch for heavy-duty appliances like AC units.',
+                'short_description' => 'Walton brand 45A double pole switch for heavy-duty appliances like AC units.',
             ],
             [
                 'name' => 'TWFR',
@@ -173,7 +173,7 @@ class ProductSeeder extends Seeder
                 'price' => 995,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand fan speed regulator for smooth ceiling fan control.',
+                'short_description' => 'Walton brand fan speed regulator for smooth ceiling fan control.',
             ],
             [
                 'name' => 'TWFRS',
@@ -183,7 +183,7 @@ class ProductSeeder extends Seeder
                 'price' => 1045,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand fan regulator with integrated on/off switch.',
+                'short_description' => 'Walton brand fan regulator with integrated on/off switch.',
             ],
             [
                 'name' => 'TWDS',
@@ -193,7 +193,7 @@ class ProductSeeder extends Seeder
                 'price' => 600,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand dimmer switch for adjustable lighting levels.',
+                'short_description' => 'Walton brand dimmer switch for adjustable lighting levels.',
             ],
             [
                 'name' => 'TWBP',
@@ -203,7 +203,7 @@ class ProductSeeder extends Seeder
                 'price' => 143,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Walton brand bell push button for doorbell applications.',
+                'short_description' => 'Walton brand bell push button for doorbell applications.',
             ],
             [
                 'name' => 'F1GS1',
@@ -213,7 +213,7 @@ class ProductSeeder extends Seeder
                 'price' => 193,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 1 gang 1 way switch for basic lighting control.',
+                'short_description' => 'Fiona brand 1 gang 1 way switch for basic lighting control.',
             ],
             [
                 'name' => 'F1GS2',
@@ -223,7 +223,7 @@ class ProductSeeder extends Seeder
                 'price' => 310,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Fiona brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'F2GS1',
@@ -233,7 +233,7 @@ class ProductSeeder extends Seeder
                 'price' => 370,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Fiona brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'F2GS2',
@@ -243,7 +243,7 @@ class ProductSeeder extends Seeder
                 'price' => 450,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Fiona brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'F3GS1',
@@ -253,7 +253,7 @@ class ProductSeeder extends Seeder
                 'price' => 470,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Fiona brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'F4GS1',
@@ -263,7 +263,7 @@ class ProductSeeder extends Seeder
                 'price' => 565,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 4 gang 1 way switch for centralized control of four lighting circuits.',
+                'short_description' => 'Fiona brand 4 gang 1 way switch for centralized control of four lighting circuits.',
             ],
             [
                 'name' => 'F2PS',
@@ -273,7 +273,7 @@ class ProductSeeder extends Seeder
                 'price' => 470,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 2 gang power switch for appliance control.',
+                'short_description' => 'Fiona brand 2 gang power switch for appliance control.',
             ],
             [
                 'name' => 'F3PS13A',
@@ -283,7 +283,7 @@ class ProductSeeder extends Seeder
                 'price' => 560,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 3 gang 13A power switch for heavy-duty appliances.',
+                'short_description' => 'Fiona brand 3 gang 13A power switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'F5PS',
@@ -293,7 +293,7 @@ class ProductSeeder extends Seeder
                 'price' => 715,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 5 gang power switch for multi-appliance control.',
+                'short_description' => 'Fiona brand 5 gang power switch for multi-appliance control.',
             ],
             [
                 'name' => 'FDBS',
@@ -303,7 +303,7 @@ class ProductSeeder extends Seeder
                 'price' => 485,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand double pole switch for complete circuit isolation.',
+                'short_description' => 'Fiona brand double pole switch for complete circuit isolation.',
             ],
             [
                 'name' => 'F3PRS',
@@ -313,7 +313,7 @@ class ProductSeeder extends Seeder
                 'price' => 635,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 3 gang push button switch for momentary contact applications.',
+                'short_description' => 'Fiona brand 3 gang push button switch for momentary contact applications.',
             ],
             [
                 'name' => 'FTVS',
@@ -323,7 +323,7 @@ class ProductSeeder extends Seeder
                 'price' => 575,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand TV/antenna switch for signal routing.',
+                'short_description' => 'Fiona brand TV/antenna switch for signal routing.',
             ],
             [
                 'name' => 'FTS',
@@ -333,7 +333,7 @@ class ProductSeeder extends Seeder
                 'price' => 575,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand telephone/communication line switch.',
+                'short_description' => 'Fiona brand telephone/communication line switch.',
             ],
             [
                 'name' => 'FDPS20A',
@@ -343,7 +343,7 @@ class ProductSeeder extends Seeder
                 'price' => 850,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 20A double pole switch for high-current appliances.',
+                'short_description' => 'Fiona brand 20A double pole switch for high-current appliances.',
             ],
             [
                 'name' => 'FDPS45A',
@@ -353,7 +353,7 @@ class ProductSeeder extends Seeder
                 'price' => 1030,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 45A double pole switch for heavy-duty appliances.',
+                'short_description' => 'Fiona brand 45A double pole switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'FFR',
@@ -363,7 +363,7 @@ class ProductSeeder extends Seeder
                 'price' => 915,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand fan speed regulator for smooth fan control.',
+                'short_description' => 'Fiona brand fan speed regulator for smooth fan control.',
             ],
             [
                 'name' => 'FFRS',
@@ -373,7 +373,7 @@ class ProductSeeder extends Seeder
                 'price' => 915,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand fan regulator with integrated on/off switch.',
+                'short_description' => 'Fiona brand fan regulator with integrated on/off switch.',
             ],
             [
                 'name' => 'FDS',
@@ -383,7 +383,7 @@ class ProductSeeder extends Seeder
                 'price' => 625,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand dimmer switch for adjustable lighting levels.',
+                'short_description' => 'Fiona brand dimmer switch for adjustable lighting levels.',
             ],
             [
                 'name' => 'FBP',
@@ -393,7 +393,7 @@ class ProductSeeder extends Seeder
                 'price' => 188,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand bell push button for doorbell applications.',
+                'short_description' => 'Fiona brand bell push button for doorbell applications.',
             ],
             [
                 'name' => 'F5PS-USB',
@@ -403,7 +403,7 @@ class ProductSeeder extends Seeder
                 'price' => 1125,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Fiona brand 5 gang power switch with integrated USB charging ports.',
+                'short_description' => 'Fiona brand 5 gang power switch with integrated USB charging ports.',
             ],
             [
                 'name' => 'P1GS1',
@@ -413,7 +413,7 @@ class ProductSeeder extends Seeder
                 'price' => 203,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 1 gang 1 way switch for basic lighting control.',
+                'short_description' => 'Penta brand 1 gang 1 way switch for basic lighting control.',
             ],
             [
                 'name' => 'P1GS2',
@@ -423,7 +423,7 @@ class ProductSeeder extends Seeder
                 'price' => 320,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Penta brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'P2GS1',
@@ -433,7 +433,7 @@ class ProductSeeder extends Seeder
                 'price' => 385,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Penta brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'P2GS2',
@@ -443,7 +443,7 @@ class ProductSeeder extends Seeder
                 'price' => 470,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Penta brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'P3GS1',
@@ -453,7 +453,7 @@ class ProductSeeder extends Seeder
                 'price' => 480,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Penta brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'P4GS1',
@@ -463,7 +463,7 @@ class ProductSeeder extends Seeder
                 'price' => 575,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 4 gang 1 way switch for centralized control of four lighting circuits.',
+                'short_description' => 'Penta brand 4 gang 1 way switch for centralized control of four lighting circuits.',
             ],
             [
                 'name' => 'P2PS',
@@ -473,7 +473,7 @@ class ProductSeeder extends Seeder
                 'price' => 480,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 2 gang power switch for appliance control.',
+                'short_description' => 'Penta brand 2 gang power switch for appliance control.',
             ],
             [
                 'name' => 'P3PS13A',
@@ -483,7 +483,7 @@ class ProductSeeder extends Seeder
                 'price' => 575,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 3 gang 13A power switch for heavy-duty appliances.',
+                'short_description' => 'Penta brand 3 gang 13A power switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'P8PS',
@@ -493,7 +493,7 @@ class ProductSeeder extends Seeder
                 'price' => 730,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 8 gang power switch for extensive multi-appliance control.',
+                'short_description' => 'Penta brand 8 gang power switch for extensive multi-appliance control.',
             ],
             [
                 'name' => 'PDBS',
@@ -503,7 +503,7 @@ class ProductSeeder extends Seeder
                 'price' => 500,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand double pole switch for complete circuit isolation.',
+                'short_description' => 'Penta brand double pole switch for complete circuit isolation.',
             ],
             [
                 'name' => 'P3PRS15A',
@@ -513,7 +513,7 @@ class ProductSeeder extends Seeder
                 'price' => 670,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 3 gang 15A push button switch for momentary heavy-load control.',
+                'short_description' => 'Penta brand 3 gang 15A push button switch for momentary heavy-load control.',
             ],
             [
                 'name' => 'PTVS',
@@ -523,7 +523,7 @@ class ProductSeeder extends Seeder
                 'price' => 585,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand TV/antenna switch for signal routing.',
+                'short_description' => 'Penta brand TV/antenna switch for signal routing.',
             ],
             [
                 'name' => 'PTS',
@@ -533,7 +533,7 @@ class ProductSeeder extends Seeder
                 'price' => 585,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand telephone/communication line switch.',
+                'short_description' => 'Penta brand telephone/communication line switch.',
             ],
             [
                 'name' => 'PDPS20A',
@@ -543,7 +543,7 @@ class ProductSeeder extends Seeder
                 'price' => 860,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 20A double pole switch for high-current appliances.',
+                'short_description' => 'Penta brand 20A double pole switch for high-current appliances.',
             ],
             [
                 'name' => 'PDPS45A',
@@ -553,7 +553,7 @@ class ProductSeeder extends Seeder
                 'price' => 1045,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand 45A double pole switch for heavy-duty appliances.',
+                'short_description' => 'Penta brand 45A double pole switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'PFR',
@@ -563,7 +563,7 @@ class ProductSeeder extends Seeder
                 'price' => 925,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand fan speed regulator for smooth fan control.',
+                'short_description' => 'Penta brand fan speed regulator for smooth fan control.',
             ],
             [
                 'name' => 'PFRS',
@@ -573,7 +573,7 @@ class ProductSeeder extends Seeder
                 'price' => 940,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand fan regulator with integrated on/off switch.',
+                'short_description' => 'Penta brand fan regulator with integrated on/off switch.',
             ],
             [
                 'name' => 'PDS',
@@ -583,7 +583,7 @@ class ProductSeeder extends Seeder
                 'price' => 640,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand dimmer switch for adjustable lighting levels.',
+                'short_description' => 'Penta brand dimmer switch for adjustable lighting levels.',
             ],
             [
                 'name' => 'PBP',
@@ -593,7 +593,7 @@ class ProductSeeder extends Seeder
                 'price' => 198,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Penta brand bell push button for doorbell applications.',
+                'short_description' => 'Penta brand bell push button for doorbell applications.',
             ],
             [
                 'name' => 'GW1GS1',
@@ -603,7 +603,7 @@ class ProductSeeder extends Seeder
                 'price' => 188,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 1 gang 1 way switch for basic lighting control.',
+                'short_description' => 'Goldwin brand 1 gang 1 way switch for basic lighting control.',
             ],
             [
                 'name' => 'GW1GS2',
@@ -613,7 +613,7 @@ class ProductSeeder extends Seeder
                 'price' => 270,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Goldwin brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'GW2GS1',
@@ -623,7 +623,7 @@ class ProductSeeder extends Seeder
                 'price' => 285,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Goldwin brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'GW2GS2',
@@ -633,7 +633,7 @@ class ProductSeeder extends Seeder
                 'price' => 335,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Goldwin brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'GW3GS1',
@@ -643,7 +643,7 @@ class ProductSeeder extends Seeder
                 'price' => 355,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Goldwin brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'GW4GS1',
@@ -653,7 +653,7 @@ class ProductSeeder extends Seeder
                 'price' => 415,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 4 gang 1 way switch for centralized control of four lighting circuits.',
+                'short_description' => 'Goldwin brand 4 gang 1 way switch for centralized control of four lighting circuits.',
             ],
             [
                 'name' => 'GW2PS',
@@ -663,7 +663,7 @@ class ProductSeeder extends Seeder
                 'price' => 695,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 2 gang power switch for appliance control.',
+                'short_description' => 'Goldwin brand 2 gang power switch for appliance control.',
             ],
             [
                 'name' => 'GW3PS13A',
@@ -673,7 +673,7 @@ class ProductSeeder extends Seeder
                 'price' => 465,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 3 gang 13A power switch for heavy-duty appliances.',
+                'short_description' => 'Goldwin brand 3 gang 13A power switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'GW8PS',
@@ -683,7 +683,7 @@ class ProductSeeder extends Seeder
                 'price' => 485,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 8 gang power switch for extensive multi-appliance control.',
+                'short_description' => 'Goldwin brand 8 gang power switch for extensive multi-appliance control.',
             ],
             [
                 'name' => 'GWDBS',
@@ -693,7 +693,7 @@ class ProductSeeder extends Seeder
                 'price' => 215,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand double pole switch for complete circuit isolation.',
+                'short_description' => 'Goldwin brand double pole switch for complete circuit isolation.',
             ],
             [
                 'name' => 'GW3PRS15A',
@@ -703,7 +703,7 @@ class ProductSeeder extends Seeder
                 'price' => 570,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 3 gang 15A push button switch for momentary heavy-load control.',
+                'short_description' => 'Goldwin brand 3 gang 15A push button switch for momentary heavy-load control.',
             ],
             [
                 'name' => 'GWTVS',
@@ -713,7 +713,7 @@ class ProductSeeder extends Seeder
                 'price' => 400,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand TV/antenna switch for signal routing.',
+                'short_description' => 'Goldwin brand TV/antenna switch for signal routing.',
             ],
             [
                 'name' => 'GWTS',
@@ -723,7 +723,7 @@ class ProductSeeder extends Seeder
                 'price' => 400,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand telephone/communication line switch.',
+                'short_description' => 'Goldwin brand telephone/communication line switch.',
             ],
             [
                 'name' => 'GWDPS20A',
@@ -733,7 +733,7 @@ class ProductSeeder extends Seeder
                 'price' => 700,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 20A double pole switch for high-current appliances.',
+                'short_description' => 'Goldwin brand 20A double pole switch for high-current appliances.',
             ],
             [
                 'name' => 'GWDPS45A',
@@ -743,7 +743,7 @@ class ProductSeeder extends Seeder
                 'price' => 950,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand 45A double pole switch for heavy-duty appliances.',
+                'short_description' => 'Goldwin brand 45A double pole switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'GWFR',
@@ -753,7 +753,7 @@ class ProductSeeder extends Seeder
                 'price' => 735,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand fan speed regulator for smooth fan control.',
+                'short_description' => 'Goldwin brand fan speed regulator for smooth fan control.',
             ],
             [
                 'name' => 'GWDS',
@@ -763,7 +763,7 @@ class ProductSeeder extends Seeder
                 'price' => 445,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Goldwin brand dimmer switch for adjustable lighting levels.',
+                'short_description' => 'Goldwin brand dimmer switch for adjustable lighting levels.',
             ],
             [
                 'name' => 'CR1GS1',
@@ -773,7 +773,7 @@ class ProductSeeder extends Seeder
                 'price' => 800,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Crystal brand 1 gang 1 way premium switch with elegant transparent design.',
+                'short_description' => 'Crystal brand 1 gang 1 way premium switch with elegant transparent design.',
             ],
             [
                 'name' => 'CR1GS2',
@@ -783,7 +783,7 @@ class ProductSeeder extends Seeder
                 'price' => 980,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Crystal brand 1 gang 2 way premium switch with transparent finish for multi-location control.',
+                'short_description' => 'Crystal brand 1 gang 2 way premium switch with transparent finish for multi-location control.',
             ],
             [
                 'name' => 'CR2GS1',
@@ -793,7 +793,7 @@ class ProductSeeder extends Seeder
                 'price' => 1140,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Crystal brand 2 gang 1 way premium switch with crystal-clear design for dual circuit control.',
+                'short_description' => 'Crystal brand 2 gang 1 way premium switch with crystal-clear design for dual circuit control.',
             ],
             [
                 'name' => 'FL1GS1',
@@ -803,7 +803,7 @@ class ProductSeeder extends Seeder
                 'price' => 188,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Flow brand 1 gang 1 way switch with sleek contemporary design for basic lighting control.',
+                'short_description' => 'Flow brand 1 gang 1 way switch with sleek contemporary design for basic lighting control.',
             ],
             [
                 'name' => 'FL1GS2',
@@ -813,7 +813,7 @@ class ProductSeeder extends Seeder
                 'price' => 305,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Flow brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Flow brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'FL2GS1',
@@ -823,7 +823,7 @@ class ProductSeeder extends Seeder
                 'price' => 361,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Flow brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Flow brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'FL2GS2',
@@ -833,7 +833,7 @@ class ProductSeeder extends Seeder
                 'price' => 440,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Flow brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Flow brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'FL3GS1',
@@ -843,7 +843,7 @@ class ProductSeeder extends Seeder
                 'price' => 555,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Flow brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Flow brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'CN1GS1',
@@ -853,7 +853,7 @@ class ProductSeeder extends Seeder
                 'price' => 210,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 1 gang 1 way switch with robust industrial design for basic lighting control.',
+                'short_description' => 'Cannon brand 1 gang 1 way switch with robust industrial design for basic lighting control.',
             ],
             [
                 'name' => 'CN1GS2',
@@ -863,7 +863,7 @@ class ProductSeeder extends Seeder
                 'price' => 325,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 1 gang 2 way switch for multi-location lighting control.',
+                'short_description' => 'Cannon brand 1 gang 2 way switch for multi-location lighting control.',
             ],
             [
                 'name' => 'CN2GS1',
@@ -873,7 +873,7 @@ class ProductSeeder extends Seeder
                 'price' => 385,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 2 gang 1 way switch for independent control of two circuits.',
+                'short_description' => 'Cannon brand 2 gang 1 way switch for independent control of two circuits.',
             ],
             [
                 'name' => 'CN2GS2',
@@ -883,7 +883,7 @@ class ProductSeeder extends Seeder
                 'price' => 475,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 2 gang 2 way switch for dual circuit control from multiple locations.',
+                'short_description' => 'Cannon brand 2 gang 2 way switch for dual circuit control from multiple locations.',
             ],
             [
                 'name' => 'CN3GS1',
@@ -893,7 +893,7 @@ class ProductSeeder extends Seeder
                 'price' => 490,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 3 gang 1 way switch for controlling three separate lighting circuits.',
+                'short_description' => 'Cannon brand 3 gang 1 way switch for controlling three separate lighting circuits.',
             ],
             [
                 'name' => 'CN4GS1',
@@ -903,7 +903,7 @@ class ProductSeeder extends Seeder
                 'price' => 585,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 4 gang 1 way switch for centralized control of four lighting circuits.',
+                'short_description' => 'Cannon brand 4 gang 1 way switch for centralized control of four lighting circuits.',
             ],
             [
                 'name' => 'CN2PS',
@@ -913,7 +913,7 @@ class ProductSeeder extends Seeder
                 'price' => 485,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 2 gang power switch for appliance control.',
+                'short_description' => 'Cannon brand 2 gang power switch for appliance control.',
             ],
             [
                 'name' => 'CN3PS13A',
@@ -923,7 +923,7 @@ class ProductSeeder extends Seeder
                 'price' => 575,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 3 gang 13A power switch for heavy-duty appliances.',
+                'short_description' => 'Cannon brand 3 gang 13A power switch for heavy-duty appliances.',
             ],
             [
                 'name' => 'CN5PS',
@@ -933,7 +933,7 @@ class ProductSeeder extends Seeder
                 'price' => 735,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 5 gang power switch for multi-appliance control.',
+                'short_description' => 'Cannon brand 5 gang power switch for multi-appliance control.',
             ],
             [
                 'name' => 'CNDBS',
@@ -943,7 +943,7 @@ class ProductSeeder extends Seeder
                 'price' => 500,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand double pole switch for complete circuit isolation.',
+                'short_description' => 'Cannon brand double pole switch for complete circuit isolation.',
             ],
             [
                 'name' => 'CN3PRS15A',
@@ -953,7 +953,7 @@ class ProductSeeder extends Seeder
                 'price' => 675,
                 'purchase_price' => 0,
                 'stock_alert' => 10,
-                'description' => 'Cannon brand 3 gang 15A push button switch for momentary heavy-load control.',
+                'short_description' => 'Cannon brand 3 gang 15A push button switch for momentary heavy-load control.',
             ],
 
 
