@@ -80,6 +80,7 @@
   /* ── Grid helpers ────────────────────────────── */
   .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
   /* ── Field ───────────────────────────────────── */
   .f-label {
@@ -112,7 +113,12 @@
   }
 
   .f-ctrl::placeholder { color: var(--text-muted); opacity: .7; }
-  textarea.f-ctrl { resize: vertical; min-height: 88px; }
+  textarea.f-ctrl {
+    resize: none;
+    min-height: 90px;
+    overflow-y: hidden;
+    line-height: 1.5;
+  }
   .f-err { color: #ef4444; font-size: .72rem; margin-top: 4px; }
 
   /* ── Toggle switch (Featured) ────────────────── */
@@ -384,8 +390,12 @@
     margin-top: 4px;
   }
 
+  @media (max-width: 768px) {
+    .g4 { grid-template-columns: 1fr 1fr; }
+  }
+
   @media (max-width: 620px) {
-    .g2, .g3 { grid-template-columns: 1fr; }
+    .g2, .g3, .g4 { grid-template-columns: 1fr; }
     .pc-footer { flex-direction: column-reverse; }
   }
 </style>
@@ -447,6 +457,21 @@
             @error('supplier_id')<div class="f-err">{{ $message }}</div>@enderror
           </div>
         </div>
+        <div style="margin-top:14px;">
+          <label class="f-label">
+            Barcode <small style="font-weight:400; color:var(--text-muted);">(Scan supplier barcode or click generate)</small>
+          </label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="position:relative; flex:1;">
+              <i class="fas fa-barcode" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:15px; pointer-events:none;"></i>
+              <input class="f-ctrl" type="text" name="barcode" id="barcodeInput" value="{{ old('barcode', $product->barcode) }}" placeholder="Scan with barcode scanner or enter code" style="padding-left:36px; font-family:monospace; letter-spacing:.05em;">
+            </div>
+            <button type="button" class="btn-smart btn-gray" id="btnGenBarcode" title="Generate new EAN-13 barcode" style="white-space:nowrap; padding:9px 14px; font-size:0.8rem;">
+              <i class="fas fa-magic"></i> Auto Generate
+            </button>
+          </div>
+          @error('barcode')<div class="f-err">{{ $message }}</div>@enderror
+        </div>
       </div>
     </div>
 
@@ -467,6 +492,29 @@
             <label class="f-label">Stock Alert Quantity <span class="f-required">*</span></label>
             <input class="f-ctrl" type="number" min="0" name="stock_alert" value="{{ old('stock_alert', $product->stock_alert) }}" required>
             @error('stock_alert')<div class="f-err">{{ $message }}</div>@enderror
+          </div>
+        </div>
+
+        <div class="g4" style="margin-bottom:14px;">
+          <div>
+            <label class="f-label">Weight <small style="font-weight:400; color:var(--text-muted);">(kg/g)</small></label>
+            <input class="f-ctrl" type="number" step="0.01" min="0" name="weight" value="{{ old('weight', $product->weight) }}" placeholder="0.00">
+            @error('weight')<div class="f-err">{{ $message }}</div>@enderror
+          </div>
+          <div>
+            <label class="f-label">Length <small style="font-weight:400; color:var(--text-muted);">(cm)</small></label>
+            <input class="f-ctrl" type="number" step="0.01" min="0" name="length" value="{{ old('length', $product->length) }}" placeholder="0.00">
+            @error('length')<div class="f-err">{{ $message }}</div>@enderror
+          </div>
+          <div>
+            <label class="f-label">Width <small style="font-weight:400; color:var(--text-muted);">(cm)</small></label>
+            <input class="f-ctrl" type="number" step="0.01" min="0" name="width" value="{{ old('width', $product->width) }}" placeholder="0.00">
+            @error('width')<div class="f-err">{{ $message }}</div>@enderror
+          </div>
+          <div>
+            <label class="f-label">Height <small style="font-weight:400; color:var(--text-muted);">(cm)</small></label>
+            <input class="f-ctrl" type="number" step="0.01" min="0" name="height" value="{{ old('height', $product->height) }}" placeholder="0.00">
+            @error('height')<div class="f-err">{{ $message }}</div>@enderror
           </div>
         </div>
 
@@ -692,6 +740,45 @@
 
       galleryPreview.appendChild(wrap);
     });
+  }
+
+  /* ── Barcode Generator Helper ───────────────── */
+  const barcodeInput  = document.getElementById('barcodeInput');
+  const btnGenBarcode = document.getElementById('btnGenBarcode');
+
+  if (btnGenBarcode && barcodeInput) {
+    btnGenBarcode.addEventListener('click', function () {
+      const prefix = '200';
+      const randomBody = Math.floor(100000000 + Math.random() * 900000000).toString();
+      const raw12 = prefix + randomBody;
+
+      // Calculate GS1 EAN-13 check digit
+      let sum = 0;
+      for (let i = 0; i < 12; i++) {
+        const weight = (i % 2 === 0) ? 1 : 3;
+        sum += parseInt(raw12[i], 10) * weight;
+      }
+      const remainder = sum % 10;
+      const checksum = (remainder === 0) ? 0 : 10 - remainder;
+
+      barcodeInput.value = raw12 + checksum;
+      barcodeInput.focus();
+    });
+  }
+
+  /* ── Auto-expanding Long Description ────────── */
+  const longDesc = document.querySelector('textarea[name="long_description"]');
+  if (longDesc) {
+    const adjustHeight = () => {
+      longDesc.style.height = 'auto';
+      longDesc.style.height = Math.max(90, longDesc.scrollHeight) + 'px';
+    };
+
+    longDesc.addEventListener('input', adjustHeight);
+    // Adjust initially for existing long description
+    if (longDesc.value) {
+      adjustHeight();
+    }
   }
 })();
 </script>

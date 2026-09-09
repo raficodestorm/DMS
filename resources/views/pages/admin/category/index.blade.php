@@ -6,11 +6,14 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <h2 class="mb-0">All Categories</h2>
-            <p class="text-muted mb-0">Manage all registered Categories</p>
+            <p class="text-muted mb-0">Manage and organize product categories</p>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
-                <i class="fas fa-tags me-1"></i> Total Categories: <span id="totalCategoryCount">0</span>
+                <i class="fas fa-tags me-1"></i> Total Categories: <span id="totalCategoryCount">{{ $totalCategories ?? 0 }}</span>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.1); color: #d97706; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.28);">
+                <i class="fas fa-star me-1" style="color: #f59e0b;"></i> Featured: <span id="totalFeaturedCount">{{ $totalFeatured ?? 0 }}</span>
             </div>
             <a href="{{ route('admin.categories.create') }}" class="btn-smart btn-blue">
                 <i class="fas fa-plus me-1"></i> Add New Category
@@ -28,7 +31,7 @@
             <div>
                 <label>Search</label>
                 <div style="position: relative;">
-                    <input type="text" id="searchInput" class="input-form" placeholder="Search Category Name or Description..." value="{{ request('search') }}" style="padding-left: 32px;">
+                    <input type="text" id="searchInput" class="input-form" placeholder="Search by Category Name or Description..." value="{{ request('search') }}" style="padding-left: 32px;">
                     <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
                 </div>
             </div>
@@ -48,14 +51,16 @@
             <thead>
                 <tr>
                     <th>S.No</th>
+                    <th>Image</th>
                     <th>Category Name</th>
                     <th>Description</th>
+                    <th>Products</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody class="desktop-table" id="categoryTable">
                 <tr>
-                    <td colspan="4" class="text-center py-5 text-muted">
+                    <td colspan="6" class="text-center py-5 text-muted">
                         <i class="fas fa-filter me-1" style="color: var(--primary);"></i> Select filters or click the reset button to view categories.
                     </td>
                 </tr>
@@ -77,6 +82,57 @@
 
 @push('scripts')
 <script>
+window.toggleCategoryFeatured = function(btn) {
+    const url = btn.dataset.url;
+    if (!url) return;
+
+    const icon = btn.querySelector('i');
+    const origIconClass = icon ? icon.className : '';
+    if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
+    btn.disabled = true;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            if (data.is_featured) {
+                btn.classList.add('is-featured');
+                if (icon) icon.className = 'fa-solid fa-star';
+                btn.title = 'Featured (Click to unfeature)';
+            } else {
+                btn.classList.remove('is-featured');
+                if (icon) icon.className = 'fa-regular fa-star';
+                btn.title = 'Mark as Featured';
+            }
+            if (data.total_featured !== undefined) {
+                const totalFeaturedEl = document.getElementById('totalFeaturedCount');
+                if (totalFeaturedEl) totalFeaturedEl.innerText = data.total_featured;
+            }
+        } else {
+            if (icon) icon.className = origIconClass;
+            alert(data.message || 'Failed to update featured status.');
+        }
+    })
+    .catch(err => {
+        console.error('Toggle featured error:', err);
+        if (icon) icon.className = origIconClass;
+        alert('Failed to update featured status. Please try again.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+    });
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput       = document.getElementById('searchInput');
     const resetBtn          = document.getElementById('resetBtn');
@@ -84,13 +140,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const categoryTable     = document.getElementById('categoryTable');
     const categoryMobile    = document.getElementById('categoryMobile');
     const totalCountEl      = document.getElementById('totalCategoryCount');
+    const totalFeaturedEl   = document.getElementById('totalFeaturedCount');
     const paginationWrapper = document.getElementById('paginationWrapper');
 
     function showLoadingState() {
         if (categoryTable) {
             categoryTable.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">
+                    <td colspan="6" class="text-center py-4 text-muted">
                         <i class="fas fa-spinner fa-spin me-2"></i> Loading categories...
                     </td>
                 </tr>`;
@@ -107,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (categoryTable) {
             categoryTable.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-danger">
+                    <td colspan="6" class="text-center py-4 text-danger">
                         <i class="fas fa-exclamation-circle me-1"></i> Failed to load category data. Please try again.
                     </td>
                 </tr>`;
@@ -145,6 +202,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (categoryMobile) categoryMobile.innerHTML = data.mobile;
             if (totalCountEl && data.total !== undefined) {
                 totalCountEl.innerText = data.total;
+            }
+            if (totalFeaturedEl && data.total_featured !== undefined) {
+                totalFeaturedEl.innerText = data.total_featured;
             }
             if (paginationWrapper && data.pagination !== undefined) {
                 paginationWrapper.innerHTML = data.pagination;

@@ -6,11 +6,38 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierTransactionController;
+use App\Models\Category;
+use App\Models\Deduction;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $featuredCategories = Category::where('is_featured', true)
+        ->withCount('products')
+        ->orderBy('name', 'asc')
+        ->get();
+
+    $featuredProducts = Product::where('is_featured', true)
+        ->where('status', 1)
+        ->with(['category', 'supplier'])
+        ->latest()
+        ->take(16)
+        ->get();
+
+    $bestSellingProducts = Product::where('status', 1)
+        ->withSum('orderItems', 'quantity')
+        ->with(['category', 'supplier'])
+        ->orderByDesc('order_items_sum_quantity')
+        ->latest()
+        ->take(8)
+        ->get();
+
+    $customerDeduction = (float) (Deduction::where('type', 'main')->value('customer_deduction')
+        ?? Deduction::value('customer_deduction')
+        ?? 0);
+
+    return view('welcome', compact('featuredCategories', 'featuredProducts', 'bestSellingProducts', 'customerDeduction'));
 })->name('home-page');
 Route::get('/about', function () {
     return view('about');

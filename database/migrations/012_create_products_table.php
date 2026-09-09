@@ -15,11 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('sku')->unique();
+            $table->string('barcode', 100)->nullable()->unique();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
             $table->decimal('price', 10, 2);
             $table->decimal('purchase_price', 10, 2)->nullable();
             $table->integer('stock_alert')->default(0);
+            $table->decimal('weight', 10, 2)->nullable();
+            $table->decimal('length', 10, 2)->nullable();
+            $table->decimal('height', 10, 2)->nullable();
+            $table->decimal('width', 10, 2)->nullable();
             $table->string('short_description')->nullable();
             $table->text('long_description')->nullable();
             $table->boolean('status')->default(1);

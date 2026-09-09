@@ -962,6 +962,13 @@ COMMON BADGE STYLE
    align-items: end;
  }
 
+ .smart-filter-grid-4 {
+   display: grid;
+   grid-template-columns: 1.8fr 1.2fr 1fr 36px;
+   gap: 8px;
+   align-items: end;
+ }
+
  .smart-filter-grid-3 {
    display: grid;
    grid-template-columns: 2fr 1.2fr 36px;
@@ -980,6 +987,7 @@ COMMON BADGE STYLE
  .smart-filter-grid-7 .input-form,
  .smart-filter-grid-6 .input-form,
  .smart-filter-grid-5 .input-form,
+ .smart-filter-grid-4 .input-form,
  .smart-filter-grid-3 .input-form,
  .smart-filter-grid-2 .input-form {
    margin-bottom: 0;
@@ -993,6 +1001,7 @@ COMMON BADGE STYLE
  .smart-filter-grid-7 input[type="date"].input-form,
  .smart-filter-grid-6 input[type="date"].input-form,
  .smart-filter-grid-5 input[type="date"].input-form,
+ .smart-filter-grid-4 input[type="date"].input-form,
  .smart-filter-grid-3 input[type="date"].input-form,
  .smart-filter-grid-2 input[type="date"].input-form {
    padding: 4px 4px;
@@ -1003,6 +1012,7 @@ COMMON BADGE STYLE
  .smart-filter-grid-7 label,
  .smart-filter-grid-6 label,
  .smart-filter-grid-5 label,
+ .smart-filter-grid-4 label,
  .smart-filter-grid-3 label,
  .smart-filter-grid-2 label {
    font-size: 0.75rem;
@@ -1019,6 +1029,7 @@ COMMON BADGE STYLE
    .smart-filter-grid-7,
    .smart-filter-grid-6,
    .smart-filter-grid-5,
+   .smart-filter-grid-4,
    .smart-filter-grid-3 {
      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
    }

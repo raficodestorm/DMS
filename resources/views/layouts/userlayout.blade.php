@@ -33,6 +33,8 @@
   @vite(['resources/css/app.css','resources/js/app.js'])
 
   <link rel="stylesheet" href="{{ asset('./css/user/userstyle.css') }}">
+
+  @if(request()->is('/') || request()->routeIs('home-page'))
   <style>
     #preloader {
       position: fixed;
@@ -41,11 +43,9 @@
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      /* background: #131518ff; */
       background: #f9fcfeff;
       z-index: 99999;
-      /* Ensure it is above everything */
-      transition: opacity 0.6s ease, visibility 0.6s;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
 
     .loader-logo {
@@ -78,13 +78,10 @@
     }
 
     @keyframes logoPulse {
-
-      0%,
-      100% {
+      0%, 100% {
         transform: scale(1);
         opacity: 0.8;
       }
-
       50% {
         transform: scale(1.1);
         opacity: 1;
@@ -92,34 +89,27 @@
     }
 
     @keyframes dotJump {
-
-      0%,
-      80%,
-      100% {
+      0%, 80%, 100% {
         transform: scale(0);
         opacity: 0.3;
       }
-
       40% {
         transform: scale(1);
         opacity: 1;
       }
     }
 
-    /* 3. Exit Animation Logic */
     body.loaded #preloader {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
-
-    body.loaded {
-      opacity: 1;
-    }
   </style>
+  @endif
 </head>
 
 <body>
+  @if(request()->is('/') || request()->routeIs('home-page'))
   <div id="preloader">
     <img src="{{ asset('image/relectric-logo.png') }}" class="loader-logo" alt="R ELECTRIC">
     <div class="dots-container">
@@ -128,6 +118,7 @@
       <div class="dot"></div>
     </div>
   </div>
+  @endif
 
   @include('components.navbar')
   @include('components.login-modal')
@@ -144,14 +135,16 @@
   </script>
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  @if(request()->is('/') || request()->routeIs('home-page'))
   <script>
     window.addEventListener("load", () => {
-      // Artificial delay for demonstration
       setTimeout(() => {
         document.body.classList.add("loaded");
-      }, 2500);
+      }, 2000);
     });
   </script>
+  @endif
 
 </body>
 

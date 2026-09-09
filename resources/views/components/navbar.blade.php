@@ -15,10 +15,7 @@
           <a class="nav-link  px-3" href="{{ route('home-page') }}">Home</a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link  px-3" href="{{ route('about') }}">About</a>
-        </li>
-
+        
         <li class="nav-item dropdown-custom">
           <a class="nav-link px-3 dropdown-toggle-custom" href="javascript:void(0)">
             Categories
@@ -32,9 +29,19 @@
           </ul>
         </li>
 
+         <li class="nav-item">
+          <a class="nav-link  px-3" href="#">Shop</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link  px-3" href="{{ route('about') }}">About</a>
+        </li>
+
+ 
         <li class="nav-item">
           <a class="nav-link  px-3" href="{{ route('contact') }}">Contact</a>
         </li>
+        
         <li class="nav-item">
           <a class="btn-login" href="javascript:void(0)" onclick="openLoginModal(event)">
             <i class="fas fa-user-circle" style="font-size: 32px; color: var(--primary);"></i>

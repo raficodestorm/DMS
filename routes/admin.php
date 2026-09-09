@@ -44,6 +44,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/customers/index/data', [CustomerController::class, 'fetchCustomersIndexData'])->name('customers.index.data');
   Route::resource('customers', CustomerController::class);
   Route::get('/categories/index/data', [CategoryController::class, 'fetchCategoriesIndexData'])->name('categories.index.data');
+  Route::post('/categories/{category}/toggle-featured', [CategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
   Route::resource('categories', CategoryController::class);
   Route::get('/company_costs/index/data', [CompanyCostController::class, 'fetchCompanyCostsIndexData'])->name('company_costs.index.data');
   Route::resource('company_costs', CompanyCostController::class);
@@ -53,6 +54,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/costs-branch/{id}', [CostDashboardController::class, 'branchCosts'])->name('costs.branch');
 
   Route::get('/products/index/data', [ProductController::class, 'fetchProductsIndexData'])->name('products.index.data');
+  Route::get('/products/export/excel', [ProductController::class, 'exportExcel'])->name('products.export.excel');
+  Route::post('/products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
   Route::resource('products', ProductController::class);
   Route::resource('offers', OfferController::class);
   Route::resource('deductions', DeductionController::class);

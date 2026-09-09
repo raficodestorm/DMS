@@ -161,112 +161,269 @@ GLOBAL
 
 
   /* ======================
-CATEGORY
-====================== */
+     CATEGORY
+  ====================== */
 
   .category-card {
     background: var(--section-bg);
-    border-radius: 14px;
     border: 1px solid var(--border-color);
-    padding: 30px;
+    border-radius: 16px;
+    padding: 24px 16px;
     text-align: center;
-    transition: .3s;
-    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    position: relative;
   }
 
   .category-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    transform: translateY(-6px);
+    border-color: var(--primary);
+    box-shadow: 0 12px 24px rgba(49, 49, 255, 0.08);
   }
 
-  .category-icon {
-    width: 60px;
-    height: 60px;
+  .category-img-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
     background: var(--primary-soft);
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: auto;
     margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+  }
+
+  .category-card:hover .category-img-wrapper {
+    transform: scale(1.08);
+  }
+
+  .category-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .category-img-wrapper i {
     font-size: 24px;
     color: var(--primary);
   }
 
-  .category-card h6 {
-    margin: 0;
+  .category-title {
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-main);
+    margin: 0 0 4px 0;
+    transition: color 0.2s ease;
+  }
+
+  .category-card:hover .category-title {
+    color: var(--primary);
+  }
+
+  .category-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin: 0;
   }
 
 
-  .about-section {
-    padding: 70px 0;
-    background: var(--background);
-  }
+  /* ======================
+     WHOLESALE & RETAIL PROMO BANNER
+  ====================== */
 
-  .about-card {
+  .promo-banner-card {
     background: var(--section-bg);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 40px;
+    border-radius: 20px;
+    padding: 34px 28px;
     height: 100%;
-    transition: .3s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
 
-  .about-card:hover {
+  .promo-banner-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+    border-color: var(--primary);
   }
 
-  .about-title {
+  .promo-banner-card::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    top: -80px;
+    right: -80px;
+    filter: blur(60px);
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  .promo-banner-card.b2b::before {
+    background: var(--primary);
+  }
+
+  .promo-banner-card.b2c::before {
+    background: var(--accent);
+  }
+
+  .promo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    margin-bottom: 18px;
+  }
+
+  .promo-badge.b2b {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid rgba(29, 29, 255, 0.2);
+  }
+
+  .promo-badge.b2c {
+    background: rgba(158, 0, 220, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(158, 0, 220, 0.2);
+  }
+
+  .promo-title {
+    font-size: 22px;
     font-weight: 700;
     color: var(--text-main);
-    margin-bottom: 15px;
-  }
-
-  .about-text {
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-
-  .about-info {
-    margin-top: 20px;
-  }
-
-  .about-info div {
     margin-bottom: 10px;
-    color: var(--text-main);
-    font-weight: 500;
+    line-height: 1.35;
   }
 
-  .about-icon {
-    color: var(--primary);
-    margin-right: 8px;
+  .promo-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
   }
 
-  .about-image {
+  .promo-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 26px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .promo-features li {
     display: flex;
     align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+
+  .promo-feature-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    height: 80%;
+    font-size: 11px;
+    flex-shrink: 0;
   }
 
-  .about-image img {
-    max-width: 60%;
-    border-radius: 14px;
+  .promo-banner-card.b2b .promo-feature-icon {
+    background: var(--primary-soft);
+    color: var(--primary);
   }
 
-  @media(max-width:768px) {
+  .promo-banner-card.b2c .promo-feature-icon {
+    background: rgba(158, 0, 220, 0.1);
+    color: var(--accent);
+  }
 
-    .about-card {
-      padding: 25px;
+  .promo-actions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-promo-primary {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .btn-promo-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-2px);
+    color: #ffffff;
+  }
+
+  .btn-promo-outline {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-promo-outline:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  @media (max-width: 768px) {
+    .promo-banner-card {
+      padding: 24px 18px;
     }
-
-    .about-image img {
-      max-width: 50%;
+    .promo-title {
+      font-size: 18px;
     }
-
+    .promo-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+    .btn-promo-primary,
+    .btn-promo-outline {
+      width: 100%;
+      justify-content: center;
+    }
   }
 
   /* ======================
@@ -412,35 +569,27 @@ TRUST
 
     <h3 class="section-title">Shop By Category</h3>
 
-    <div class="row g-4">
+    <div class="row g-3 g-md-4 justify-content-center">
 
-      <div class="col-lg-3 col-6">
+      @forelse($featuredCategories ?? [] as $cat)
+      <div class="col-xl-3 col-lg-4 col-md-4 col-6">
         <div class="category-card">
-          <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
-          <h6>Lighting</h6>
+          <div class="category-img-wrapper">
+            @if(!empty($cat->image))
+              <img src="{{ asset($cat->image) }}" alt="{{ $cat->name }}">
+            @else
+              <i class="fas fa-layer-group"></i>
+            @endif
+          </div>
+          <h6 class="category-title">{{ $cat->name }}</h6>
+          <p class="category-count">{{ $cat->products_count ?? 0 }} {{ Str::plural('Product', $cat->products_count ?? 0) }}</p>
         </div>
       </div>
-
-      <div class="col-lg-3 col-6">
-        <div class="category-card">
-          <div class="category-icon"><i class="fas fa-plug"></i></div>
-          <h6>Switch & Plug</h6>
-        </div>
+      @empty
+      <div class="col-12 text-center py-4">
+        <p class="text-muted mb-0">No featured categories found.</p>
       </div>
-
-      <div class="col-lg-3 col-6">
-        <div class="category-card">
-          <div class="category-icon"><i class="fas fa-bolt"></i></div>
-          <h6>Wiring</h6>
-        </div>
-      </div>
-
-      <div class="col-lg-3 col-6">
-        <div class="category-card">
-          <div class="category-icon"><i class="fas fa-tools"></i></div>
-          <h6>Tools</h6>
-        </div>
-      </div>
+      @endforelse
 
     </div>
 
@@ -449,72 +598,136 @@ TRUST
 </section>
 
 
-<section class="about-section">
+<!-- FEATURED PRODUCTS -->
+
+<section class="section pt-0">
 
   <div class="container">
 
-    <div class="row align-items-center g-4">
+    <h3 class="section-title">Featured Products</h3>
 
-      <!-- TEXT -->
+    <div class="row g-3 g-md-4">
 
-      <div class="col-lg-6">
+      @forelse($featuredProducts ?? [] as $product)
+      <div class="col-lg-3 col-6 d-flex">
+        @include('components.product-card', ['product' => $product, 'customerDeduction' => $customerDeduction])
+      </div>
+      @empty
+      <div class="col-12 text-center py-4">
+        <p class="text-muted mb-0">No featured products available.</p>
+      </div>
+      @endforelse
 
-        <div class="about-card">
+    </div>
 
-          <h3 class="about-title">About {{ config('app.name') }}</h3>
+  </div>
 
-          <p class="about-text">
-            {{ config('app.name') }} is a trusted electrical product supplier providing both
-            <strong>wholesale and retail sales</strong>. We supply high-quality electrical
-            items including lighting, switches, wiring accessories, and professional
-            tools for homes, shops, and industrial use.
+</section>
+
+
+<!-- BEST SELLING PRODUCTS -->
+
+<section class="section pt-0">
+
+  <div class="container">
+
+    <h3 class="section-title">Best Selling Products</h3>
+
+    <div class="row g-3 g-md-4">
+
+      @forelse($bestSellingProducts ?? [] as $product)
+      <div class="col-lg-3 col-6 d-flex">
+        @include('components.product-card', ['product' => $product, 'customerDeduction' => $customerDeduction])
+      </div>
+      @empty
+      <div class="col-12 text-center py-4">
+        <p class="text-muted mb-0">No best selling products available.</p>
+      </div>
+      @endforelse
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- WHOLESALE & RETAIL ADVANTAGE SECTION -->
+
+<section class="section pt-0">
+
+  <div class="container">
+
+    <div class="row g-4">
+
+      <!-- B2B & Wholesale Supply Hub -->
+      <div class="col-lg-6 col-12 d-flex">
+        <div class="promo-banner-card b2b">
+          <span class="promo-badge b2b">
+            <i class="fas fa-boxes-stacked"></i> B2B & Bulk Orders
+          </span>
+          <h4 class="promo-title">Wholesale & Contractor Supply</h4>
+          <p class="promo-desc">
+            Direct dealership supply with tier-based wholesale pricing for retailers, electrical contractors, and corporate projects.
           </p>
-
-          <p class="about-text">
-            Our goal is to deliver reliable products at the best price while ensuring
-            excellent customer service. With years of experience in the electrical
-            market, {{ config('app.name') }} has built strong trust among electricians, contractors,
-            and homeowners.
-          </p>
-
-          <div class="about-info">
-
-            <div>
-              <i class="fas fa-map-marker-alt about-icon"></i>
-              Address: Chattogram, Bangladesh
-            </div>
-
-            <div>
-              <i class="fas fa-phone about-icon"></i>
-              Phone: +880 1828333233
-            </div>
-
-            <div>
-              <i class="fas fa-envelope about-icon"></i>
-              Email: relectricbdofficial@gmail.com
-            </div>
-            <div>
-              <i class="fas fa-user about-icon"></i>
-              Owner: MD Sarwar Hossain
-            </div>
-
+          <ul class="promo-features">
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>Special Bulk Tier Discounts on 100+ items</span>
+            </li>
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>Priority Warehouse Dispatch & Delivery</span>
+            </li>
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>Dedicated Credit & Order Management</span>
+            </li>
+          </ul>
+          <div class="promo-actions">
+            <a href="{{ route('contact') }}" class="btn-promo-primary">
+              <i class="fas fa-file-invoice-dollar"></i> Request Bulk Quote
+            </a>
+            <a href="tel:+8801828333233" class="btn-promo-outline">
+              <i class="fas fa-phone-alt"></i> Call Wholesale Desk
+            </a>
           </div>
-
         </div>
-
       </div>
 
-
-      <!-- IMAGE -->
-
-      <div class="col-lg-6">
-
-        <div class="about-image">
-
-          <img src="{{ asset('image/electronics.png') }}">
-
+      <!-- B2C & Retail Excellence -->
+      <div class="col-lg-6 col-12 d-flex">
+        <div class="promo-banner-card b2c">
+          <span class="promo-badge b2c">
+            <i class="fas fa-shield-halved"></i> 100% Genuine Guaranteed
+          </span>
+          <h4 class="promo-title">Direct Retail & Smart Home Delivery</h4>
+          <p class="promo-desc">
+            Premium authentic switches, smart lighting, and wiring solutions delivered safely to your home or workspace with official warranty.
+          </p>
+          <ul class="promo-features">
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>100% Original Walton & Certified Brands</span>
+            </li>
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>Official Manufacturer Replacement Warranty</span>
+            </li>
+            <li>
+              <span class="promo-feature-icon"><i class="fas fa-check"></i></span>
+              <span>Fast Nationwide Cash on Delivery (COD)</span>
+            </li>
+          </ul>
+          <div class="promo-actions">
+            <a href="{{ route('contact') }}" class="btn-promo-primary">
+              <i class="fas fa-headset"></i> Get Expert Support
+            </a>
+            <a href="{{ route('contact') }}" class="btn-promo-outline">
+              <i class="fas fa-location-dot"></i> Visit Outlet
+            </a>
+          </div>
         </div>
-
       </div>
 
     </div>
@@ -522,6 +735,9 @@ TRUST
   </div>
 
 </section>
+
+
+
 
 
 <!-- TRUST -->

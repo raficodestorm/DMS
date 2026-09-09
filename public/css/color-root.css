@@ -8,15 +8,16 @@
    LIGHT MODE (Default)
 ================================ */
 :root {
-  --primary: #3131ff;
-  --primary-light: #3d60fc;
+  --primary: #1d1dff;
+  --primary-light: #4466ff;
   --primary-soft: #e4ecf9;
 
-  --secondary: #1f2937;
-  --accent: #ae04f1;
+  --secondary: #0b134a;
+  --accent: #9e00dc;
+  --accent-light: #d233fe;
 
-  --background: #f1f2f4; 
---section-bg: #fafcfd;
+  --background: #f1f2f4;
+  --section-bg: #fafcfd;
   /* --section-bg: #ffffff; */
 
   --text-main: #080d14;
