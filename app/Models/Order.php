@@ -19,6 +19,12 @@ class Order extends Model
         'note',
         'branch_id',
         'order_type',
+        'payment_status',
+        'customer_name',
+        'customer_phone',
+        'country',
+        'city',
+        'address',
     ];
 
     public function getDisplayOrderIdAttribute(): string

@@ -47,14 +47,14 @@
             <i class="fa-solid fa-pen"></i>
         </a>
 
-        <form action="{{ route('admin.deductions.destroy', $deduction->id) }}" method="POST" class="d-inline"
+        <!-- <form action="{{ route('admin.deductions.destroy', $deduction->id) }}" method="POST" class="d-inline"
             onsubmit="return confirm('Are you sure you want to delete this deduction?')">
             @csrf
             @method('DELETE')
             <button type="submit" class="icon-btn delete-icon" style="border: none; background: none;">
                 <i class="fa-solid fa-trash"></i>
             </button>
-        </form>
+        </form> -->
     </div>
 
 </div>

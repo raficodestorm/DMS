@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained('customers')->nullOnDelete();
             $table->foreignId('sr_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->string('status')->default('pending_sr');
             // 'pending_sr', 'pending_manager', 'approved', 'rejected', 'complete', 'delivered'
             $table->decimal('special_discount', 10, 2)->default(0)->nullable();
@@ -24,14 +25,26 @@ return new class extends Migration
             $table->decimal('net_total', 10, 2);
             $table->decimal('applied_deduction_percent', 10, 2)->nullable();
             $table->text('note')->nullable();
-            // New -------------------------------------------
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
             $table->string('order_type')->default('field_order');
             // 'retail',
             // 'field_order',
             // 'online', 
+            $table->string('payment_status')->default('unpaid');
+            // partial
+            // paid
+            // unpaid
             $table->boolean('is_returned')->default(false)->index();
-            // -----------------------------------------
+
+            $table->string('customer_name')->nullable();
+
+            $table->string('customer_phone', 30)->nullable();
+
+            $table->string('country', 100)->nullable();
+
+            $table->string('city', 100)->nullable();
+
+            $table->text('address')->nullable();
+            
             $table->timestamps();
         });
     }

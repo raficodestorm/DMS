@@ -30,6 +30,33 @@
             </div>
 
             <div class="col-md-6">
+                <label>Country</label>
+                <select class="input-form" name="country" id="country" required>
+                <option value="" disabled selected>Select Country</option>
+                    @foreach ($countries as $c)
+                    <option value="{{ $c }}" {{ old('country') === $c ? 'selected' : '' }}>{{ $c }}</option>
+                    @endforeach
+                </select>
+
+                @error('country')
+                    <div class="error-text">{{ $message }}</div>
+                @enderror
+            </div>
+
+
+            <div class="col-md-6">
+                <label>City</label>
+                <select class="input-form" name="city" id="city" required disabled>
+                    <option value="" disabled selected>Select City</option>
+                </select>
+                @error('city')
+                <div class="error">{{ $message }}</div>
+                @enderror
+            </div>
+
+                        
+
+            <div class="col-md-6">
                 <label>Area Branch</label>
                 <select name="branch_id" class="input-form" required>
                     <option value="">Select Branch</option>
@@ -54,4 +81,61 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Read JSON data source directly
+    let countriesData = {};
+    
+    try {
+        // Embed the loaded JSON directly from disk safely
+        countriesData = @json(file_exists(resource_path('data/countries.json')) ? json_decode(file_get_contents(resource_path('data/countries.json')), true) : []);
+    } catch(e) {
+        console.error("Failed to load country/cities data", e);
+    }
+
+    const countrySelect = document.getElementById('country');
+    const citySelect = document.getElementById('city');
+
+    // Retrieve old values from Laravel
+    const oldCountry = "{{ old('country') }}";
+    const oldCity = "{{ old('city') }}";
+
+    function populateCities(country, selectedCity = '') {
+        // Clear previous options
+        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+        
+        if (country && countriesData[country]) {
+            const cities = countriesData[country];
+            
+            // Populate select input element
+            cities.forEach(function (city) {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                if (city === selectedCity) {
+                    option.selected = true;
+                }
+                citySelect.appendChild(option);
+            });
+
+            citySelect.disabled = false;
+        } else {
+            citySelect.disabled = true;
+        }
+    }
+
+    // Bind change listener for country input
+    countrySelect.addEventListener('change', function () {
+        populateCities(this.value);
+    });
+
+    // Handle old input preservation on validation redirects
+    if (oldCountry) {
+        populateCities(oldCountry, oldCity);
+    }
+
+    
+});
+</script>
 @endsection

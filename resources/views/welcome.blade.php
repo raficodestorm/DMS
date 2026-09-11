@@ -23,140 +23,339 @@ GLOBAL
   }
 
 
-  /* SLIDER HEIGHT */
+  /* SLIDER HEIGHT & CONTAINER */
   .main-slider {
-    margin-top: 85px;
-  }
-
-  .hero-slider {
-    height: 250px;
-  }
-
-  @media(max-width:768px) {
-
-    .hero-slider {
-      height: 180px;
-    }
-
-    .main-slider {
-      margin-top: 55px;
-    }
-
-  }
-
-
-  /* SLIDE DESIGN */
-
-  .hero-slide {
-
-    height: 100%;
-    border-radius: 16px;
-    background: var(--section-bg);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 35px;
-    overflow: hidden;
+    margin-top: 25px;
     position: relative;
   }
 
-  /* decorative background */
+  .hero-slider {
+    height: 350px;
+    border-radius: 20px;
+    overflow: hidden;
+    padding-bottom: 28px;
+  }
 
-  .hero-slide::before {
+  @media(max-width:768px) {
+    .main-slider {
+      margin-top: 15px;
+    }
 
+    .hero-slider {
+      height: 200px;
+      padding-bottom: 22px;
+    }
+  }
+
+  /* SLIDE DESIGN & GRADIENTS */
+  .hero-slide {
+    height: 100%;
+    border-radius: 20px;
+    background: 
+      radial-gradient(circle at 10% 20%, #0e69fc18 0%, transparent 45%),
+      radial-gradient(circle at 90% 15%, #d100d116 0%, transparent 45%),
+      radial-gradient(circle at 80% 85%, #00800018 0%, transparent 45%),
+      radial-gradient(circle at 20% 85%, #ff571416 0%, transparent 45%),
+      var(--section-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 45px;
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Distinct Slide Gradients using specified colors (Soft & Transparent) */
+  .hero-slide.slide-theme-1 {
+    background: 
+      radial-gradient(circle at 85% 20%, #d100d11a 0%, transparent 50%),
+      radial-gradient(circle at 15% 80%, #0e69fc18 0%, transparent 55%),
+      linear-gradient(135deg, #0e69fc16 0%, #d100d118 100%),
+      var(--section-bg);
+    border-color: rgba(14, 105, 252, 0.14);
+  }
+
+  .hero-slide.slide-theme-2 {
+    background: 
+      radial-gradient(circle at 85% 20%, #0e69fc18 0%, transparent 50%),
+      radial-gradient(circle at 15% 80%, #0080001a 0%, transparent 55%),
+      linear-gradient(135deg, #0080001a 0%, #0e69fc18 100%),
+      var(--section-bg);
+    border-color: rgba(0, 128, 0, 0.14);
+  }
+
+  .hero-slide.slide-theme-3 {
+    background: 
+      radial-gradient(circle at 85% 20%, #d100d118 0%, transparent 50%),
+      radial-gradient(circle at 15% 80%, #ff57141c 0%, transparent 55%),
+      linear-gradient(135deg, #ff571418 0%, #d100d118 100%),
+      var(--section-bg);
+    border-color: rgba(255, 87, 20, 0.14);
+  }
+
+  .hero-slide.slide-theme-4 {
+    background: 
+      radial-gradient(circle at 85% 20%, #f59e0b1a 0%, transparent 50%),
+      radial-gradient(circle at 15% 80%, #8b5cf618 0%, transparent 55%),
+      linear-gradient(135deg, #8b5cf616 0%, #f59e0b18 100%),
+      var(--section-bg);
+    border-color: rgba(245, 158, 11, 0.14);
+  }
+
+  /* Decorative Ambient Glow Orbs */
+  .hero-slide::before,
+  .hero-slide::after {
     content: "";
     position: absolute;
-    width: 260px;
-    height: 260px;
-    background: var(--primary-soft);
     border-radius: 50%;
-    top: -120px;
-    right: -100px;
-    filter: blur(50px);
+    filter: blur(65px);
+    pointer-events: none;
+    z-index: 0;
+  }
 
+  .hero-slide::before {
+    width: 220px;
+    height: 220px;
+    top: -60px;
+    right: -40px;
+  }
+
+  .hero-slide::after {
+    width: 180px;
+    height: 180px;
+    bottom: -50px;
+    left: 20%;
+  }
+
+  .slide-theme-1::before { background: #0e69fc20; }
+  .slide-theme-1::after  { background: #d100d118; }
+
+  .slide-theme-2::before { background: #00800020; }
+  .slide-theme-2::after  { background: #0e69fc18; }
+
+  .slide-theme-3::before { background: #ff571420; }
+  .slide-theme-3::after  { background: #d100d118; }
+
+  .slide-theme-4::before { background: #8b5cf620; }
+  .slide-theme-4::after  { background: #f59e0b18; }
+
+  /* SLIDE CONTENT */
+  .hero-text {
+    position: relative;
+    z-index: 1;
+    max-width: 60%;
+  }
+
+  /* Hero Badge */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    backdrop-filter: blur(6px);
+  }
+
+  .hero-badge.badge-blue {
+    background: rgba(14, 105, 252, 0.12);
+    color: #0e69fc;
+    border: 1px solid rgba(14, 105, 252, 0.25);
+  }
+
+  .hero-badge.badge-green {
+    background: rgba(0, 128, 0, 0.12);
+    color: #059669;
+    border: 1px solid rgba(0, 128, 0, 0.25);
+  }
+
+  .hero-badge.badge-orange {
+    background: rgba(255, 87, 20, 0.12);
+    color: #ea580c;
+    border: 1px solid rgba(255, 87, 20, 0.25);
+  }
+
+  .hero-badge.badge-cyan {
+    background: rgba(0, 180, 216, 0.12);
+    color: #0891b2;
+    border: 1px solid rgba(0, 180, 216, 0.25);
+  }
+
+  .hero-badge.badge-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.25);
   }
 
   /* TEXT */
-
   .hero-text h2 {
-
+    font-size: 26px;
     font-weight: 800;
-    color: var(--primary);
-    margin-bottom: 6px;
-
+    color: var(--text-main);
+    line-height: 1.25;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
   }
 
   .hero-text p {
-
     color: var(--text-muted);
     font-size: 14px;
-
+    margin-bottom: 14px;
+    line-height: 1.5;
   }
 
+  /* BUTTON */
   .hero-btn {
-
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    color: white;
-    padding: 8px 20px;
-    border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #ffffff !important;
+    padding: 9px 22px;
+    border-radius: 10px;
     text-decoration: none;
-    display: inline-block;
-    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 14px rgba(49, 49, 255, 0.28);
+    transition: all 0.25s ease;
+  }
 
+  .hero-btn i {
+    font-size: 12px;
+    transition: transform 0.25s ease;
+  }
+
+  .hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 49, 255, 0.38);
+    color: #ffffff !important;
+  }
+
+  .hero-btn:hover i {
+    transform: translateX(4px);
   }
 
   /* IMAGE */
+  .hero-img {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .hero-img img {
-
-    height: 180px;
-    transition: 0.7s ease;
-
+    height: 190px;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.12));
+    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   /* ACTIVE ANIMATION */
-
   .swiper-slide-active .hero-img img {
-
-    transform: scale(1.15) rotate(6deg);
-
+    transform: scale(1.08) rotate(3deg);
   }
 
-  /* MOBILE FIX */
+  /* SWIPER MODERN PAGINATION */
+  .hero-slider .swiper-pagination {
+    bottom: 2px !important;
+  }
 
+  .hero-slider .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 10px;
+    background: var(--text-muted);
+    opacity: 0.35;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hero-slider .swiper-pagination-bullet-active {
+    width: 26px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 1;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(49, 49, 255, 0.35);
+  }
+
+  /* MOBILE RESPONSIVENESS */
   @media(max-width:768px) {
-
     .hero-slide {
-      text-align: center;
-      padding: 20px;
+      padding: 16px 20px;
+      border-radius: 16px;
     }
 
-    .hero-img img {
+    .hero-text {
+      max-width: 62%;
+    }
 
-      height: 60px;
-      margin-top: 8px;
-
+    .hero-badge {
+      font-size: 9px;
+      padding: 3px 8px;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
     }
 
     .hero-text h2 {
-
       font-size: 15px;
-
+      margin-bottom: 4px;
     }
 
     .hero-text p {
-
-      font-size: 9px;
-
+      font-size: 11px;
+      margin-bottom: 8px;
+      line-height: 1.3;
     }
 
     .hero-btn {
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: small;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      gap: 5px;
     }
 
+    .hero-btn i {
+      font-size: 10px;
+    }
+
+    .hero-img img {
+      height: 105px;
+    }
+
+    .hero-slide::before {
+      width: 140px;
+      height: 140px;
+    }
+
+    .hero-slide::after {
+      width: 110px;
+      height: 110px;
+    }
+  }
+
+  @media(max-width:480px) {
+    .hero-slider {
+      height: 185px;
+    }
+
+    .hero-img img {
+      height: 85px;
+    }
+
+    .hero-text h2 {
+      font-size: 13.5px;
+    }
   }
 
 
@@ -474,22 +673,27 @@ TRUST
 
       <div class="swiper-slide">
 
-        <div class="hero-slide">
+        <div class="hero-slide slide-theme-1">
 
           <div class="hero-text">
 
-            <h2>Premium Electrical Products</h2>
-            <p>Smart accessories for modern homes</p>
+            <span class="hero-badge badge-blue">
+              <i class="fas fa-bolt"></i> Premium Collection
+            </span>
 
-            <a href="#" class="hero-btn">
-              Explore
+            <h2>Premium Electrical Products</h2>
+            <p>Smart accessories & high-durability fittings for modern homes</p>
+
+            <a href="{{ route('home-page') }}" class="hero-btn">
+              <span>Explore More</span>
+              <i class="fas fa-arrow-right"></i>
             </a>
 
           </div>
 
           <div class="hero-img">
 
-            <img src="{{ asset('image/electronics.png') }}">
+            <img src="{{ asset('image/electronics1.webp') }}" alt="Premium Electrical Products">
 
           </div>
 
@@ -502,22 +706,27 @@ TRUST
 
       <div class="swiper-slide">
 
-        <div class="hero-slide">
+        <div class="hero-slide slide-theme-2">
 
           <div class="hero-text">
 
-            <h2>Smart Lighting Solution</h2>
-            <p>Energy efficient lighting system</p>
+            <span class="hero-badge badge-green">
+              <i class="fas fa-lightbulb"></i> Eco Solution
+            </span>
 
-            <a href="#" class="hero-btn">
-              Explore
+            <h2>Smart Lighting Solution</h2>
+            <p>Energy efficient smart LED systems & elegant ambient fixtures</p>
+
+            <a href="{{ route('home-page') }}" class="hero-btn">
+              <span>Explore More</span>
+              <i class="fas fa-arrow-right"></i>
             </a>
 
           </div>
 
           <div class="hero-img">
 
-            <img src="{{ asset('image/light.webp') }}">
+            <img src="{{ asset('image/light1.webp') }}" alt="Smart Lighting Solutions">
 
           </div>
 
@@ -530,22 +739,62 @@ TRUST
 
       <div class="swiper-slide">
 
-        <div class="hero-slide">
+        <div class="hero-slide slide-theme-3">
 
           <div class="hero-text">
 
-            <h2>Professional Electrical Tools</h2>
-            <p>Trusted tools for electricians</p>
+            <span class="hero-badge badge-orange">
+              <i class="fas fa-screwdriver-wrench"></i> Pro Series
+            </span>
 
-            <a href="#" class="hero-btn">
-              Explore
+            <h2>Professional Electrical Tools</h2>
+            <p>Heavy-duty, precision-engineered tools trusted by electricians</p>
+
+            <a href="{{ route('home-page') }}" class="hero-btn">
+              <span>Explore More</span>
+              <i class="fas fa-arrow-right"></i>
             </a>
 
           </div>
 
           <div class="hero-img">
 
-            <img src="{{ asset('image/tools.webp') }}">
+            <img src="{{ asset('image/tools.webp') }}" alt="Professional Electrical Tools">
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- SLIDE 4 -->
+
+      
+
+      <div class="swiper-slide">
+
+        <div class="hero-slide slide-theme-4">
+
+          <div class="hero-text">
+
+            <span class="hero-badge badge-amber">
+              <i class="fas fa-boxes-stacked"></i> Wholesale Supplier
+            </span>
+
+            <h2>Premium Switch & Socket</h2>
+            <p>Best Quality Switches & Socket can make your house beautiful</p>
+
+            <a href="{{ route('home-page') }}" class="hero-btn">
+              <span>Explore More</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+
+          </div>
+
+          <div class="hero-img">
+
+            <img src="{{ asset('image/switch.webp') }}" alt="Premium Switch & Socket">
 
           </div>
 
@@ -555,6 +804,9 @@ TRUST
 
 
     </div>
+
+    <!-- Swiper Pagination -->
+    <div class="swiper-pagination"></div>
 
   </div>
 

@@ -49,7 +49,17 @@ class Product extends Model
 
     public function offers()
     {
-        return $this->belongsToMany(Offer::class, 'offer_products');
+        return $this->hasMany(Offer::class);
+    }
+
+    public function activeRetailOffer()
+    {
+        $today = now()->toDateString();
+        return $this->hasOne(Offer::class)
+            ->where('status', 1)
+            ->where('customer_type', 'retail')
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today);
     }
     public function stockItems()
     {

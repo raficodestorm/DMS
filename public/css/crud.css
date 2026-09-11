@@ -291,14 +291,20 @@ COMMON BADGE STYLE
    display: block;
  }
 
+ label .text-danger,
+ label span {
+   display: inline;
+   margin-left: 3px;
+ }
+
  .input-form {
    width: 100%;
-   padding: 0.8rem 1rem;
+   padding: 10px;
    background-color: var(--background);
    color: var(--text-main);
-   border: 1px solid var(--border-color);
+   border: 1.5px solid var(--border-color);
    border-radius: 10px;
-   font-size: 0.95rem;
+   font-size: 0.90rem;
    margin-bottom: 5px;
    transition: all 0.3s ease;
  }

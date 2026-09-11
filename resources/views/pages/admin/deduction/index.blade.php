@@ -16,7 +16,8 @@
                     <th>S.No</th>
                     <th>Type</th>
                     <th>Cust-Deduction</th>
-                    <th>Own Deduction</th>
+                    <th>Retail-Deduction</th>
+                    <th>Own-Deduction</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -28,6 +29,7 @@
                     </td>
                     <td>{{ $deduction->type }}</td>
                     <td>{{ $deduction->customer_deduction }}</td>
+                    <td>{{ $deduction->retail_deduction }}</td>
                     <td>{{ $deduction->my_deduction }}</td>
                     
 
@@ -59,6 +61,9 @@
                 </div>
                 <div><span>Cust-Deduction</span>
                     <p>{{ $deduction->customer_deduction }}</p>
+                </div>
+                <div><span>Retail-Deduction</span>
+                    <p>{{ $deduction->retail_deduction }}</p>
                 </div>
                 <div><span>Own-Deduction</span>
                     <p>{{ $deduction->my_deduction }}</p>

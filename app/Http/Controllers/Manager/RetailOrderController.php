@@ -376,6 +376,7 @@ class RetailOrderController extends Controller
 
     $offer = Offer::where('product_id', $id)
       ->where('status', 1)
+      ->where('customer_type', 'wholesale')
       ->whereDate('start_date', '<=', $today)
       ->whereDate('end_date', '>=', $today)
       ->first();

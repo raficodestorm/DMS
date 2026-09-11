@@ -11,7 +11,9 @@ class Offer extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'customer_type',
         'product_id',
+        'coupon_code',
         'type',
         'discount_amount',
         'start_date',

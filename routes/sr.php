@@ -21,7 +21,7 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::get('/orders/data', [OrderSrController::class, 'fetchOrdersData'])->name('order.index.data');
   Route::get('/orders/create', [OrderSrController::class, 'create'])->name('order.create');
   Route::post('/orders/store', [OrderSrController::class, 'store'])->name('order.store');
-  Route::get('/get-product-data/{id}', [OrderController::class, 'getProductData']);
+  Route::get('/get-product-data/{id}', [OrderSrController::class, 'getProductData']);
   Route::get('/orders/edit/{order}', [OrderController::class, 'edit'])->name('order.edit');
   Route::put('/orders/update/{order}', [OrderController::class, 'update'])->name('order.update');
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');

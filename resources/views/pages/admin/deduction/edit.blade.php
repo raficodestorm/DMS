@@ -37,6 +37,13 @@
             </div>
 
             <div class="input-box">
+                <label>Retail Deduction</label>
+                <input type="number" step="0.01" class="input-form" name="retail_deduction" placeholder="0.00"
+                    required value="{{ old('retail_deduction', $deduction->retail_deduction) }}">
+                @error('retail_deduction')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="input-box">
                 <label>Own Deduction</label>
                 <input type="number" step="0.01" class="input-form" name="my_deduction" placeholder="0.00" required
                     value="{{ old('my_deduction', $deduction->my_deduction) }}">

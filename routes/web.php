@@ -20,22 +20,22 @@ Route::get('/', function () {
 
     $featuredProducts = Product::where('is_featured', true)
         ->where('status', 1)
-        ->with(['category', 'supplier'])
+        ->with(['category', 'supplier', 'activeRetailOffer'])
         ->latest()
         ->take(16)
         ->get();
 
     $bestSellingProducts = Product::where('status', 1)
         ->withSum('orderItems', 'quantity')
-        ->with(['category', 'supplier'])
+        ->with(['category', 'supplier', 'activeRetailOffer'])
         ->orderByDesc('order_items_sum_quantity')
         ->latest()
         ->take(8)
         ->get();
 
-    $customerDeduction = (float) (Deduction::where('type', 'main')->value('customer_deduction')
-        ?? Deduction::value('customer_deduction')
-        ?? 0);
+    $customerDeduction = (float) (Deduction::where('type', 'main')->value('retail_deduction')
+        ?? Deduction::value('retail_deduction')
+        ?? 30);
 
     return view('welcome', compact('featuredCategories', 'featuredProducts', 'bestSellingProducts', 'customerDeduction'));
 })->name('home-page');

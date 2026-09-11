@@ -55,8 +55,17 @@ class CustomerController extends Controller
 
     public function create()
     {
+        $countriesData = [];
+        $countriesPath = resource_path('data/countries.json');
+
+        if (file_exists($countriesPath)) {
+            $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
+        }
+
+        // Get only the country names for selection
+        $countries = array_keys($countriesData);
         $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.admin.customer.create', compact('branches'));
+        return view('pages.admin.customer.create', compact('branches','countries'));
     }
 
     public function store(Request $request)
@@ -66,6 +75,8 @@ class CustomerController extends Controller
             'shop_name' => 'required|string|max:150',
             'manager' => 'required|string|max:100',
             'phone' => 'required|string|max:30',
+            'country' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
             'address' => 'required|string|max:255',
             'branch_id' => 'required|integer|max:100',
         ]);
@@ -85,8 +96,17 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $countriesData = [];
+        $countriesPath = resource_path('data/countries.json');
+
+        if (file_exists($countriesPath)) {
+            $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
+        }
+
+        // Get only the country names for selection
+        $countries = array_keys($countriesData);
         $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.admin.customer.edit', compact('customer', 'branches'));
+        return view('pages.admin.customer.edit', compact('customer', 'branches','countries'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -96,6 +116,8 @@ class CustomerController extends Controller
             'shop_name' => 'required|string|max:150',
             'manager' => 'required|string|max:100',
             'phone' => 'required|string|max:30',
+            'country' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
             'address' => 'required|string|max:255',
             'branch_id' => 'nullable|integer|max:100',
             'due' => 'nullable|numeric',

@@ -29,6 +29,7 @@ class DeductionController extends Controller
 
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
+            'retail_deduction' => 'required|numeric|min:0',
             'my_deduction' => 'required|numeric|min:0',
             
 
@@ -58,6 +59,7 @@ class DeductionController extends Controller
         $validated = $request->validate([
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
+            'retail_deduction' => 'required|numeric|min:0',
             'my_deduction' => 'required|numeric|min:0',
             
         ]);

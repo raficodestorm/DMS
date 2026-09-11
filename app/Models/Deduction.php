@@ -11,6 +11,7 @@ class Deduction extends Model
     protected $fillable = [
         'type',
         'customer_deduction',
+        'retail_deduction',
         'my_deduction',
         'tree_deduction',
         'floor_deduction',

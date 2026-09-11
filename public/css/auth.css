@@ -74,6 +74,11 @@
 }
 .text-danger {
   color: var(--danger);
+}
+
+.auth-card .text-danger,
+.error-text {
+  color: var(--danger);
   font-size: 12px;
   margin-top: 5px;
   display: block;

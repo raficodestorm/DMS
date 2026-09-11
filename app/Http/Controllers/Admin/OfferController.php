@@ -11,16 +11,68 @@ use Illuminate\Validation\Rule;
 class OfferController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $offers = Offer::with('product')->latest()->paginate(10);
-        return view('pages.admin.offer.index', compact('offers'));
+        $totalOffers = Offer::count();
+        $activeOffers = Offer::where('status', 1)->count();
+        return view('pages.admin.offer.index', compact('totalOffers', 'activeOffers'));
+    }
+
+    public function fetchOffersIndexData(Request $request)
+    {
+        $query = Offer::with(['product', 'product.category'])->latest();
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('product', function ($pq) use ($search) {
+                      $pq->where('name', 'like', "%{$search}%")
+                         ->orWhere('sku', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('customer_type')) {
+            $query->where('customer_type', $request->customer_type);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
+        
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('start_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('end_date', '<=', $request->to_date);
+        }
+
+        $activeCount = (clone $query)->where('status', 1)->count();
+        $totalCount  = (clone $query)->count();
+        $offers      = $query->paginate(15)->withQueryString();
+
+        return response()->json([
+            'table'        => view('pages.admin.offer.table', compact('offers'))->render(),
+            'mobile'       => view('pages.admin.offer.mtable', compact('offers'))->render(),
+            'pagination'   => (string) $offers->links(),
+            'total'        => $offers->total(),
+            'activeOffers' => $activeCount,
+            'totalOffers'  => $totalCount,
+        ]);
     }
 
 
     public function create()
     {
-        $products = Product::where('status', 1)->orderBy('name', 'asc')->get();
+        $products = Product::where('status', 1)->with('category')->orderBy('name', 'asc')->get();
         return view('pages.admin.offer.create', compact('products'));
     }
 
@@ -28,7 +80,9 @@ class OfferController extends Controller
     {
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
+            'customer_type'   => 'required|string|max:255',
             'product_id'      => 'required|exists:products,id',
+            'coupon_code'     => 'nullable|string|max:255',
             'type'            => 'required|in:percentage,fixed',
             'discount_amount' => 'required|numeric|min:0',
             'start_date'      => 'required|date',
@@ -50,7 +104,7 @@ class OfferController extends Controller
 
     public function edit(Offer $offer)
     {
-        $products = Product::where('status', 1)->orderBy('name', 'asc')->get();
+        $products = Product::where('status', 1)->with('category')->orderBy('name', 'asc')->get();
         return view('pages.admin.offer.edit', compact('offer', 'products'));
     }
 
@@ -61,7 +115,9 @@ class OfferController extends Controller
     {
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
+            'customer_type'   => 'required|string|max:255',
             'product_id'      => 'required|exists:products,id',
+            'coupon_code'     => 'nullable|string|max:255',
             'type'            => 'required|in:percentage,fixed',
             'discount_amount' => 'required|numeric|min:0',
             'start_date'      => 'required|date',

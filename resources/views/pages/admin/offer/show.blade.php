@@ -15,6 +15,20 @@
                 <span class="i-value">{{ $offer->name }}</span>
             </div>
             <div class="info-group">
+                <span class="i-label">Customer Type</span>
+                @if($offer->customer_type == 'retail')
+                <span class="purple-type-badge">Retail</span>
+                @else
+                <span class="emerald-type-badge">Whole Sale</span>
+                @endif
+            </div>
+            @if($offer->customer_type == 'retail' && !empty($offer->coupon_code))
+            <div class="info-group">
+                <span class="i-label">Coupon Code</span>
+                <span class="i-value"><code style="background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ $offer->coupon_code }}</code></span>
+            </div>
+            @endif
+            <div class="info-group">
                 <span class="i-label">Applied Product</span>
                 <span class="i-value">{{ $offer->product->name ?? 'N/A' }}</span>
             </div>

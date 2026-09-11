@@ -57,6 +57,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/products/export/excel', [ProductController::class, 'exportExcel'])->name('products.export.excel');
   Route::post('/products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
   Route::resource('products', ProductController::class);
+  Route::get('/offers/index/data', [OfferController::class, 'fetchOffersIndexData'])->name('offers.index.data');
   Route::resource('offers', OfferController::class);
   Route::resource('deductions', DeductionController::class);
   Route::resource('suppliers', SupplierController::class);

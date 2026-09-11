@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('deductions', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['main', 'specific', 'console']);
+            $table->string('type')->default('main'); // main, specific, console
             $table->decimal('customer_deduction', 10, 2);
+            $table->decimal('retail_deduction', 10, 2);
             $table->decimal('my_deduction', 10, 2);
             $table->decimal('tree_deduction', 10, 2)->nullable();
             $table->decimal('floor_deduction', 10, 2)->nullable();

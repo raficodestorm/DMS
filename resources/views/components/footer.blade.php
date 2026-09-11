@@ -1,87 +1,95 @@
+@php
+    $footerCategories = \App\Models\Category::where('is_featured', true)
+        ->orderBy('name', 'asc')
+        ->take(4)
+        ->get();
+
+    if ($footerCategories->isEmpty()) {
+        $footerCategories = \App\Models\Category::orderBy('name', 'asc')->take(4)->get();
+    }
+@endphp
+
 <footer class="mt-5">
     <div class="container">
-        <div class="row g-5">
+        <div class="row g-4 g-lg-5">
+            <!-- Brand & Info -->
             <div class="col-lg-4 col-md-6">
-                <a class="brand" href="{{ route('home-page') }}">
-      <img src="{{ asset('image/relectric-logo.png') }}" class="img-logo img-fluid" id="img-logo" alt="relectric" >
-    </a>
+                <a class="brand d-inline-block" href="{{ route('home-page') }}">
+                    <img src="{{ asset('image/relectric-logo.png') }}" class="footer-brand-logo img-fluid" alt="{{ config('app.name', 'R Electric') }}">
+                </a>
                 <p class="mt-3"
-                    style="font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--text-muted); line-height: 1.8;">
-                    "Touch and Shock" <br>
+                    style="font-size: 13.5px; color: var(--text-muted); line-height: 1.8;">
+                    <strong style="color: var(--primary);">"Touch and Shock"</strong><br>
                     Delivering electrical excellence nationwide. We combine nationwide
-                    accessibility with a
-                    commitment to service that powers your happiness
+                    accessibility with a commitment to service that powers your happiness.
                 </p>
-                <div class="mt-4">
-                    <a href="#" class="social-circle"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-circle"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-circle"><i class="fab fa-youtube"></i></a>
+                <div class="mt-4 footer-social-wrap">
+                    <a href="#" class="social-circle" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-circle" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-circle" title="YouTube"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
 
-            <div class="col-lg-2 col-md-6">
+            <!-- Navigation Links -->
+            <div class="col-lg-2 col-md-6 col-6">
                 <h5 class="footer-section-title">Navigation</h5>
                 <ul class="footer-links">
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">All Products</a></li>
-                    <li><a href="#">About Author</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="{{ route('home-page') }}">Home</a></li>
+                    <li><a href="{{ route('home-page') }}#products">All Products</a></li>
+                    <li><a href="{{ route('about') }}">About Us</a></li>
+                    <li><a href="{{ route('contact') }}">Contact Us</a></li>
                 </ul>
             </div>
 
-            <div class="col-lg-3 col-md-6">
+            <!-- Dynamic Featured Categories -->
+            <div class="col-lg-3 col-md-6 col-6">
                 <h5 class="footer-section-title">Categories</h5>
                 <ul class="footer-links">
-
-                    <li><a href="">Cable</a></li>
-                    <li><a href="">Socket</a></li>
-                    <li><a href="">Light</a></li>
-                    <li><a href="">All Electronics</a></li>
-
+                    @forelse($footerCategories as $fCat)
+                        <li><a href="{{ route('home-page') }}?category={{ $fCat->id }}">{{ $fCat->name }}</a></li>
+                    @empty
+                        <li><a href="{{ route('home-page') }}">Cables & Wires</a></li>
+                        <li><a href="{{ route('home-page') }}">Switches & Sockets</a></li>
+                        <li><a href="{{ route('home-page') }}">Lighting Solutions</a></li>
+                        <li><a href="{{ route('home-page') }}">Professional Tools</a></li>
+                    @endforelse
                 </ul>
             </div>
 
+            <!-- Ask a Question Glass Card -->
             <div class="col-lg-3 col-md-6">
-                <h5 class="footer-section-title">Ask a Question</h5>
-                <p
-                    style="font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--text-muted); margin-bottom: clamp(0.8rem, 3vw, 1.2rem);">
-                    Have a thought or a curious question? Send it my way!
-                </p>
+                <div class="footer-ask-card">
+                    <h5 class="footer-section-title" style="margin-bottom: 8px;">Ask a Question</h5>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+                        Have a thought or a curious question? Send it to us!
+                    </p>
 
-                <div id="success-message" style="display: none;" class="mb-3">
-                    <div class="d-flex align-items-center gap-2"
-                        style="background: rgba(197, 160, 89, 0.1); border: 1px solid var(--accent); padding: 12px; border-radius: 12px;">
-                        <i class="fas fa-check-circle" style="color: var(--accent-light);"></i>
-                        <small style="color: var(--text-main); font-weight: 500;">Thanks! I'll read your question
-                            soon.</small>
+                    <div id="success-message" style="display: none;" class="mb-3">
+                        <div class="d-flex align-items-center gap-2"
+                            style="background: var(--primary-soft); border: 1px solid var(--accent); padding: 10px; border-radius: 10px;">
+                            <i class="fas fa-check-circle" style="color: var(--accent);"></i>
+                            <small style="color: var(--text-main); font-weight: 500;">Thanks! We'll reply soon.</small>
+                        </div>
                     </div>
-                </div>
 
-                <form action="" method="POST">
-                    <textarea name="user_question" class="form-control question-input mb-2" rows="2"
-                        placeholder="What's on your mind?" required></textarea>
-                    <button type="submit" name="submit_question" class="btn btn-ask w-100">
-                        Submit
-                    </button>
-                </form>
+                    <form action="" method="POST">
+                        <textarea name="user_question" class="form-control question-input mb-3" rows="2"
+                            placeholder="What's on your mind?" required></textarea>
+                        <button type="submit" name="submit_question" class="btn btn-ask w-100">
+                            <i class="fas fa-paper-plane me-1"></i> Submit
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
+        <!-- Footer Bottom Bar -->
         <div class="footer-bottom d-md-flex justify-content-between align-items-center">
             <p class="mb-0">&copy;
-                <?= date('Y') ?> <span style="color: var(--accent); font-weight: 600;">{{ config('app.name') }}</span>.
-                All rights
-                reserved.
+                <span id="current-year">{{ date('Y') }}</span> <span style="color: var(--primary); font-weight: 700;">{{ config('app.name') }}</span>.
+                All rights reserved.
             </p>
-            <p class="mb-0">Built with ❤️ by <a class="rafi-link" href="https://safiulrafi.top"> S A Rafi</a></p>
+            <p class="mb-0">Built with ❤️ by <a class="rafi-link" href="https://safiulrafi.top" target="_blank" rel="noopener">S A Rafi</a></p>
         </div>
     </div>
 </footer>
-
-<script>
-    // set current year (keeps HTML static but copyright current)
-    (function() {
-        const el = document.getElementById('current-year');
-        if (el) el.textContent = new Date().getFullYear();
-    })();
-</script>

@@ -13,9 +13,14 @@ class Customer extends Model
         'shop_name',
         'manager',
         'phone',
+        'country',
+        'city',
         'address',
         'branch_id',
         'due',
+        'customer_type',
+        'customer_group',
+        'image',
     ];
 
     public function branch()
