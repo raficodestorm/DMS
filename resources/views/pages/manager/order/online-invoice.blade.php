@@ -1,0 +1,404 @@
+@extends(getLayout())
+
+@section('content')
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  .invoice-wrapper {
+    width: 100%;
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .invoice-box {
+    width: 100%;
+    background: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .fixed-row {
+    display: flex;
+    gap: 15px;
+  }
+
+  .fixed-col-6 {
+    width: 50%;
+  }
+
+  .fixed-col-5 {
+    width: 41.66%;
+  }
+
+  .fixed-col-7 {
+    width: 58.33%;
+  }
+
+  .header {
+    text-align: center;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+  }
+
+  .header h1 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .info-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .invoice-table th,
+  .invoice-table td {
+    border: 1px solid #08111b;
+    padding: 8px;
+    font-size: 13px;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  .invoice-table td {
+    color: #08111b;
+  }
+
+  .invoice-table thead th {
+    background: #f2f2f2;
+  }
+
+  .summary-card {
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .total-payable {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    border-top: 2px solid #ddd;
+  }
+
+  .signature-box {
+    border-top: 1px solid #333;
+    text-align: center;
+    width: 180px;
+    padding-top: 6px;
+    margin-top: 40px;
+  }
+
+  .footer-note {
+    margin-top: 45px;
+    text-align: center;
+    font-size: 10px;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    line-height: 1.6;
+  }
+
+  @media print {
+    .no-print,
+    .sidebar-overlay,
+    .sidebar,
+    .custom-navbar {
+      display: none !important;
+    }
+
+    aside, nav {
+      display: none !important;
+    }
+
+    body {
+      background: #fff;
+    }
+
+    .invoice-wrapper {
+      transform: none !important;
+    }
+  }
+
+  #printArea {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .invoice-box {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    position: relative;
+    z-index: 1;
+  }
+
+  .invoice-box > *:not(.watermark-logo) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .watermark-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65%;
+    max-width: 600px;
+    opacity: 0.08;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
+
+<div class="container-fluid" id="wrapper-outer">
+  <div class="invoice-wrapper" id="invoice-scale-target">
+
+    <div class="invoice-box" id="printArea">
+      
+      <!-- Watermark Logo -->
+      <img src="{{ asset('image/relectric-logo.png') }}" class="watermark-logo" alt="Watermark">
+
+      <div class="header">
+        <div>
+          <img src="{{ asset('image/relectric-logo.png') }}" alt="Logo" class="sidebar-logo img-fluid" style="width: 200px; height: 60px; object-fit: contain;">
+        </div>
+        <p>Double Mooring, Chattogram, Bangladesh  |  Contact: 01871923000</p>
+      </div>
+
+      <div class="fixed-row">
+        <div class="fixed-col-6">
+          <div class="info-card">
+            <b>Customer Details:</b><br>
+            <strong>Name:</strong> {{ $order->customer_name ?? ($order->customer->shop_name ?? 'Online Customer') }}<br>
+            <strong>Phone:</strong> {{ $order->customer_phone ?? ($order->customer->phone ?? 'N/A') }}<br>
+            <strong>Address:</strong> {{ $order->address ? $order->address . ', ' . $order->city . ', ' . $order->country : ($order->city ? $order->city . ', ' . $order->country : 'N/A') }}
+          </div>
+        </div>
+
+        <div class="fixed-col-6">
+          <div class="info-card text-end" style="text-align: right;">
+            <b>Invoice Info:</b><br>
+            <strong>Invoice No:</strong> {{ $order->order_id ?? ('BRS' . $order->id) }}<br>
+            <strong>Date:</strong> {{ $order->created_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A') }}<br>
+            <strong>Order Type:</strong> <span class="badge bg-primary text-white" style="font-size: 11px; padding: 2px 6px;">Online Order</span><br>
+            <strong>Branch:</strong> {{ $order->branch->name ?? 'Online' }} Branch
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive mb-4 mt-3">
+        <table class="invoice-table">
+          <colgroup>
+            @if($hasDiscount)
+            <col style="width: 8%;">
+            <col style="width: 44%;">
+            <col style="width: 14%;">
+            <col style="width: 10%;">
+            <col style="width: 10%;">
+            <col style="width: 14%;">
+            @else
+            <col style="width: 8%;">
+            <col style="width: 48%;">
+            <col style="width: 16%;">
+            <col style="width: 12%;">
+            <col style="width: 16%;">
+            @endif
+          </colgroup>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Product</th>
+              <th>Rate</th>
+              <th>Qty</th>
+              @if($hasDiscount)
+              <th>Discount</th>
+              @endif
+              <th style="text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @php $sl = 1; @endphp
+            @foreach($items as $item)
+            <tr>
+              <td>{{ $sl++ }}</td>
+              <td>{{ $item->product->name ?? 'Product' }}</td>
+              <td>{{ number_format($item->selling_rate, 2) }} ৳</td>
+              <td>{{ $item->quantity }}</td>
+              @if($hasDiscount)
+              <td style="color: #dc2626;">
+                @if(!empty($item->offer))
+                {{ $item->offer }}
+                @elseif($item->discount_amount > 0 && $item->selling_rate > 0)
+                ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
+                @else
+                -
+                @endif
+              </td>
+              @endif
+              <td style="text-align: right;">{{ number_format($item->net_total, 2) }} ৳</td>
+            </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+
+      <div class="fixed-row">
+        <div class="fixed-col-5">
+          <div class="summary-card">
+            <h6 style="color: var(--text-muted, #64748b); margin-bottom: 4px;">Payment Method</h6>
+            <h5 style="color: var(--text-main, #1e293b); font-weight: 700; margin-bottom: 12px;">{{ $order->payment_method ?? 'Cash on Delivery (COD)' }}</h5>
+            @if( $order->payment_status == 'paid' || $order->payment_status == 'partial')
+            <h6 style="color: var(--text-muted, #64748b); margin-bottom: 4px;">Payment Status</h6>
+            <h4 class="{{ $order->payment_status === 'paid' ? 'text-success' : 'text-danger' }}" style="font-weight: 800; margin: 0;">
+              {{ $order->payment_status === 'paid' ? 'PAID' : 'Partially Paid' }}
+            </h4>
+            @endif
+          </div>
+        </div>
+
+        <div class="fixed-col-7">
+          <div class="summary-card">
+            <div class="summary-table">
+              @php
+                $itemsSubtotal = $order->items->sum('net_total') + (float)$order->discount_amount;
+                $shippingCharge = (float)($order->shipping_charge ?? 0);
+              @endphp
+              <div class="summary-row">
+                <span>Items Subtotal:</span>
+                <span>{{ number_format($itemsSubtotal, 2) }} ৳</span>
+              </div>
+              @if($order->special_discount > 0)
+              <div class="summary-row" style="color: #dc2626; font-size: small;">
+                <span>Special Discount:</span>
+                <span>- {{ number_format($order->special_discount, 2) }} ৳</span>
+              </div>
+              @endif
+              @if($order->discount_amount > 0)
+              <div class="summary-row" style="color: #dc2626;">
+                <span>Offer Savings:</span>
+                <span>- {{ number_format($order->discount_amount, 2) }} ৳</span>
+              </div>
+              @endif
+              <div class="summary-row">
+                <span>Shipping Fee:</span>
+                <span>{{ $shippingCharge > 0 ? number_format($shippingCharge, 2) . ' ৳' : 'FREE' }}</span>
+              </div>
+              <div class="summary-row total-payable">
+                <span>Net Payable:</span>
+                <span>{{ number_format($order->net_total, 2) }} ৳</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-top: 50px;">
+        <div class="signature-box">Customer Signature</div>
+        <div class="signature-box">Authorized Signature</div>
+      </div>
+
+      <div class="footer-note">
+        R Electric থেকে কেনাকাটা করার জন্য আপনাকে আন্তরিক ধন্যবাদ। </br>
+        মানসম্মত পণ্য ও সেরা সেবা নিয়ে R Electric সবসময় আপনার পাশে। </br>
+        পণ্য ফেরত বা পরিবর্তনের ক্ষেত্রে অবশ্যই এই ইনভয়েসটি সঙ্গে রাখুন। ইনভয়েস ছাড়া কোনো পণ্য ফেরত বা পরিবর্তন গ্রহণযোগ্য নয়। </br>
+        www.relectricbd.com
+      </div>
+
+    </div>
+  </div>
+
+  {{-- Action Buttons --}}
+  <div class="action-bar d-flex justify-content-center no-print mt-3">
+    <button onclick="downloadPDF()" class="btn-smart btn-green me-3">
+      <i class="fas fa-download me-1"></i> Download PDF
+    </button>
+    <button onclick="printInvoice()" class="btn-smart btn-blue">
+      <i class="fas fa-print me-1"></i> Print Invoice
+    </button>
+  </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+  function scaleInvoice() {
+    const wrapper = document.getElementById("invoice-scale-target");
+    if (!wrapper) return;
+
+    const baseWidth = 900;
+    const screenWidth = window.innerWidth;
+
+    let scale = screenWidth / baseWidth;
+    if (scale > 1) scale = 1;
+
+    wrapper.style.transform = `scale(${scale})`;
+    wrapper.style.transformOrigin = "top left";
+  }
+
+  window.addEventListener("load", scaleInvoice);
+  window.addEventListener("resize", scaleInvoice);
+
+  function printInvoice() {
+    window.print();
+  }
+
+  function downloadPDF() {
+    const element = document.getElementById('printArea');
+    const wrapper = document.getElementById("invoice-scale-target");
+
+    const originalTransform = wrapper.style.transform;
+    wrapper.style.transform = "none";
+
+    const opt = {
+        margin: [2, 1, 2, 3],
+        filename: 'Invoice_{{ $order->order_id ?? ('BRS' . $order->id) }}.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            letterRendering: true,
+            scrollY: 0 
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' 
+        }
+    };
+
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+        wrapper.style.transform = originalTransform;
+    }).save();
+  }
+</script>
+@endpush

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\OrderAdminController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\ShippingRateController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
@@ -38,16 +39,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/employees/{employee}/qr-download', [EmployeeController::class, 'downloadQR'])
     ->name('employees.qr.download');
 
-  Route::resource('employees', EmployeeController::class);
+  
   Route::get('/employees/index/data', [EmployeeController::class, 'fetchEmployeesIndexData'])->name('employees.index.data');
-  Route::resource('branches', BranchController::class);
+  
   Route::get('/customers/index/data', [CustomerController::class, 'fetchCustomersIndexData'])->name('customers.index.data');
-  Route::resource('customers', CustomerController::class);
+  
   Route::get('/categories/index/data', [CategoryController::class, 'fetchCategoriesIndexData'])->name('categories.index.data');
   Route::post('/categories/{category}/toggle-featured', [CategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
-  Route::resource('categories', CategoryController::class);
+  
   Route::get('/company_costs/index/data', [CompanyCostController::class, 'fetchCompanyCostsIndexData'])->name('company_costs.index.data');
-  Route::resource('company_costs', CompanyCostController::class);
+  
 
   // Cost Dashboard Routes
   Route::get('/costs-dashboard', [CostDashboardController::class, 'index'])->name('costs.dashboard');
@@ -56,13 +57,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/products/index/data', [ProductController::class, 'fetchProductsIndexData'])->name('products.index.data');
   Route::get('/products/export/excel', [ProductController::class, 'exportExcel'])->name('products.export.excel');
   Route::post('/products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
-  Route::resource('products', ProductController::class);
-  Route::get('/offers/index/data', [OfferController::class, 'fetchOffersIndexData'])->name('offers.index.data');
-  Route::resource('offers', OfferController::class);
-  Route::resource('deductions', DeductionController::class);
-  Route::resource('suppliers', SupplierController::class);
-  Route::get('/bonuses/index/data', [BonusController::class, 'fetchBonusesIndexData'])->name('bonuses.index.data');
-  Route::resource('bonuses', BonusController::class);
+  
 
 
   Route::get('/stock-in-requests/index', [StockRequestController::class, 'stockInRequestIndexForAdmin'])->name('stock.in.requests.index');
@@ -94,13 +89,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('orders/specific/{id}', [OrderAdminController::class, 'specificSrOrders'])->name('order.specific.sr');
   Route::get('orders/specific/customer/{id}', [OrderAdminController::class, 'specificCustomerOrders'])->name('order.specific.customer');
   Route::get('orders/specific/branch/{id}', [OrderAdminController::class, 'specificBranchOrders'])->name('order.specific.branch');
-  // Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
   Route::get('/orders/{order}/show', [OrderController::class, 'showForAdmin'])->name('order.show');
   Route::patch('/orders/approve/{order}', [OrderController::class, 'approve'])->name('order.approve');
+  Route::patch('/orders/online-approve/{order}', [OrderAdminController::class, 'onlineApprove'])->name('order.online_approve');
   Route::patch('/orders/reject/{order}', [OrderController::class, 'reject'])->name('order.reject');
 
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
   Route::get('/retail/invoice/view/{order}', [RetailOrderController::class, 'viewRetailInvoice'])->name('order.view_retail_invoice');
+  Route::get('/online/invoice/view/{order}', [OrderController::class, 'viewOnlineInvoice'])->name('order.view_online_invoice');
 
   Route::get('/return', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'index'])->name('return.index');
   Route::get('/return/index/data', [\App\Http\Controllers\Admin\ReturnAdminController::class, 'fetchReturnsIndexData'])->name('return.index.data');
@@ -128,12 +124,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
   // Report Module
   Route::get('/report', [ReportController::class, 'index'])->name('report.index');
-
-
-
-
-
-
 
 
 
@@ -167,6 +157,27 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/supplier-transactions/{id}/edit', [SupplierTransactionController::class, 'editForAdmin'])->name('supplier-transactions.edit');
   Route::put('/supplier-transactions/{id}', [SupplierTransactionController::class, 'updateForAdmin'])->name('supplier-transactions.update');
   Route::delete('/supplier-transactions/{id}', [SupplierTransactionController::class, 'destroyForAdmin'])->name('supplier-transactions.destroy');
+
+
+
+
+  Route::get('/offers/index/data', [OfferController::class, 'fetchOffersIndexData'])->name('offers.index.data');
+  Route::get('/bonuses/index/data', [BonusController::class, 'fetchBonusesIndexData'])->name('bonuses.index.data');
+  Route::get('/shipping-rates/index/data', [ShippingRateController::class, 'fetchShippingRatesIndexData'])->name('shipping-rates.index.data');
+  Route::match(['post', 'patch'], '/shipping-rates/{shippingRate}/toggle-status', [ShippingRateController::class, 'toggleStatus'])->name('shipping-rates.toggle-status');
+    
+
+  Route::resource('products', ProductController::class);
+  Route::resource('offers', OfferController::class);
+  Route::resource('deductions', DeductionController::class);
+  Route::resource('suppliers', SupplierController::class);
+  Route::resource('bonuses', BonusController::class);
+  Route::resource('shipping-rates', ShippingRateController::class);
+  Route::resource('company_costs', CompanyCostController::class);
+  Route::resource('employees', EmployeeController::class);
+  Route::resource('branches', BranchController::class);
+  Route::resource('customers', CustomerController::class);
+  Route::resource('categories', CategoryController::class);
 
 });
 

@@ -6,6 +6,17 @@
   <td>{{ $order->sr->fullname ?? 'N/A' }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
   <td>
+    @if($order->order_type == "field_order")
+    <span class="emerald-type-badge">Field Order</span>
+    @elseif($order->order_type == 'retail')
+    <span class="pink-type-badge">Retail</span>
+    @elseif($order->order_type == 'online')
+    <span class="purple-type-badge">Online</span>
+    @else
+    <span class="status-undefined-badge">Undefined</span>
+    @endif
+  </td>
+  <td>
     @if($order->status == "pending_sr")
     <span class="status-pending-badge">Pending..SR..</span>
     @elseif($order->status == 'pending_manager')
@@ -18,6 +29,17 @@
     <span class="status-delivered-badge">Delivered</span>
     @elseif($order->status == 'approved')
     <span class="status-approved-badge">Approved</span>
+    @else
+    <span class="status-undefined-badge">Undefined</span>
+    @endif
+  </td>
+  <td>
+    @if($order->payment_status == "unpaid")
+    <span class="orange-type-badge">Unpaid</span>
+    @elseif($order->payment_status == 'partial')
+    <span class="purple-type-badge">Partial</span>
+    @elseif($order->payment_status == 'paid')
+    <span class="emerald-type-badge">Paid</span>
     @else
     <span class="status-undefined-badge">Undefined</span>
     @endif
@@ -46,6 +68,6 @@
 </tr>
 @empty
 <tr>
-  <td colspan="8" class="text-center text-muted">No orders found.</td>
+  <td colspan="9" class="text-center text-muted">No orders found.</td>
 </tr>
 @endforelse

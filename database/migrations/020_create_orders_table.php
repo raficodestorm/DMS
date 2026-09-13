@@ -25,10 +25,15 @@ return new class extends Migration
             $table->decimal('net_total', 10, 2);
             $table->decimal('applied_deduction_percent', 10, 2)->nullable();
             $table->text('note')->nullable();
+            $table->foreignId('delivered_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('delivered_at')->nullable();
+            $table->decimal('shipping_charge', 10, 2)->default(0);
             $table->string('order_type')->default('field_order');
             // 'retail',
             // 'field_order',
             // 'online', 
+            $table->decimal('payment_amount', 10, 2)->default(0);
+            $table->string('payment_method', 50)->default('Cash on Delivery')->nullable();
             $table->string('payment_status')->default('unpaid');
             // partial
             // paid

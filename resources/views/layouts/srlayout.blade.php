@@ -114,6 +114,12 @@
               <i class="fas fa-users-cog me-1"></i> Customers Orders
             </a>
           </li>
+
+          <li>
+            <a href="{{ route('sr.order.online.index') }}" class="sub-link {{ isActive('sr.order.online.index') }}">
+              <i class="fas fa-users-cog me-1"></i> Find for delivery
+            </a>
+          </li>
         </ul>
       </li>
 

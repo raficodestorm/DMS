@@ -95,7 +95,8 @@
           <th>Branch</th>
           <th>Amount</th>
           <th>Order Type</th>
-          <th>Status</th>
+          <th>Order Status</th>
+          <th>Payment Status</th>
           <th>Date & Time</th>
           <th>Action</th>
         </tr>

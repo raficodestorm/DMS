@@ -313,7 +313,7 @@
       </li>
 
 
-      <!-- Products -->
+      <!-- suppliers -->
       <li class="nav-item {{ request()->routeIs('admin.suppliers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.suppliers.*') }}">
           <i class="fa-solid fa-truck-field"></i>
@@ -381,6 +381,30 @@
           <li>
             <a href="{{ route('admin.offers.index') }}" class="sub-link {{ isActive('admin.offers.index') }}">
               <i class="fa-solid fa-boxes-stacked me-1"></i> All Offers
+            </a>
+          </li>
+
+        </ul>
+      </li>
+
+      <!-- shipping rate -->
+      <li class="nav-item {{ request()->routeIs('admin.shipping-rates.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.shipping-rates.*') }}">
+          <i class="fa-solid fa-truck-field"></i>
+          <span>Shipping Rate</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.shipping-rates.*') }}">
+          <li>
+            <a href="{{ route('admin.shipping-rates.create') }}" class="sub-link {{ isActive('admin.shipping-rates.create') }}">
+              <i class="fa-solid fa-plus me-1"></i> Add Shipping Rate
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.shipping-rates.index') }}" class="sub-link {{ isActive('admin.shipping-rates.index') }}">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> All Shipping Rates
             </a>
           </li>
 

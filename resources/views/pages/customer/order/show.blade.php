@@ -13,21 +13,60 @@
 
   .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     margin-bottom: 25px;
   }
 
-  .info-item label {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    display: block;
+  .info-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
 
-  .info-item p {
-    font-weight: 700;
+  .info-card:hover {
+    border-color: var(--primary);
+  }
+
+  .info-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .info-details {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .info-details label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .info-details p {
+    font-weight: 600;
+    font-size: 0.92rem;
     color: var(--text-main);
     margin: 0;
+    word-break: break-word;
   }
 
   .action-bar {
@@ -50,7 +89,33 @@
 
   @media (max-width: 600px) {
     .info-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .info-card {
+      padding: 7px 8px;
+      gap: 7px;
+      border-radius: 8px;
+    }
+
+    .info-icon-box {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .info-details label {
+      font-size: 0.60rem;
+    }
+
+    .info-details p {
+      font-size: 0.75rem;
+    }
+
+    .info-card.span-2 {
+      grid-column: span 2 !important;
     }
 
     .action-bar {
@@ -114,37 +179,57 @@
   </div>
 
   <div class="info-grid">
-    <div class="info-item">
-      <label>Customer</label>
-      <p>{{ $order->customer->shop_name ?? 'N/A' }}</p>
-    </div>
-    <div class="info-item">
-      <label>Reference</label>
-      <p>{{ $order->sr->fullname ?? 'N/A' }}</p>
-    </div>
-
-    <div class="info-item">
-      <label>Customer Phone</label>
-      <p>{{ $order->customer->phone ?? 'N/A' }}</p>
-    </div>
-    <div class="info-item">
-      <label>Order Date</label>
-      <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="info-details">
+        <label>Customer</label>
+        <p>{{ $order->customer_name ?? $order->customer->shop_name }}</p>
+      </div>
     </div>
 
-    <div class="info-item">
-      <label>Deduction</label>
-      <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="info-details">
+        <label>Reference</label>
+        <p>{{ $order->sr->fullname ?? 'N/A' }}</p>
+      </div>
     </div>
 
-    @if($order->note)
-    <div class="info-item" style="grid-column: span 2;">
-      <label>Order Note</label>
-      <p style="font-weight: 400; font-style: italic; background: var(--primary-soft); padding: 10px; border-radius: 5px; border-left: 3px solid var(--primary);">
-        {{ $order->note }}
-      </p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-phone-alt"></i>
+      </div>
+      <div class="info-details">
+        <label>Customer Phone</label>
+        <p>{{ $order->customer_phone ?? $order->customer->phone ?? 'N/A' }}</p>
+      </div>
     </div>
-    @endif
+
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-calendar-day"></i>
+      </div>
+      <div class="info-details">
+        <label>Order Date</label>
+        <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      </div>
+    </div>
+
+    <div class="info-card span-2" style="grid-column: span 2;">
+      <div class="info-icon-box">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div class="info-details">
+        <label>Delivery Address</label>
+        <p>{{ $order->address ?? 'N/A' }}</p>
+      </div>
+    </div>
+
+   
   </div>
 
   <h4 style="color:var(--text-muted); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px;">

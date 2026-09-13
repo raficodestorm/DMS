@@ -13,21 +13,60 @@
 
   .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     margin-bottom: 25px;
   }
 
-  .info-item label {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    display: block;
+  .info-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
 
-  .info-item p {
+  .info-card:hover {
+    border-color: var(--primary);
+  }
+
+  .info-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .info-details {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .info-details label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .info-details p {
+    font-weight: 600;
+    font-size: 0.92rem;
     color: var(--text-main);
     margin: 0;
+    word-break: break-word;
   }
 
   .action-bar {
@@ -113,7 +152,33 @@
 
   @media (max-width: 600px) {
     .info-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .info-card {
+      padding: 7px 8px;
+      gap: 8px;
+      border-radius: 8px;
+    }
+
+    .info-icon-box {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .info-details label {
+      font-size: 0.60rem;
+    }
+
+    .info-details p {
+      font-size: 0.75rem;
+    }
+
+    .info-card.span-2 {
+      grid-column: span 2 !important;
     }
 
     .action-bar {
@@ -177,52 +242,97 @@
   </div>
 
   <div class="info-grid">
-    <div class="info-item">
-      <label>Customer</label>
-      <p>{{ $order->customer->shop_name ?? 'Retail' }}</p>
-    </div>
-    <div class="info-item">
-      <label>Reference</label>
-      <p>{{ $order->sr->fullname ?? $order->manager->fullname }} <span class="text-primary"> ({{ $order->branch->name ?? 'N/A' }}
-          branch)</span>
-      </p>
-    </div>
-
-    <div class="info-item">
-      <label>Customer Phone</label>
-      <p>{{ $order->customer->phone ?? 'N/A' }}</p>
-    </div>
-    <div class="info-item">
-      <label>Order Date</label>
-      <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="info-details">
+        <label>Customer</label>
+        <p>{{ $order->customer_name ?? $order->customer->shop_name }}</p>
+      </div>
     </div>
 
-    <div class="info-item">
-      <label>Deduction</label>
-      <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="info-details">
+        <label>Reference</label>
+        <p>{{ $order->sr->fullname ?? $order->manager->fullname ?? "Online" }} <span class="text-primary" style="font-size: 0.85em; font-weight: 500;">({{ $order->branch->name ?? 'N/A' }} branch)</span></p>
+      </div>
     </div>
 
-    <div class="info-item">
-      <label>Order Type</label>
-      <p>
-        @if($order->order_type == "field_order")
-        <span class="emerald-type-badge">Field Order</span>
-        @elseif($order->order_type == 'retail')
-        <span class="pink-type-badge">Retail</span>
-        @elseif($order->order_type == 'online')
-        <span class="purple-type-badge">Online</span>
-        @else
-        <span class="status-undefined-badge">Undefined</span>
-        @endif
-      </p>
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-phone-alt"></i>
+      </div>
+      <div class="info-details">
+        <label>Customer Phone</label>
+        <p>{{ $order->customer->phone ?? 'N/A' }}</p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-calendar-day"></i>
+      </div>
+      <div class="info-details">
+        <label>Order Date</label>
+        <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-percentage"></i>
+      </div>
+      <div class="info-details">
+        <label>Deduction</label>
+        <p>{{ number_format($order->applied_deduction_percent, 2) }} %</p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <div class="info-details">
+        <label>Order Type</label>
+        <p>
+          @if($order->order_type == "field_order")
+          <span class="emerald-type-badge">Field Order</span>
+          @elseif($order->order_type == 'retail')
+          <span class="pink-type-badge">Retail</span>
+          @elseif($order->order_type == 'online')
+          <span class="purple-type-badge">Online</span>
+          @else
+          <span class="status-undefined-badge">Undefined</span>
+          @endif
+        </p>
+      </div>
+    </div>
+
+    <div class="info-card span-2" style="grid-column: span 2;">
+      <div class="info-icon-box">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div class="info-details">
+        <label>Delivery Address</label>
+        <p>{{ $order->address ?? 'N/A' }}</p>
+      </div>
     </div>
 
     @if($order->note)
-    <div class="info-item" style="grid-column: span 2;">
-      <label>Order Note</label>
-      <p style="font-weight: 400; font-style: italic; background: var(--primary-soft); padding: 10px; border-radius: 5px; border-left: 3px solid var(--primary);">
-        {{ $order->note }}
-      </p>
+    <div class="info-card span-2" style="grid-column: span 2; background: var(--primary-soft); border-left: 3px solid var(--primary);">
+      <div class="info-icon-box" style="background: var(--section-bg);">
+        <i class="fas fa-comment-dots"></i>
+      </div>
+      <div class="info-details">
+        <label style="color: var(--primary);">Order Note</label>
+        <p style="font-weight: 500; font-style: italic;">
+          {{ $order->note }}
+        </p>
+      </div>
     </div>
     @endif
   </div>
@@ -251,7 +361,9 @@
           <td>{{ number_format($item->price, 2) }} ৳</td>
           <td>{{ number_format($item->selling_rate, 2) }} ৳</td>
           <td>{{ $item->quantity }}</td>
-          <td class="text-danger">@if($item->discount_amount > 0 && $item->selling_rate > 0)
+          <td class="text-danger">@if(!empty($item->offer))
+            {{ $item->offer }}
+            @elseif($item->discount_amount > 0 && $item->selling_rate > 0)
             ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
             @else
             -
@@ -284,7 +396,9 @@
           <p>{{ $item->quantity }}</p>
         </div>
         <div><span>Discount</span>
-          <p>@if($item->discount_amount > 0 && $item->selling_rate > 0)
+          <p>@if(!empty($item->offer))
+            {{ $item->offer }}
+            @elseif($item->discount_amount > 0 && $item->selling_rate > 0)
             ({{ number_format(($item->discount_amount / $item->selling_rate) * 100, 2) }}%)
             @else
             -
@@ -361,21 +475,27 @@
             @method('PATCH')
 
             <button type="submit"
-                class="btn-smart btn-reject"
+                class="btn-smart btn-red"
                 onclick="return confirm('Reject this order?')">
 
                 <i class="fas fa-times-circle"></i> Reject
             </button>
         </form>
 
-        <form action="{{ route('admin.order.approve', $order->id) }}" method="POST">
-            @csrf
-            @method('PATCH')
-
-            <button type="submit" class="btn-smart btn-admin">
+        @if($order->order_type == 'online')
+            <button type="button" class="btn-smart btn-green" onclick="openAssignBranchModal()">
                 <i class="fas fa-check-circle"></i> Approve
             </button>
-        </form>
+        @else
+            <form action="{{ route('admin.order.approve', $order->id) }}" method="POST">
+                @csrf
+                @method('PATCH')
+
+                <button type="submit" class="btn-smart btn-green">
+                    <i class="fas fa-check-circle"></i> Approve
+                </button>
+            </form>
+        @endif
 
     @elseif(in_array($order->status, ['complete', 'delivered']))
 
@@ -395,12 +515,250 @@
                 <i class="fas fa-file-invoice"></i> Invoice
             </a>
 
+        @elseif($order->order_type == "online" || empty($order->customer_id))
+
+            <a href="{{ route('admin.order.view_online_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @else
+
+            <a href="{{ route('admin.order.view_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
         @endif
 
     @endif
 
 </div>
 </div>
+
+@if($order->order_type == 'online')
+@php
+  $branches = $branches ?? \App\Models\Branch::select('id', 'name')->orderBy('name', 'asc')->get();
+@endphp
+<!-- Assign Branch & Approve Modal for Online Orders -->
+<div id="assignBranchModal" class="assign-modal-overlay" onclick="handleAssignModalBackdrop(event)">
+  <div class="assign-modal-box">
+    <div class="assign-modal-header">
+      <h4>
+        <i class="fas fa-code-branch text-primary"></i> Assign Branch & Approve
+      </h4>
+      <button type="button" class="assign-modal-close-btn" onclick="closeAssignBranchModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form action="{{ route('admin.order.online_approve', $order->id) }}" method="POST">
+      @csrf
+      @method('PATCH')
+
+      <div class="assign-order-info">
+        <div class="assign-order-info-row">
+          <span>Order ID:</span>
+          <strong>{{ $order->order_id ?? ('BRS' . $order->id) }}</strong>
+        </div>
+        <div class="assign-order-info-row">
+          <span>Customer:</span>
+          <strong>{{ $order->customer_name }} ({{ $order->city }}, {{ $order->country }})</strong>
+        </div>
+        <div class="assign-order-info-row" style="margin-bottom: 0;">
+          <span>Net Total:</span>
+          <strong style="color: var(--primary);">৳ {{ number_format($order->net_total, 2) }}</strong>
+        </div>
+      </div>
+
+      <div class="assign-form-group">
+        <label for="branch_id">
+          <i class="fas fa-building text-primary"></i> Select Delivery Branch:
+        </label>
+        <select name="branch_id" id="branch_id" class="assign-branch-select" required>
+          <option value="">-- Choose Branch --</option>
+          @foreach($branches as $branch)
+          <option value="{{ $branch->id }}" {{ ($order->branch_id == $branch->id) ? 'selected' : '' }}>
+            {{ $branch->name }}
+          </option>
+          @endforeach
+        </select>
+        <small style="display: block; color: var(--text-muted); font-size: 0.78rem; margin-top: 6px;">
+          The managers of the selected branch will receive a notification to fulfill this order.
+        </small>
+      </div>
+
+      <div class="assign-modal-footer">
+        <button type="button" class="btn-smart btn-red" onclick="closeAssignBranchModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-smart btn-green">
+          <i class="fas fa-check-double"></i> Confirm & Approve
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .assign-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .assign-modal-overlay.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  .assign-modal-box {
+    background: var(--section-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    position: relative;
+    transform: translateY(-20px) scale(0.96);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .assign-modal-overlay.show .assign-modal-box {
+    transform: translateY(0) scale(1);
+  }
+
+  .assign-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+  }
+
+  .assign-modal-header h4 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .assign-modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: var(--text-muted, #94a3b8);
+    cursor: pointer;
+    line-height: 1;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .assign-modal-close-btn:hover {
+    color: var(--text-main, #1e293b);
+    background: var(--primary-soft, #f1f5f9);
+  }
+
+  .assign-order-info {
+    background: var(--primary-soft, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 18px;
+    font-size: 0.85rem;
+  }
+
+  .assign-order-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+  }
+
+  .assign-order-info-row strong {
+    color: var(--text-main);
+  }
+
+  .assign-form-group {
+    margin-bottom: 20px;
+  }
+
+  .assign-form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+
+  .assign-branch-select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border-color, #cbd5e1);
+    background: var(--section-bg, #ffffff);
+    color: var(--text-main);
+    font-size: 0.92rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .assign-branch-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  .assign-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+
+<script>
+  function openAssignBranchModal() {
+    var modal = document.getElementById('assignBranchModal');
+    if (modal) {
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeAssignBranchModal() {
+    var modal = document.getElementById('assignBranchModal');
+    if (modal) {
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function handleAssignModalBackdrop(event) {
+    if (event.target.id === 'assignBranchModal') {
+      closeAssignBranchModal();
+    }
+  }
+</script>
+@endif
 
 <div style="text-align: center; margin-top: 20px;">
   <a href="{{ route('admin.order.index') }}" style="color: var(--text-muted); text-decoration: none;">

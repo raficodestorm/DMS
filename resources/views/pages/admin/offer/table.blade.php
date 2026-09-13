@@ -43,9 +43,15 @@
         @endif
     </td>
     <td>
-        <strong style="color: var(--primary, #3131ff); font-size: 0.92rem;">
-            {{ $offer->type == 'percentage' ? $offer->discount_amount . '%' : number_format($offer->discount_amount, 2) . ' TK' }}
-        </strong>
+        @if($offer->type == 'free_shipping')
+            <span style="display:inline-flex; align-items:center; gap:4px; background: rgba(22,163,74,0.1); color:#16a34a; border:1px solid rgba(22,163,74,0.25); padding:3px 7px; border-radius:10px; font-size:0.65rem; font-weight:700;">
+                🚚 Free Shipping
+            </span>
+        @else
+            <strong style="color: var(--primary, #3131ff); font-size: 0.92rem;">
+                {{ $offer->type == 'percentage' ? $offer->discount_amount . '%' : number_format($offer->discount_amount, 0) . ' TK' }}
+            </strong>
+        @endif
     </td>
     <td style="font-size: 0.82rem; white-space: nowrap;">
         <div><i class="far fa-calendar-alt text-muted me-1"></i>{{ \Carbon\Carbon::parse($offer->start_date)->format('d M Y') }}</div>
@@ -53,9 +59,9 @@
     </td>
     <td>
         @if($offer->status == 1)
-            <span class="status-active-badge">● Active</span>
+            <span class="status-active-badge">Active</span>
         @else
-            <span class="status-inactive-badge">● Inactive</span>
+            <span class="status-inactive-badge">Inactive</span>
         @endif
     </td>
     <td class="action-icons">

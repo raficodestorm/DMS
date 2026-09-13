@@ -34,15 +34,25 @@
             </div>
             <div class="info-group">
                 <span class="i-label">Discount Type</span>
-                <span class="i-value" style="text-transform: capitalize;">{{ $offer->type }}</span>
+                <span class="i-value" style="text-transform: capitalize;">
+                    @if($offer->type == 'free_shipping')
+                        <span style="display:inline-flex; align-items:center; gap:5px; background: rgba(22,163,74,0.1); color:#16a34a; border:1px solid rgba(22,163,74,0.25); padding:3px 10px; border-radius:10px; font-weight:700;">
+                            🚚 Free Shipping
+                        </span>
+                    @else
+                        {{ $offer->type }}
+                    @endif
+                </span>
             </div>
+            @if($offer->type != 'free_shipping')
             <div class="info-group">
                 <span class="i-label">Discount Amount</span>
                 <span class="i-value">
                     <strong>{{ $offer->type == 'percentage' ? $offer->discount_amount . '%' :
-                        number_format($offer->discount_amount, 2) . ' TK' }}</strong>
+                        number_format($offer->discount_amount, 0) . ' TK' }}</strong>
                 </span>
             </div>
+            @endif
             <div class="info-group">
                 <span class="i-label">Start Date</span>
                 <span class="i-value">{{ \Carbon\Carbon::parse($offer->start_date)->format('d M Y') }}</span>
@@ -69,11 +79,16 @@
         <div class="statement">
             <p class="statement-text">
                 <strong>Offer Summary</strong>
-                This offer provides a {{ $offer->type }} discount of {{ $offer->discount_amount }}{{ $offer->type ==
-                'percentage' ? '%' : ' TK' }}
-                on {{ $offer->product->name ?? 'the selected product' }}.
-                Valid from {{ \Carbon\Carbon::parse($offer->start_date)->format('d M') }} until {{
-                \Carbon\Carbon::parse($offer->end_date)->format('d M Y') }}.
+                @if($offer->type == 'free_shipping')
+                    This offer provides <strong>Free Shipping</strong>
+                    on {{ $offer->product->name ?? 'the selected product' }}.
+                @else
+                    This offer provides a {{ $offer->type }} discount of
+                    {{ $offer->discount_amount }}{{ $offer->type == 'percentage' ? '%' : ' TK' }}
+                    on {{ $offer->product->name ?? 'the selected product' }}.
+                @endif
+                Valid from {{ \Carbon\Carbon::parse($offer->start_date)->format('d M') }} until
+                {{ \Carbon\Carbon::parse($offer->end_date)->format('d M Y') }}.
             </p>
         </div>
     </div>

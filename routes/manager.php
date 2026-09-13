@@ -88,10 +88,11 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('order/specific/{id}', [OrderManagerController::class, 'specificSrOrders'])->name('order.specific.sr');
   Route::get('/specific/{id}', [OrderManagerController::class, 'specificCustomerOrders'])->name('order.specific.customer');
   Route::get('/order/invoice/{order}', [OrderManagerController::class, 'confirmAndInvoice'])->name('order.confirm');
-
+  Route::get('/order/online-confirm/{order}', [OrderManagerController::class, 'onlineConfirm'])->name('order.online_confirm');
 
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
   Route::get('/retail/invoice/view/{order}', [RetailOrderController::class, 'viewRetailInvoice'])->name('order.view_retail_invoice');
+  Route::get('/online/invoice/view/{order}', [OrderManagerController::class, 'viewOnlineInvoice'])->name('order.view_online_invoice');
 
 
   Route::get('/payments', [PaymentController::class, 'indexForManager'])->name('payments.index');

@@ -62,13 +62,14 @@ COMMON BADGE STYLE
  .status-undefined-badge,
  .status-pmanager-badge,
  .cyan-type-badge,
+ .orange-type-badge,
  .purple-type-badge,
  .pink-type-badge,
  .emerald-type-badge,
  .amber-type-badge {
    padding: 4px 16px;
    border-radius: 50px;
-   font-size: 13px;
+   font-size: 10px;
    font-weight: 600;
    display: inline-block;
    letter-spacing: .3px;
@@ -126,7 +127,7 @@ COMMON BADGE STYLE
 
  .orange-type-badge {
    background-color: #ffedd5;
-   color: #c2410c;
+   color: #f84a05;
  }
 
  .cyan-type-badge {

@@ -8,7 +8,7 @@
       <p>{{ $order->order_id ?? ('BRS' . $order->id) }}</p>
     </div>
     <div><span>Branch</span>
-      <p>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</p>
+      <p>{{ $order->branch->name ?? "N/A" }}</p>
     </div>
 
     <div><span>Amount</span>
@@ -54,6 +54,19 @@
 
         @else
         <span style="color:#6b7280;">Undefined</span>
+        @endif
+      </p>
+    </div>
+    <div><span>Pay Status</span>
+      <p>
+        @if($order->payment_status == "unpaid")
+        <span class="orange-type-badge">Unpaid</span>
+        @elseif($order->payment_status == 'partial')
+        <span class="purple-type-badge">Partial</span>
+        @elseif($order->payment_status == 'paid')
+        <span class="emerald-type-badge">Paid</span>
+        @else
+        <span class="status-undefined-badge">Undefined</span>
         @endif
       </p>
     </div>

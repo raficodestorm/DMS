@@ -163,9 +163,10 @@ class OrderController extends Controller
 
   public function showForAdmin($id)
   {
-    $order = Order::with(['customer', 'sr', 'items.product'])->findOrFail($id);
+    $order = Order::with(['customer', 'sr', 'items.product', 'branch'])->findOrFail($id);
+    $branches = \App\Models\Branch::select('id', 'name')->orderBy('name', 'asc')->get();
 
-    return view('pages.admin.orders.show', compact('order'));
+    return view('pages.admin.orders.show', compact('order', 'branches'));
   }
 
 
@@ -570,6 +571,25 @@ class OrderController extends Controller
       'items',
       'hasDiscount',
       'invoiceHeader'
+    ));
+  }
+
+  public function viewOnlineInvoice(Order $order)
+  {
+    $order->load(['items.product.category', 'items.product.supplier', 'customer', 'branch', 'manager', 'sr']);
+
+    $items = $order->items->sortBy(function ($item) {
+      return $item->product->category->name ?? 'General';
+    });
+
+    $hasDiscount = $items->contains(function ($item) {
+      return (float) $item->discount_amount > 0 || !empty($item->offer);
+    });
+
+    return view("pages.manager.order.online-invoice", compact(
+      'order',
+      'items',
+      'hasDiscount'
     ));
   }
 }

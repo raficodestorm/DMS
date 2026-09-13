@@ -2,7 +2,7 @@
 <tr>
   <td scope="row">{{ $orders->firstItem() ? $orders->firstItem() + $loop->index : $loop->iteration}}</td>
   <td>{{ $order->order_id ?? ('BRS' . $order->id) }}</td>
-  <td>{{ $order->sr->branch->name ?? $order->manager->branch->name }}</td>
+  <td>{{ $order->branch->name ?? "N/A" }}</td>
   <td>{{ number_format($order->net_total, 2) }} TK</td>
   
   <td>
@@ -35,6 +35,18 @@
     @endif
   </td>
 
+  <td >
+    @if($order->payment_status == "unpaid")
+    <span class="orange-type-badge ">Unpaid</span>
+    @elseif($order->payment_status == "partial")
+    <span class="purple-type-badge">Partial</span>
+    @elseif($order->payment_status == 'paid')
+    <span class="emerald-type-badge">Paid</span>
+    @else
+    <span class="status-undefined-badge">Undefined</span>
+    @endif
+  </td>
+
   <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
 
   <td class="action-icons">
@@ -59,6 +71,6 @@
 </tr>
 @empty
 <tr>
-  <td colspan="8" class="text-center text-muted">No orders found.</td>
+  <td colspan="9" class="text-center text-muted">No orders found.</td>
 </tr>
 @endforelse

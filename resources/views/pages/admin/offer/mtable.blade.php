@@ -30,8 +30,16 @@
         </div>
         <div>
             <span>Discount</span>
-            <p class="fw-bold" style="color: var(--primary, #3131ff);">
-                {{ $offer->type == 'percentage' ? $offer->discount_amount . '%' : number_format($offer->discount_amount, 2) . ' TK' }}
+            <p>
+                @if($offer->type == 'free_shipping')
+                    <span style="display:inline-flex; align-items:center; gap:4px; background: rgba(22,163,74,0.1); color:#16a34a; border:1px solid rgba(22,163,74,0.25); padding:3px 9px; border-radius:10px; font-size:0.8rem; font-weight:700;">
+                        🚚 Free Shipping
+                    </span>
+                @else
+                    <span class="fw-bold" style="color: var(--primary, #3131ff);">
+                        {{ $offer->type == 'percentage' ? $offer->discount_amount . '%' : number_format($offer->discount_amount, 0) . ' TK' }}
+                    </span>
+                @endif
             </p>
         </div>
         <div>

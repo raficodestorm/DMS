@@ -14,6 +14,7 @@ class OrderItem extends Model
         'unit_deduction_amount',
         'selling_rate',
         'discount_amount',
+        'offer',
         'net_total',
         'profit',
     ];

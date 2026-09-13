@@ -66,14 +66,14 @@
         </a>
 
         <!-- Cart Widget Pill -->
-        <a href="javascript:void(0)" class="header-pill-widget" title="Your Cart">
+        <a href="javascript:void(0)" class="header-pill-widget" title="Your Cart" onclick="openCartModal()">
           <div class="widget-icon-wrap">
             <i class="fas fa-basket-shopping icon-cart"></i>
-            <span class="widget-badge">0</span>
+            <span class="widget-badge cart-count-badge" style="display: none;">0</span>
           </div>
           <div class="widget-text">
             <span class="sub">Your Cart</span>
-            <strong class="main">৳0.00</strong>
+            <strong class="main cart-total-text">৳0.00</strong>
           </div>
         </a>
       </div>
@@ -180,10 +180,10 @@
       </a>
 
       <!-- Cart with Badge -->
-      <a href="javascript:void(0)" class="mobile-icon-btn" title="Cart">
+      <a href="javascript:void(0)" class="mobile-icon-btn" title="Cart" onclick="openCartModal()">
         <div class="widget-icon-wrap">
           <i class="fas fa-basket-shopping icon-cart" style="font-size: 19px;"></i>
-          <span class="widget-badge">0</span>
+          <span class="widget-badge cart-count-badge" style="display: none;">0</span>
         </div>
       </a>
 

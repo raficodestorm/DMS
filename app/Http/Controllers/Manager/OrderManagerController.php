@@ -50,6 +50,11 @@ class OrderManagerController extends Controller
       $query->where('status', $request->status);
     }
 
+    // Order Type Filter
+    if ($request->filled('order_type')) {
+      $query->where('order_type', $request->order_type);
+    }
+
     // Search Filter
     if ($request->filled('search')) {
       $search = trim($request->search);
@@ -363,5 +368,79 @@ class OrderManagerController extends Controller
     $order->delete();
 
     return redirect()->route('manager.order.index')->with('success', 'Order deleted successfully.');
+  }
+
+  /**
+   * Confirm an online/guest order and generate its invoice.
+   */
+  public function onlineConfirm(Order $order)
+  {
+    try {
+      DB::transaction(function () use ($order) {
+        $branchId = auth()->user()->branch_id ?? $order->branch_id;
+
+        $order = Order::query()
+          ->whereKey($order->id)
+          ->lockForUpdate()
+          ->with([
+            'items.product.category',
+            'customer',
+            'sr',
+          ])
+          ->firstOrFail();
+
+        if ($order->status === 'complete' || $order->status === 'delivered') {
+          return;
+        }
+
+        // Check and decrement branch stock if not already decremented
+        foreach ($order->items as $item) {
+          $stock = Stock::where([
+            'product_id' => $item->product_id,
+            'branch_id'  => $branchId,
+          ])->lockForUpdate()->first();
+
+          
+
+          if ($stock && $stock->quantity >= $item->quantity) {
+            $stock->decrement('quantity', $item->quantity);
+          }
+        }
+
+        $order->update([
+          'status'    => 'complete',
+          'branch_id' => $branchId,
+        ]);
+      });
+
+      return redirect()
+        ->route('manager.order.view_online_invoice', $order->id)
+        ->with('success', "Online Order #{$order->order_id} confirmed and invoice generated successfully!");
+    } catch (\Throwable $e) {
+      Log::error('Online order confirm error: ' . $e->getMessage());
+      return back()->with('error', 'Something went wrong while confirming the order: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * View the printable/downloadable online order invoice.
+   */
+  public function viewOnlineInvoice(Order $order)
+  {
+    $order->load(['items.product.category', 'items.product.supplier', 'customer', 'branch', 'manager', 'sr']);
+
+    $items = $order->items->sortBy(function ($item) {
+      return $item->product->category->name ?? 'General';
+    });
+
+    $hasDiscount = $items->contains(function ($item) {
+      return (float) $item->discount_amount > 0 || !empty($item->offer);
+    });
+
+    return view('pages.manager.order.online-invoice', compact(
+      'order',
+      'items',
+      'hasDiscount'
+    ));
   }
 }

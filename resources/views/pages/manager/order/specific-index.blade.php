@@ -93,6 +93,7 @@
           <th>Reference</th>
           <th>Amount</th>
           <th>Status</th>
+          <th>Payment Status</th>
           <th>Date & Time</th>
           <th>Action</th>
         </tr>
@@ -122,6 +123,17 @@
             <span class="status-undefined-badge">Undefined</span>
             @endif
           </td>
+          <td>
+            @if($order->payment_status == "unpaid")
+            <span class="orange-type-badge">Unpaid</span>
+            @elseif($order->payment_status == 'partial')
+            <span class="purple-type-badge">Partial</span>
+            @elseif($order->payment_status == 'paid')
+            <span class="emerald-type-badge">Paid</span>
+            @else
+            <span class="status-undefined-badge">Undefined</span>
+            @endif
+          </td>
           <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
           <td class="action-icons">
             <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
@@ -131,7 +143,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="8" class="text-center text-muted">No orders found</td>
+          <td colspan="9" class="text-center text-muted">No orders found</td>
         </tr>
         @endforelse
       </tbody>
@@ -179,6 +191,19 @@
 
             @else
             <span style="color:#6b7280;">Undefined</span>
+            @endif
+          </p>
+        </div>
+        <div><span>Payment Status</span>
+          <p>
+            @if($order->payment_status == "unpaid")
+            <span class="orange-type-badge">Unpaid</span>
+            @elseif($order->payment_status == 'partial')
+            <span class="purple-type-badge">Partial</span>
+            @elseif($order->payment_status == 'paid')
+            <span class="emerald-type-badge">Paid</span>
+            @else
+            <span class="status-undefined-badge">Undefined</span>
             @endif
           </p>
         </div>

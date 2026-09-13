@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('customer_type'); // retail, wholesale
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('coupon_code')->nullable();
-            $table->enum('type', ['percentage', 'fixed']);
+            $table->enum('type', ['percentage', 'fixed', 'free_shipping']);
             $table->decimal('discount_amount', 10, 2);
             $table->date('start_date');
             $table->date('end_date');

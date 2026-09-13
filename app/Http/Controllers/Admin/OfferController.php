@@ -83,12 +83,17 @@ class OfferController extends Controller
             'customer_type'   => 'required|string|max:255',
             'product_id'      => 'required|exists:products,id',
             'coupon_code'     => 'nullable|string|max:255',
-            'type'            => 'required|in:percentage,fixed',
-            'discount_amount' => 'required|numeric|min:0',
+            'type'            => 'required|in:percentage,fixed,free_shipping',
+            'discount_amount' => 'required_unless:type,free_shipping|nullable|numeric|min:0',
             'start_date'      => 'required|date',
             'end_date'        => 'required|date|after_or_equal:start_date',
             'status'          => 'boolean',
         ]);
+
+        // Free shipping offers have no monetary discount
+        if ($validated['type'] === 'free_shipping') {
+            $validated['discount_amount'] = 0;
+        }
 
         Offer::create($validated);
 
@@ -118,12 +123,17 @@ class OfferController extends Controller
             'customer_type'   => 'required|string|max:255',
             'product_id'      => 'required|exists:products,id',
             'coupon_code'     => 'nullable|string|max:255',
-            'type'            => 'required|in:percentage,fixed',
-            'discount_amount' => 'required|numeric|min:0',
+            'type'            => 'required|in:percentage,fixed,free_shipping',
+            'discount_amount' => 'required_unless:type,free_shipping|nullable|numeric|min:0',
             'start_date'      => 'required|date',
             'end_date'        => 'required|date|after_or_equal:start_date',
             'status'          => 'required|in:0,1',
         ]);
+
+        // Free shipping offers have no monetary discount
+        if ($validated['type'] === 'free_shipping') {
+            $validated['discount_amount'] = 0;
+        }
 
         $offer->update($validated);
 

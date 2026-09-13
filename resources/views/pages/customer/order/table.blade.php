@@ -20,6 +20,17 @@
     <span class="status-undefined-badge">Undefined</span>
     @endif
   </td>
+  <td>
+    @if($order->payment_status == "unpaid")
+    <span class="orange-type-badge">Unpaid</span>
+    @elseif($order->payment_status == 'partial')
+    <span class="purple-type-badge">Partial</span>
+    @elseif($order->payment_status == 'paid')
+    <span class="emerald-type-badge">Paid</span>
+    @else
+    <span class="status-undefined-badge">Undefined</span>
+    @endif
+  </td>
   <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
   <td class="action-icons">
     <a href="{{ route('customer.orders.show', $order->id) }}" class="icon-btn view-icon">
@@ -29,6 +40,6 @@
 </tr>
 @empty
 <tr>
-  <td colspan="6" class="text-center text-muted">No orders found.</td>
+  <td colspan="7" class="text-center text-muted">No orders found.</td>
 </tr>
 @endforelse

@@ -104,6 +104,83 @@ class OrderSrController extends Controller
     ]);
   }
 
+  /**
+   * Show the Online Order Search UI for SR.
+   */
+  public function onlineOrderIndex()
+  {
+    return view('pages.sr.order.onlineindex');
+  }
+
+  /**
+   * AJAX: Search orders for SR.
+   * - online orders: search across all branches
+   * - field_order: only from SR's own branch
+   */
+  public function onlineOrderSearch(Request $request)
+  {
+    $user   = auth()->user();
+    $search = trim($request->input('search', ''));
+
+    if (empty($search)) {
+      return response()->json(['orders' => [], 'message' => 'Enter an Order ID to search.']);
+    }
+
+    // Online orders: all branches — search by order_id only
+    $onlineQuery = Order::with(['customer', 'branch'])
+      ->where('order_type', 'online')
+      ->where(function ($q) use ($search) {
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search);
+      });
+
+    // Field orders: only SR's branch — search by order_id only
+    $fieldQuery = Order::with(['customer', 'branch'])
+      ->where('order_type', 'field_order')
+      ->where('branch_id', $user->branch_id)
+      ->where(function ($q) use ($search) {
+        $q->where('order_id', 'like', "%{$search}%")
+          ->orWhere('id', $search);
+      });
+
+    $onlineOrders = $onlineQuery->latest()->limit(15)->get();
+    $fieldOrders  = $fieldQuery->latest()->limit(15)->get();
+
+    $orders = $onlineOrders->merge($fieldOrders)->sortByDesc('created_at')->values();
+
+    $result = $orders->map(function ($order) {
+      return [
+        'id'               => $order->id,
+        'order_id'         => $order->order_id ?? ('BRS' . $order->id),
+        'order_type'       => $order->order_type,
+        'customer_id'      => $order->customer_id,
+        'customer_name'    => $order->customer_name ?? ($order->customer->shop_name ?? ($order->customer->name ?? 'N/A')),
+        'customer_phone'   => $order->customer_phone ?? ($order->customer->phone ?? 'N/A'),
+        'country'          => $order->country ?? ($order->customer->country ?? 'N/A'),
+        'city'             => $order->city ?? ($order->customer->city ?? 'N/A'),
+        'address'          => $order->address ?? ($order->customer->address ?? 'N/A'),
+        'note'             => $order->note,
+        'branch'           => $order->branch->name ?? 'N/A',
+        'net_total'        => number_format($order->net_total, 2),
+        'payment_amount'   => number_format($order->payment_amount ?? 0, 2),
+        'discount_amount'  => number_format($order->discount_amount ?? 0, 2),
+        'special_discount' => number_format($order->special_discount ?? 0, 2),
+        'payment_method'   => $order->payment_method ?? 'Cash on Delivery',
+        'status'           => $order->status,
+        'payment_status'   => $order->payment_status ?? 'unpaid',
+        'date'             => $order->created_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A'),
+        'show_url'         => route('sr.order.show', $order->id),
+        'delivered_url'    => route('sr.order.delivered', $order->id),
+        'is_delivered'     => $order->status === 'delivered',
+      ];
+    });
+
+    return response()->json([
+      'orders'  => $result,
+      'message' => $orders->isEmpty() ? 'No orders found for "' . $search . '".' : null,
+    ]);
+  }
+
 
   public function indexForCustomer()
   {
@@ -198,16 +275,46 @@ class OrderSrController extends Controller
     return view('pages.sr.order.show', compact('order'));
   }
 
-  public function delivered($id)
-  {
-    $order = Order::findOrFail($id);
+  public function delivered(Request $request, $id)
+{
+    $order = Order::with('customer')->findOrFail($id);
 
-    $order->update([
-      'status' => 'delivered'
-    ]);
+    $updateData = [
+        'status'       => 'delivered',
+        'delivered_by' => auth()->id(),
+        'delivered_at' => now(),
+    ];
 
-    return back()->with('success', "Order BRS{$id} has been delivered successfully.");
-  }
+    // Customer নেই OR customer group is retail
+    if (
+        is_null($order->customer_id) ||
+        $order->customer?->customer_group === 'retail'
+    ) {
+        $updateData += [
+            'payment_status' => 'paid',
+            'payment_amount' => $order->net_total,
+        ];
+    }
+
+    $order->update($updateData);
+
+    $orderNumber = $order->order_id ?? "BRS{$id}";
+
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => "Order {$orderNumber} has been delivered successfully.",
+            'status'  => 'delivered',
+        ]);
+    }
+
+    return back()->with(
+        'success',
+        "Order {$orderNumber} has been delivered successfully."
+    );
+}
+
+
 
   public function create()
   {
@@ -379,6 +486,15 @@ class OrderSrController extends Controller
 
             /*
              * ---------------------------------------------------------
+             * 1-B. Get Customer (to snapshot contact info into order)
+             * ---------------------------------------------------------
+             */
+            $customer = Customer::query()
+                ->whereKey($request->customer_id)
+                ->firstOrFail();
+
+            /*
+             * ---------------------------------------------------------
              * 2. Get deduction settings
              * ---------------------------------------------------------
              */
@@ -441,9 +557,15 @@ class OrderSrController extends Controller
                 'special_discount'            => $request->special_discount ?? 0,
                 'discount_amount'             => $request->total_discount ?? 0,
                 'net_total'                   => $request->net_total,
-                'applied_deduction_percent'  => $totalDeductionPercent,
+                'applied_deduction_percent'   => $totalDeductionPercent,
                 'note'                        => $request->note,
-                'order_type'                  => 'field_order'
+                'order_type'                  => 'field_order',
+                // Snapshot customer info at time of order
+                'customer_name'               => $customer->shop_name,
+                'customer_phone'              => $customer->phone,
+                'country'                     => $customer->country,
+                'city'                        => $customer->city,
+                'address'                     => $customer->address,
             ]);
 
             /*
@@ -590,81 +712,4 @@ class OrderSrController extends Controller
     }
 }
 
-
-
-  // public function store(Request $request)
-  // {
-
-  //   $request->validate([
-  //     'customer_id' => 'required|exists:customers,id',
-  //     'products'    => 'required|array|min:1',
-  //     'net_total'   => 'required|numeric'
-  //   ]);
-
-  //   try {
-  //     return DB::transaction(function () use ($request) {
-  //       $user = auth()->user();
-  //       $branchId = $user->branch_id;
-
-  //       $manager = User::where('branch_id', $branchId)
-  //         ->where('role', 'manager')
-  //         ->first();
-
-        
-  //       $deductionSettings = DB::table('deductions')->where('type', 'main')->first();
-  //       $globalRate = $request->has('apply_global') ? ($deductionSettings->customer_deduction ?? 0) : 0;
-  //       $customRate = $request->applied_custom_deduction ?? 0;
-  //       $totalDeductionPercent = $globalRate + $customRate;
-
-  //       $order = Order::create([
-  //         'customer_id'     => $request->customer_id,
-  //         'sr_id'           => $user->id,
-  //         'manager_id'      => $manager->id,
-  //         'branch_id'      => $user->branch_id,
-  //         'status'          => 'pending_sr',
-  //         'special_discount' => $request->special_discount ?? 0,
-  //         'discount_amount' => $request->total_discount,
-  //         'net_total'       => $request->net_total,
-  //         'applied_deduction_percent' => $totalDeductionPercent,
-  //         'note'            => $request->note
-  //       ]);
-
-  //       foreach ($request->products as $item) {
-
-  //         $basePrice = $item['price'];
-  //         $deductionAmount = ($basePrice * $totalDeductionPercent / 100);
-  //         $sellingRate = $basePrice - $deductionAmount;
-
-  //         OrderItem::create([
-  //           'order_id'              => $order->id,
-  //           'product_id'            => $item['product_id'],
-  //           'quantity'              => $item['qty'],
-  //           'price'                 => $basePrice,
-  //           'unit_deduction_amount' => $deductionAmount,
-  //           'selling_rate'          => $sellingRate,
-  //           'discount_amount'       => $item['discount'] ?? 0, 
-  //           'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty']
-  //         ]);
-  //       }
-
-  //       if ($manager) {
-  //         $notificationData = [
-  //           'title'   => 'New Order Received',
-  //           'message' => [
-  //             'text' => 'A new order has been placed by',
-  //             'from' => $user->username
-  //           ],
-  //           'url'     => route('manager.order.show', $order->id),
-  //           'type'    => 'new_order'
-  //         ];
-
-  //         $manager->notify(new \App\Notifications\SystemNotification($notificationData));
-  //       }
-
-  //       return redirect()->route('dashboards')->with('success', 'Order requested successfully!');
-  //     });
-  //   } catch (\Exception $e) {
-  //     return redirect()->back()->with('error', 'Something went wrong! ' . $e->getMessage());
-  //   }
-  // }
 }

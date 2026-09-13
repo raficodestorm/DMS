@@ -74,6 +74,7 @@
           <th>Order ID</th>
           <th>Amount</th>
           <th>Status</th>
+          <th>Payment Status</th>
           <th>Date & Time</th>
           <th>Action</th>
         </tr>

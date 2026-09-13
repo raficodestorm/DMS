@@ -533,6 +533,16 @@ public function managerStore(Request $request)
 
             /*
              * ---------------------------------------------------------
+             * 4-A. AUTO-SETTLEMENT: Distribute the payment across
+             *      this customer's oldest unpaid/partial orders (FIFO).
+             *      Updates each order's payment_amount and
+             *      payment_status atomically within this transaction.
+             * ---------------------------------------------------------
+             */
+            $this->settleOrdersWithPayment($customer->id, $paymentAmount);
+
+            /*
+             * ---------------------------------------------------------
              * 5. Customer notification
              * ---------------------------------------------------------
              */
@@ -725,6 +735,16 @@ public function managerStore(Request $request)
             $customer->update([
                 'due' => $dueAfterTransaction,
             ]);
+
+            /*
+             * ---------------------------------------------------------
+             * 5-A. AUTO-SETTLEMENT: Distribute the approved payment
+             *      across this customer's oldest unpaid/partial orders
+             *      (FIFO). Updates each order's payment_amount and
+             *      payment_status atomically within this transaction.
+             * ---------------------------------------------------------
+             */
+            $this->settleOrdersWithPayment($customer->id, $paymentAmount);
 
             /*
              * ---------------------------------------------------------
@@ -1144,4 +1164,102 @@ public function destroy(Transaction $payment)
 }
 
 
+    /**
+     * =========================================================
+     * FIFO ORDER AUTO-SETTLEMENT
+     * =========================================================
+     *
+     * Distributes a payment amount across a customer's oldest
+     * unpaid / partial orders in FIFO order.
+     *
+     * How it works:
+     *   1. Fetch all 'unpaid' and 'partial' orders for the
+     *      customer that are in an approved/active status,
+     *      ordered oldest-first.
+     *   2. Walk the list, crediting each order's `payment_amount`
+     *      until the credit is exhausted:
+     *        - Full cover  → payment_status = 'paid'
+     *        - Partial cover → payment_status = 'partial'
+     *        - No credit left → stop (remaining orders untouched)
+     *
+     * Why `payment_amount` column?
+     *   - O(1) read vs. O(n) SUM(transactions) per order
+     *   - Always-consistent, updated atomically inside the same
+     *     DB::transaction as the payment approval.
+     *   - Zero extra queries during settlement — one read + one
+     *     update per affected order only.
+     *
+     * MUST be called inside an active DB::transaction() block.
+     *
+     * @param  int   $customerId     The customer whose orders to settle
+     * @param  float $creditAmount   The payment amount to distribute
+     * @return void
+     */
+    private function settleOrdersWithPayment(int $customerId, float $creditAmount): void
+    {
+        if ($creditAmount <= 0) {
+            return;
+        }
+
+        $remainingCredit = round($creditAmount, 2);
+
+        /*
+         * Fetch all unsettled orders for this customer:
+         *   - Only orders that have been approved/active
+         *     (pending or rejected orders are excluded).
+         *   - Lock rows for update to prevent race conditions
+         *     when two payments are approved concurrently.
+         *   - Oldest first (FIFO).
+         */
+        $pendingOrders = \App\Models\Order::query()
+            ->where('customer_id', $customerId)
+            ->whereIn('payment_status', ['unpaid', 'partial'])
+            ->whereIn('status', ['approved', 'complete', 'delivered'])
+            ->orderBy('created_at', 'asc')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($pendingOrders as $order) {
+
+            if ($remainingCredit <= 0) {
+                break;
+            }
+
+            // How much of this order is still unpaid?
+            $alreadyPaid   = round((float) $order->payment_amount, 2);
+            $orderTotal    = round((float) $order->net_total, 2);
+            $orderRemaining = round($orderTotal - $alreadyPaid, 2);
+
+            // Skip if already fully covered (defensive guard).
+            if ($orderRemaining <= 0) {
+                $order->update(['payment_status' => 'paid']);
+                continue;
+            }
+
+            if ($remainingCredit >= $orderRemaining) {
+                /*
+                 * This order is FULLY covered by the remaining credit.
+                 * Mark it as paid and carry the surplus forward.
+                 */
+                $order->update([
+                    'payment_amount' => $orderTotal,  // cap at net_total
+                    'payment_status' => 'paid',
+                ]);
+
+                $remainingCredit = round($remainingCredit - $orderRemaining, 2);
+
+            } else {
+                /*
+                 * Remaining credit covers only part of this order.
+                 * Mark it as partial and exhaust the credit.
+                 */
+                $order->update([
+                    'payment_amount' => round($alreadyPaid + $remainingCredit, 2),
+                    'payment_status' => 'partial',
+                ]);
+
+                $remainingCredit = 0;
+            }
+        }
+    }
 }

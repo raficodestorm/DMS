@@ -31,6 +31,19 @@
         @endif
       </p>
     </div>
+    <div><span>Payment Status</span>
+      <p>
+        @if($order->payment_status == "unpaid")
+        <span class="orange-type-badge">Unpaid</span>
+        @elseif($order->payment_status == 'partial')
+        <span class="purple-type-badge">Partial</span>
+        @elseif($order->payment_status == 'paid')
+        <span class="emerald-type-badge">Paid</span>
+        @else
+        <span class="status-undefined-badge">Undefined</span>
+        @endif
+      </p>
+    </div>
     <div><span>Date & Time</span>
       <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
     </div>

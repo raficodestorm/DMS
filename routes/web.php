@@ -46,6 +46,17 @@ Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
 
+// Cart Live Calculation & Coupon Routes (Pricing Engine)
+Route::post('/cart/calculate', [\App\Http\Controllers\CartController::class, 'calculate'])->name('cart.calculate');
+Route::post('/cart/apply-coupon', [\App\Http\Controllers\CartController::class, 'applyCoupon'])->name('cart.apply_coupon');
+
+// Checkout & Order Placement Routes
+Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout/calculate', [\App\Http\Controllers\CheckoutController::class, 'calculate'])->name('checkout.calculate');
+Route::post('/checkout/shipping-rate', [\App\Http\Controllers\CheckoutController::class, 'getShippingRate'])->name('checkout.shipping_rate');
+Route::post('/checkout/place-order', [\App\Http\Controllers\CheckoutController::class, 'placeOrder'])->name('checkout.place_order');
+Route::get('/order-success/{order_id}', [\App\Http\Controllers\CheckoutController::class, 'orderSuccess'])->name('order.success');
+
 
 // Route::post('/notifications/read/{id}', function ($id) {
 //     $notification = auth()->user()->notifications()->findOrFail($id);

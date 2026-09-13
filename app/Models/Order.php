@@ -17,14 +17,23 @@ class Order extends Model
         'net_total',
         'applied_deduction_percent',
         'note',
+        'delivered_by',
+        'delivered_at',
         'branch_id',
         'order_type',
         'payment_status',
+        'payment_amount',
         'customer_name',
         'customer_phone',
         'country',
         'city',
         'address',
+        'shipping_charge',
+        'payment_method',
+    ];
+
+    protected $casts = [
+        'delivered_at' => 'datetime',
     ];
 
     public function getDisplayOrderIdAttribute(): string
@@ -39,6 +48,11 @@ class Order extends Model
     public function sr()
     {
         return $this->belongsTo(User::class, 'sr_id');
+    }
+
+    public function dso()
+    {
+        return $this->belongsTo(User::class, 'delivered_by');
     }
 
     public function items()

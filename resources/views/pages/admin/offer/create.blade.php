@@ -257,18 +257,19 @@
                 {{-- Offer Type (Percentage or Fixed) --}}
                 <div class="col-md-6 mb-3">
                     <label>Offer Type <span class="text-danger">*</span></label>
-                    <select class="input-form" name="type" required>
+                    <select class="input-form" name="type" id="offerTypeSelect" required>
                         <option value="percentage" {{ old('type')=='percentage' ? 'selected' : '' }}>Percentage (%)</option>
                         <option value="fixed" {{ old('type')=='fixed' ? 'selected' : '' }}>Fixed Amount (TK)</option>
+                        <option value="free_shipping" {{ old('type')=='free_shipping' ? 'selected' : '' }}>🚚 Free Shipping</option>
                     </select>
                     @error('type')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- Discount Amount --}}
-                <div class="col-md-6 mb-3">
-                    <label>Discount Amount <span class="text-danger">*</span></label>
-                    <input type="number" step="0.01" class="input-form" name="discount_amount" placeholder="0.00" required
-                        value="{{ old('discount_amount') }}">
+                {{-- Discount Amount (hidden for free_shipping) --}}
+                <div class="col-md-6 mb-3" id="discountAmountContainer">
+                    <label>Discount Amount <span class="text-danger" id="discountAmountRequired">*</span></label>
+                    <input type="number" step="1" class="input-form" name="discount_amount" id="discountAmountInput"
+                        placeholder="0" value="{{ old('discount_amount') }}">
                     @error('discount_amount')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
 
@@ -504,6 +505,34 @@ document.addEventListener('DOMContentLoaded', function () {
     if (customerTypeSelect) {
         customerTypeSelect.addEventListener('change', toggleCouponField);
         toggleCouponField();
+    }
+
+    // Offer Type toggle for Discount Amount field
+    const offerTypeSelect       = document.getElementById('offerTypeSelect');
+    const discountAmountCont    = document.getElementById('discountAmountContainer');
+    const discountAmountInput   = document.getElementById('discountAmountInput');
+    const discountAmountReq     = document.getElementById('discountAmountRequired');
+
+    function toggleDiscountAmountField() {
+        if (!offerTypeSelect || !discountAmountCont) return;
+        if (offerTypeSelect.value === 'free_shipping') {
+            discountAmountCont.style.display = 'none';
+            if (discountAmountInput) {
+                discountAmountInput.removeAttribute('required');
+                discountAmountInput.value = '0';
+            }
+        } else {
+            discountAmountCont.style.display = '';
+            discountAmountCont.classList.add('dynamic-field-anim');
+            if (discountAmountInput) {
+                discountAmountInput.setAttribute('required', 'required');
+            }
+        }
+    }
+
+    if (offerTypeSelect) {
+        offerTypeSelect.addEventListener('change', toggleDiscountAmountField);
+        toggleDiscountAmountField();
     }
 });
 </script>

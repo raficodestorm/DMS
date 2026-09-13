@@ -131,6 +131,8 @@ class RetailOrderController extends Controller
           'applied_deduction_percent' => $totalDeductionPercent,
           'note'                      => $request->note,
           'order_type'                => 'retail',
+          'payment_status'            => 'paid',
+          'customer_name'            => 'Retail Customer',
         ]);
 
         // Pre-fetch all products in one query for purchase_price lookup

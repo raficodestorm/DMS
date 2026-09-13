@@ -209,9 +209,9 @@
         <div class="fixed-col-6">
           <div class="info-card">
             <b>Customer Details:</b><br>
-            Shop Name: {{ $customerData['details']->shop_name }}<br>
-            Address: {{ $customerData['details']->address ?? 'Chattogram' }}<br>
-            Phone: {{ $customerData['details']->phone }}
+            Shop Name: {{ $order->customer_name ?? $customerData['details']->shop_name }}<br>
+            Address: {{ $order->address ?? $customerData['details']->address }}<br>
+            Phone: {{ $order->customer_phone ?? $customerData['details']->phone }}
           </div>
         </div>
 

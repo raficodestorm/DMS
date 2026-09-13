@@ -115,9 +115,18 @@
         </div>
 
         <div class="product-card-actions">
-            <button type="button" class="btn-card-cart">
+            @if($isInStock)
+            <button type="button" class="btn-card-cart"
+                data-id="{{ $product->id }}"
+                data-name="{{ $product->name }}"
+                onclick="addToCart(this)">
                 <i class="fas fa-shopping-bag"></i> Add to Cart
             </button>
+            @else
+            <button type="button" class="btn-card-cart" style="opacity: 0.6; cursor: not-allowed;" disabled>
+                <i class="fas fa-ban"></i> Out of Stock
+            </button>
+            @endif
             <a href="javascript:void(0)" class="btn-card-view">
                 <i class="fas fa-eye"></i> View Product
             </a>

@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\User;
+use App\Notifications\SystemNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -259,9 +260,10 @@ class OrderAdminController extends Controller
 
   public function showForAdmin($id)
   {
-    $order = Order::with(['customer', 'sr', 'items.product'])->findOrFail($id);
+    $order = Order::with(['customer', 'sr', 'items.product', 'branch'])->findOrFail($id);
+    $branches = Branch::select('id', 'name')->orderBy('name', 'asc')->get();
 
-    return view('pages.admin.orders.show', compact('order'));
+    return view('pages.admin.orders.show', compact('order', 'branches'));
   }
 
   public function approve($id)
@@ -273,5 +275,46 @@ class OrderAdminController extends Controller
     ]);
 
     return back()->with('success', "Order BRS{$id} has been approved successfully.");
+  }
+
+  /**
+   * Approve an online order and assign it to a selected branch.
+   */
+  public function onlineApprove(Request $request, $id)
+  {
+    $request->validate([
+      'branch_id' => ['required', 'exists:branches,id'],
+    ]);
+
+    $order = Order::findOrFail($id);
+
+    $order->update([
+      'status'    => 'approved',
+      'branch_id' => $request->branch_id,
+    ]);
+
+    // Send notification to assigned branch managers
+    $managers = User::where('role', 'manager')
+      ->where('branch_id', $request->branch_id)
+      ->get();
+
+    $notificationData = [
+      'title'   => 'New Online Order Assigned',
+      'message' => [
+        'text' => 'An online order has been assigned to your branch for processing. Order ID:',
+        'from' => $order->order_id ?? ('BRS' . $order->id),
+      ],
+      'url'     => route('manager.order.show', $order->id),
+      'type'    => 'new_order',
+    ];
+
+    foreach ($managers as $manager) {
+      $manager->notify(new SystemNotification($notificationData));
+    }
+
+    $branch = Branch::find($request->branch_id);
+    $branchName = $branch ? $branch->name : 'Branch';
+
+    return back()->with('success', "Online Order #{$order->order_id} approved and assigned to {$branchName} successfully.");
   }
 }

@@ -27,6 +27,8 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::get('/order/invoice/view/{order}', [OrderController::class, 'viewInvoice'])->name('order.view_invoice');
   Route::get('/orders/show/{order}', [OrderSrController::class, 'showForSr'])->name('order.show');
   Route::patch('/orders/delivered/{order}', [OrderSrController::class, 'delivered'])->name('order.delivered');
+  Route::get('/orders/online', [OrderSrController::class, 'onlineOrderIndex'])->name('order.online.index');
+  Route::get('/orders/online/search', [OrderSrController::class, 'onlineOrderSearch'])->name('order.online.search');
   Route::get('/products/search', [OrderSrController::class, 'searchProducts'])->name('products.search');
   Route::get('/customers/search', [OrderSrController::class, 'searchCustomers'])->name('customers.search');
 

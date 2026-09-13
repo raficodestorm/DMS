@@ -17,7 +17,7 @@
 
   {{-- Smart Filter Bar --}}
   <div class="smart-filter-wrapper">
-    <div class="smart-filter-grid-5">
+    <div class="smart-filter-grid-6">
 
       {{-- Search --}}
       <div>
@@ -26,6 +26,17 @@
           <input type="text" id="searchInput" class="input-form" placeholder="Search Order ID or Customer..." value="{{ request('search') }}" style="padding-left: 32px;">
           <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
         </div>
+      </div>
+
+      {{-- Order Type Filter --}}
+      <div>
+        <label>Order Type</label>
+        <select id="orderTypeFilter" class="input-form">
+          <option value="">-- All Types --</option>
+          <option value="field_order" {{ request('order_type') == 'field_order' ? 'selected' : '' }}>Field Order</option>
+          <option value="retail" {{ request('order_type') == 'retail' ? 'selected' : '' }}>Retail</option>
+          <option value="online" {{ request('order_type') == 'online' ? 'selected' : '' }}>Online</option>
+        </select>
       </div>
 
       {{-- Status Filter --}}
@@ -73,7 +84,9 @@
           <th>Customer</th>
           <th>Reference</th>
           <th>Amount</th>
+          <th>Order Type</th>
           <th>Status</th>
+          <th>Payment Status</th>
           <th>Date & Time</th>
           <th>Action</th>
         </tr>
@@ -104,6 +117,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput       = document.getElementById('searchInput');
+    const orderTypeFilter   = document.getElementById('orderTypeFilter');
     const statusFilter      = document.getElementById('statusFilter');
     const fromDate          = document.getElementById('fromDate');
     const toDate            = document.getElementById('toDate');
@@ -118,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (desktopTable) {
             desktopTable.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
+                    <td colspan="9" class="text-center py-4 text-muted">
                         <i class="fas fa-spinner fa-spin me-2"></i> Loading orders...
                     </td>
                 </tr>`;
@@ -135,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (desktopTable) {
             desktopTable.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-danger">
+                    <td colspan="9" class="text-center py-4 text-danger">
                         <i class="fas fa-exclamation-circle me-1"></i> Failed to load order data. Please try again.
                     </td>
                 </tr>`;
@@ -149,10 +163,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function clearAllFilterInputs() {
-        if (searchInput)  searchInput.value  = '';
-        if (statusFilter) statusFilter.value = '';
-        if (fromDate)     fromDate.value     = '';
-        if (toDate)       toDate.value       = '';
+        if (searchInput)      searchInput.value      = '';
+        if (orderTypeFilter)  orderTypeFilter.value  = '';
+        if (statusFilter)     statusFilter.value     = '';
+        if (fromDate)         fromDate.value         = '';
+        if (toDate)           toDate.value           = '';
     }
 
     function fetchFilteredOrders(fetchUrl = null) {
@@ -160,12 +175,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let url = fetchUrl;
         if (!url) {
-            const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
-            const status = encodeURIComponent(statusFilter ? statusFilter.value : '');
-            const from   = encodeURIComponent(fromDate ? fromDate.value : '');
-            const to     = encodeURIComponent(toDate ? toDate.value : '');
+            const search    = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
+            const orderType = encodeURIComponent(orderTypeFilter ? orderTypeFilter.value : '');
+            const status    = encodeURIComponent(statusFilter ? statusFilter.value : '');
+            const from      = encodeURIComponent(fromDate ? fromDate.value : '');
+            const to        = encodeURIComponent(toDate ? toDate.value : '');
 
-            url = `{{ route('manager.order.index.data') }}?search=${search}&status=${status}&from_date=${from}&to_date=${to}`;
+            url = `{{ route('manager.order.index.data') }}?search=${search}&order_type=${orderType}&status=${status}&from_date=${from}&to_date=${to}`;
         }
 
         fetch(url, {
@@ -207,9 +223,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Filter change listeners
-    if (statusFilter) statusFilter.addEventListener('change', () => fetchFilteredOrders());
-    if (fromDate)     fromDate.addEventListener('change',     () => fetchFilteredOrders());
-    if (toDate)       toDate.addEventListener('change',       () => fetchFilteredOrders());
+    if (orderTypeFilter)  orderTypeFilter.addEventListener('change',  () => fetchFilteredOrders());
+    if (statusFilter)     statusFilter.addEventListener('change',     () => fetchFilteredOrders());
+    if (fromDate)         fromDate.addEventListener('change',         () => fetchFilteredOrders());
+    if (toDate)           toDate.addEventListener('change',           () => fetchFilteredOrders());
 
     // Reset button handler
     if (resetBtn) {
