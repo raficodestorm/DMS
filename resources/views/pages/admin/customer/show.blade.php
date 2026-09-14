@@ -30,6 +30,14 @@
                 <span class="i-value">{{ $customer->branch?->name ?? '_' }}</span>
             </div>
             <div class="info-group">
+                <span class="i-label">Country</span>
+                <span class="i-value">{{ $customer->country ?? 'N/A' }}</span>
+            </div>
+            <div class="info-group">
+                <span class="i-label">City</span>
+                <span class="i-value">{{ $customer->city ?? 'N/A' }}</span>
+            </div>
+            <div class="info-group">
                 <span class="i-label">Address</span>
                 <span class="i-value">{{ $customer->address ?? 'N/A' }}</span>
             </div>

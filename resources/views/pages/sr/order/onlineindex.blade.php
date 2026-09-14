@@ -843,6 +843,7 @@
               <div style="background: var(--primary-soft); display: inline-block; padding: 5px 14px; border-radius: 20px; font-weight: 700; color: var(--primary); font-size: 13.5px;">
                 মোট বিল: ৳ ${esc(netTotal)}
               </div>
+              <p style="margin-top: 12px; margin-bottom: 0; color: var(--accent); font-weight: 600; font-size: 12.5px;"> ⚠️ এটি একটি Wholesale অর্ডার। কাস্টমারের কাছ থেকে কোনো পেমেন্ট গ্রহণ করা হলে, অনুগ্রহ করে সংশ্লিষ্ট <strong>Payment Option</strong>-এ পেমেন্টটি অবশ্যই রেকর্ড করুন। </p>
             </div>
           `,
           icon: 'question',

@@ -120,6 +120,7 @@ class RetailOrderController extends Controller
         $orderId = app(OrderIdGeneratorService::class)->generate();
 
         $order = Order::create([
+          'customer_id'               => null,
           'order_id'                  => $orderId,
           'sr_id'                     => null,
           'manager_id'                => $managerId,
@@ -127,12 +128,14 @@ class RetailOrderController extends Controller
           'status'                    => 'delivered',
           'special_discount'          => $request->special_discount ?? 0,
           'discount_amount'           => $request->total_discount ?? 0,
-          'net_total'                 => $request->net_total,
+          'net_total'                 => 0,
           'applied_deduction_percent' => $totalDeductionPercent,
           'note'                      => $request->note,
           'order_type'                => 'retail',
           'payment_status'            => 'paid',
-          'customer_name'            => 'Retail Customer',
+          'payment_amount'            => 0,
+          'payment_method'            => $request->payment_method ?? 'Cash',
+          'customer_name'             => 'Retail Customer',
         ]);
 
         // Pre-fetch all products in one query for purchase_price lookup
@@ -144,6 +147,7 @@ class RetailOrderController extends Controller
 
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
+        $totalNetTotal = 0;
         foreach ($request->products as $item) {
 
           // Stock Check & Update
@@ -186,7 +190,14 @@ class RetailOrderController extends Controller
             'net_total'             => $itemNetTotal,
             'profit'                => $profit,
           ]);
+          $totalNetTotal += $itemNetTotal;
         }
+        $totalNetTotal = round($totalNetTotal, 2);
+
+        $order->update([
+            'net_total'      => $totalNetTotal,
+            'payment_amount' => $totalNetTotal,
+        ]);
 
         // Notify admins
         $notificationData = [

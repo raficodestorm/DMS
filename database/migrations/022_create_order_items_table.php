@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('unit_deduction_amount', 10, 2)->nullable();
             $table->decimal('selling_rate', 10, 2);
             $table->decimal('discount_amount', 10, 2)->default(0);
-            $table->string('offer', 50)->nullable();
+            $table->string('offer', 50)->nullable(); // just for snapshot
             $table->decimal('net_total', 10, 2);
             // new -------------------
             $table->decimal('profit', 15, 2)->default(0);

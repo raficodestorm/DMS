@@ -28,7 +28,14 @@ function toggleMobileCategory() {
     }
 }
 
-// Desktop Category Dropdown Click Toggle (if clicked)
+// Desktop & Mobile User Profile Dropdown Click Toggle
+function toggleMobileUserDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('mobileUserDropdownWrap');
+    if (wrap) wrap.classList.toggle('active');
+}
+
+// Desktop Category & User Dropdown Click Toggle
 document.addEventListener('DOMContentLoaded', () => {
     const browseBtn = document.getElementById('browseCatBtn');
     const dropdownWrap = document.getElementById('categoriesDropdownWrap');
@@ -44,6 +51,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // User Profile Dropdown Click Toggle (Desktop & Mobile)
+    const userDropdownWrap = document.getElementById('headerUserDropdownWrap');
+    const userBtn = document.getElementById('headerUserBtn');
+    if (userBtn && userDropdownWrap) {
+        userBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdownWrap.classList.toggle('active');
+        });
+    }
+
+    // Global click listener to close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (userDropdownWrap && !userDropdownWrap.contains(e.target)) {
+            userDropdownWrap.classList.remove('active');
+        }
+        const mobileWrap = document.getElementById('mobileUserDropdownWrap');
+        if (mobileWrap && !mobileWrap.contains(e.target)) {
+            mobileWrap.classList.remove('active');
+        }
+    });
 
     updateThemeIcons();
 });

@@ -539,7 +539,7 @@ public function managerStore(Request $request)
              *      payment_status atomically within this transaction.
              * ---------------------------------------------------------
              */
-            $this->settleOrdersWithPayment($customer->id, $paymentAmount);
+            $this->settleOrdersWithPayment($customer->id, $paymentAmount, $validated['payment_method']);
 
             /*
              * ---------------------------------------------------------
@@ -744,7 +744,7 @@ public function managerStore(Request $request)
              *      payment_status atomically within this transaction.
              * ---------------------------------------------------------
              */
-            $this->settleOrdersWithPayment($customer->id, $paymentAmount);
+            $this->settleOrdersWithPayment($customer->id, $paymentAmount, $payment->payment_method );
 
             /*
              * ---------------------------------------------------------
@@ -1195,7 +1195,7 @@ public function destroy(Transaction $payment)
      * @param  float $creditAmount   The payment amount to distribute
      * @return void
      */
-    private function settleOrdersWithPayment(int $customerId, float $creditAmount): void
+    private function settleOrdersWithPayment(int $customerId, float $creditAmount, string $paymentMethod ): void
     {
         if ($creditAmount <= 0) {
             return;
@@ -1244,6 +1244,7 @@ public function destroy(Transaction $payment)
                 $order->update([
                     'payment_amount' => $orderTotal,  // cap at net_total
                     'payment_status' => 'paid',
+                    'payment_method' => $paymentMethod,
                 ]);
 
                 $remainingCredit = round($remainingCredit - $orderRemaining, 2);
@@ -1256,6 +1257,7 @@ public function destroy(Transaction $payment)
                 $order->update([
                     'payment_amount' => round($alreadyPaid + $remainingCredit, 2),
                     'payment_status' => 'partial',
+                    'payment_method' => $paymentMethod,
                 ]);
 
                 $remainingCredit = 0;

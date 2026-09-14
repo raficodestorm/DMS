@@ -4,22 +4,19 @@
 <style>
     .login-modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(15, 23, 42, 0.6);
-        /* Slate color overlay */
+        background: rgba(10, 15, 30, 0.65);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         z-index: 100000;
-        /* Extremely high z-index to show above everything */
         display: none;
-        /* starts with display none */
         justify-content: center;
         align-items: center;
+        padding: 16px;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.25s ease;
     }
 
     .login-modal-overlay.show {
@@ -29,63 +26,66 @@
 
     .login-modal-container {
         width: 100%;
-        max-width: 550px;
-        padding: 20px;
+        max-width: 450px;
         position: relative;
-        transform: translateY(-30px);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .login-modal-overlay.show .login-modal-container {
-        transform: translateY(0);
-    }
-
-    .login-modal-close {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: transparent;
-        border: none;
-        font-size: 26px;
-        font-weight: bold;
-        color: var(--text-muted);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        z-index: 10;
-        line-height: 1;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-
-    .login-modal-close:hover {
-        color: var(--primary);
-        background: rgba(0, 0, 0, 0.05);
-        transform: rotate(90deg);
+        transform: scale(1);
     }
 
     .login-form-card-modal {
         background: var(--section-bg);
-        border-radius: 15px;
-        padding: 28px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 30px 26px 24px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
         width: 100%;
         position: relative;
     }
 
-    .login-form-card-modal h2 {
-        margin: 0 0 6px 0;
-        font-size: 38px;
-        font-weight: bold;
-        color: var(--primary);
+    .login-modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: var(--primary-soft);
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 13px;
+        transition: all 0.2s ease;
     }
 
-    .login-form-card-modal p.lead {
-        margin: 0 0 18px 0;
-        font-size: 15px;
+    .login-modal-close:hover {
+        color: #ef4444;
+        background: #fee2e2;
+        transform: rotate(90deg);
+    }
+
+    .login-modal-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .login-modal-header h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--text-main);
+        letter-spacing: -0.3px;
+    }
+
+    .login-modal-header p {
+        margin: 4px 0 0;
+        font-size: 13px;
         color: var(--text-muted);
     }
 
@@ -95,163 +95,230 @@
         gap: 14px;
     }
 
-    .field {
+    .modal-field {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 5px;
     }
 
-    .label-log {
-        font-size: 13px;
+    .modal-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .modal-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-input-wrap .input-icon-left {
+        position: absolute;
+        left: 14px;
         color: var(--text-muted);
+        font-size: 14px;
+        pointer-events: none;
     }
 
-    .input-log {
-        height: 48px;
-        border-radius: 10px;
-        border: .5px solid var(--primary-light);
-        padding: 12px 14px;
-        font-size: 15px;
-        outline: none;
-        transition: box-shadow .18s, border-color .18s, transform .06s;
+    .modal-input {
+        width: 100%;
+        height: 45px;
         background: var(--background);
+        border: 1.5px solid var(--border-color);
+        border-radius: 11px;
+        padding: 10px 14px 10px 38px;
+        font-size: 14px;
+        color: var(--text-main);
+        outline: none;
+        transition: all 0.2s ease;
+        font-family: inherit;
     }
 
-    .input-log:focus {
-        box-shadow: 0 6px 18px rgba(1, 84, 120, 0.06);
+    .modal-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-soft);
+        background: var(--section-bg);
+    }
+
+    .modal-toggle-pwd {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .modal-toggle-pwd:hover {
+        color: var(--primary);
+    }
+
+    .modal-actions-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12.5px;
+        margin-top: 1px;
+    }
+
+    .modal-remember {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+
+    .modal-remember input[type="checkbox"] {
+        accent-color: var(--primary);
+        cursor: pointer;
+    }
+
+    .modal-forgot-link {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--primary);
+        text-decoration: none;
+    }
+
+    .modal-forgot-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+
+    .btn-modal-submit {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        border-radius: 11px;
+        height: 46px;
+        width: 100%;
+        margin-top: 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(2, 2, 226, 0.2);
+    }
+
+    .btn-modal-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(2, 2, 226, 0.3);
+    }
+
+    .modal-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 4px 0;
+    }
+
+    .modal-divider span {
+        flex: 1;
+        height: 1px;
+        background: var(--border-color);
+    }
+
+    .modal-divider small {
+        color: var(--text-muted);
+        font-size: 11.5px;
+        text-transform: uppercase;
+    }
+
+    .modal-social-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .btn-modal-social {
+        background: var(--background);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        height: 39px;
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 12.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-modal-social:hover {
+        background: var(--primary-soft);
+        color: var(--primary);
         border-color: var(--primary-light);
     }
 
-    .actions {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .remember {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        font-size: 14px;
-        color: var(--text-muted);
-    }
-
-    .btn-submit {
-        background: linear-gradient(90deg, var(--primary), var(--accent));
-        color: white;
-        font-weight: 600;
-        border: none;
-        border-radius: 10px;
-        padding: 0.7rem;
-        width: 100%;
-        margin-top: 0.8rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-        letter-spacing: 1px;
-        box-shadow: 0 4px 15px rgba(49, 49, 255, 0.3);
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        background: linear-gradient(90deg, var(--accent), var(--primary-light));
-    }
-
-    .btn-submit:active {
-        transform: translateY(1px);
-        background: #39aff8;
-        border: 1px solid #e81efa;
-    }
-
-    .btn-outline {
-        background: transparent;
-        border: 1px solid rgba(16, 16, 16, 0.06);
-    }
-
-    .divider-log {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 6px 0;
-    }
-
-    .divider-log span {
-        flex: 1;
-        height: 1px;
-        background: rgba(16, 16, 16, 0.04);
-    }
-
-    .divider-log small {
-        color: var(--text-muted);
+    .modal-footer-nav {
+        text-align: center;
         font-size: 13px;
-        padding: 0 6px;
+        color: var(--text-muted);
+        padding-top: 12px;
+        margin-top: 2px;
+        border-top: 1px dashed var(--border-color);
     }
 
-    .socials-log {
-        display: flex;
-        gap: 8px;
-    }
-
-    .socials-log button {
-        flex: 1;
-        height: 44px;
-    }
-
-    .meta {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        margin-top: 8px;
-        font-size: 14px;
-    }
-
-    .meta a {
-        color: var(--primary);
+    .modal-footer-nav a {
+        color: var(--accent);
+        font-weight: 700;
         text-decoration: none;
-        font-weight: 600;
+        margin-left: 3px;
     }
 
-    .note {
-        font-size: 13px;
-        color: var(--text-muted);
+    .modal-footer-nav a:hover {
+        color: var(--primary);
+        text-decoration: underline;
     }
 
-    /* Small screens adjustments */
-    @media (max-width: 767px) {
+    .modal-error-msg {
+        font-size: 11.5px;
+        color: #ef4444;
+        font-weight: 500;
+    }
+
+    /* Mobile Screen Optimization */
+    @media (max-width: 480px) {
+        .login-modal-overlay {
+            padding: 12px;
+        }
+
         .login-modal-container {
-            padding: 15px;
-            width: 80%;
-            height: 80vh;
+            max-width: 100%;
         }
 
         .login-form-card-modal {
-            padding: 20px;
-            border-radius: 12px;
+            padding: 20px 16px 16px;
+            border-radius: 16px;
         }
 
-        .login-form-card-modal h2 {
-            font-size: 30px;
+        .login-modal-header h2 {
+            font-size: 19px;
         }
 
-        .input-log {
-            height: 44px;
-            font-size: 14px;
+        .modal-input {
+            height: 38px;
+            font-size: 13px;
         }
 
-        .actions {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
+        .btn-modal-submit {
+            height: 40px;
+            font-size: 13.5px;
         }
 
-        .socials-log {
-            flex-direction: column;
-        }
-
-        .meta {
-            flex-direction: column;
-            gap: 8px;
+        .btn-modal-social {
+            height: 34px;
+            font-size: 11.5px;
         }
     }
 </style>
@@ -259,59 +326,80 @@
 <div id="loginModal" class="login-modal-overlay" onclick="handleOutsideClick(event)">
     <div class="login-modal-container">
         <div class="login-form-card-modal" aria-labelledby="login-modal-title">
-            <button class="login-modal-close" onclick="closeLoginModal()" aria-label="Close modal">&times;</button>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
-                <div>
-                    <h2 id="login-modal-title">Welcome back</h2>
-                    <p class="lead">Sign in to continue to your dashboard</p>
-                </div>
-                <div style="text-align:right">
-                    <small class="note">Not a member?</small>
-                </div>
+            <button class="login-modal-close" onclick="closeLoginModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="login-modal-header">
+                <h2 id="login-modal-title">Welcome Back</h2>
+                <p>Sign in to continue to your dashboard</p>
             </div>
 
             <form id="loginFormModal" method="POST" action="{{ route('login') }}">
                 @csrf
-                <div class="field">
-                    <label for="modal-login" class="label-log">Username or Email</label>
-                    <input class="input-log" id="modal-login" name="login" value="{{ old('login') }}" required
-                        autocomplete="username" />
-                    @error('login')<div class="text-danger" style="font-size: 13px; color: #dc3545; margin-top: 4px;">{{
-                        $message }}</div>@enderror
-                </div>
 
-                <div class="field">
-                    <label for="modal-password" class="label-log">Password</label>
-                    <div style="position:relative; display:flex; align-items:center">
-                        <input class="input-log" style="width: 100%;" id="modal-password" type="password"
-                            name="password" placeholder="••••••••" required autocomplete="current-password" />
-                        <button type="button" id="togglePwdModal" aria-label="Show password" title="Show password"
-                            style="position:absolute; right:8px; height:34px; padding:0 8px; border-radius:8px; border:none; background:transparent; cursor:pointer">👁️</button>
+                {{-- Username / Email --}}
+                <div class="modal-field">
+                    <label for="modal-login" class="modal-label">Username or Email</label>
+                    <div class="modal-input-wrap">
+                        <input class="modal-input @error('login') is-invalid @enderror" id="modal-login" name="login" value="{{ old('login') }}" placeholder="Username or email" required autocomplete="username" />
+                        <span class="input-icon-left"><i class="far fa-envelope"></i></span>
                     </div>
-                    @error('password')<div class="text-danger"
-                        style="font-size: 13px; color: #dc3545; margin-top: 4px;">{{ $message }}</div>@enderror
+                    @error('login')
+                        <span class="modal-error-msg"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="actions">
-                    <label class="remember label-log"><input type="checkbox" id="remember-modal" name="remember" />
-                        Remember me</label>
+                {{-- Password --}}
+                <div class="modal-field">
+                    <label for="modal-password" class="modal-label">Password</label>
+                    <div class="modal-input-wrap">
+                        <input class="modal-input @error('password') is-invalid @enderror" id="modal-password" type="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+                        <span class="input-icon-left"><i class="fas fa-lock"></i></span>
+                        <button type="button" class="modal-toggle-pwd" id="togglePwdModal" aria-label="Toggle password visibility" title="Show password">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                        <span class="modal-error-msg"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                    @enderror
                 </div>
 
-                <button class="btn btn-submit" type="submit">Sign in</button>
-                <div class="actions">
-                    <a href="{{ route('password.request') }}" class="note">Forgot password?</a>
+                {{-- Remember & Forgot --}}
+                <div class="modal-actions-row">
+                    <label class="modal-remember">
+                        <input type="checkbox" id="remember-modal" name="remember" />
+                        <span>Remember me</span>
+                    </label>
+                    <a href="{{ route('password.request') }}" class="modal-forgot-link">Forgot password?</a>
                 </div>
 
-                <div class="divider-log"><span></span><small>or continue with</small><span></span></div>
+                {{-- Submit Button --}}
+                <button class="btn-modal-submit" type="submit">
+                    <i class="fas fa-arrow-right-to-bracket"></i> Sign In
+                </button>
 
-                <div class="socials-log">
-                    <button type="button" class="btn btn-outline" aria-label="Sign in with Google">Google</button>
-                    <button type="button" class="btn btn-outline" aria-label="Sign in with Apple">Apple</button>
+                {{-- Social Divider --}}
+                <div class="modal-divider">
+                    <span></span>
+                    <small>Or continue with</small>
+                    <span></span>
                 </div>
 
-                <div class="meta">
-                    <div class="note">By signing in you accept our <a href="#">Terms</a></div>
-                    <div style="text-align:right"><a href="#">Need help?</a></div>
+                {{-- Social Buttons --}}
+                <div class="modal-social-grid">
+                    <button type="button" class="btn-modal-social" aria-label="Sign in with Google">
+                        <i class="fab fa-google" style="color: #ea4335;"></i> Google
+                    </button>
+                    <button type="button" class="btn-modal-social" aria-label="Sign in with Apple">
+                        <i class="fab fa-apple"></i> Apple
+                    </button>
+                </div>
+
+                {{-- Footer Register Nav --}}
+                <div class="modal-footer-nav">
+                    Don't have an account?
+                    <a href="{{ route('register') }}">Create Account</a>
                 </div>
             </form>
         </div>
@@ -324,15 +412,13 @@
         const modal = document.getElementById('loginModal');
         if (modal) {
             modal.style.display = 'flex';
-            // Trigger reflow for transition
             modal.offsetHeight;
             modal.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
-            
-            // Focus the username field
+            document.body.style.overflow = 'hidden';
+
             const usernameField = document.getElementById('modal-login');
             if (usernameField) {
-                setTimeout(() => usernameField.focus(), 100);
+                setTimeout(() => usernameField.focus(), 150);
             }
         }
     }
@@ -341,10 +427,10 @@
         const modal = document.getElementById('loginModal');
         if (modal) {
             modal.classList.remove('show');
-            document.body.style.overflow = ''; // Restore scrolling
+            document.body.style.overflow = '';
             setTimeout(() => {
                 modal.style.display = 'none';
-            }, 300); // match transition speed
+            }, 250);
         }
     }
 
@@ -355,25 +441,24 @@
         }
     }
 
-    // Toggle password visibility
     (function(){
         const pwd = document.getElementById('modal-password');
         const toggle = document.getElementById('togglePwdModal');
         if (pwd && toggle) {
             toggle.addEventListener('click', ()=>{
-                const type = pwd.type === 'password' ? 'text' : 'password';
-                pwd.type = type;
-                toggle.textContent = type === 'password' ? '👁️' : '🙈';
-                toggle.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+                const isPwd = pwd.type === 'password';
+                pwd.type = isPwd ? 'text' : 'password';
+                const icon = toggle.querySelector('i');
+                if (icon) {
+                    icon.className = isPwd ? 'far fa-eye-slash' : 'far fa-eye';
+                }
+                toggle.setAttribute('aria-label', isPwd ? 'Hide password' : 'Show password');
             });
         }
     })();
 
-    // Auto open if login page requested or validation errors are present
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // Check for error elements or query parameters
         const hasErrors = {{ $errors->has('login') || $errors->has('password') ? 'true' : 'false' }};
         const showLoginParam = urlParams.get('login') === 'show' || urlParams.get('show_login') === '1';
 

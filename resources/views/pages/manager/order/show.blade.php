@@ -392,23 +392,32 @@
 
     @elseif($order->status == 'complete' || $order->status == 'delivered')
     {{-- Invoice Button --}}
-    @if($order->order_type == 'online' || empty($order->customer_id))
-    <a href="{{ route('manager.order.view_online_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i> Invoice
-    </a>
-    @elseif($order->order_type == 'retail')
-    <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i> Invoice
-    </a>
-    @else
-    <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i> Invoice
-    </a>
-    @endif
+  
+    @if($order->order_type == "field_order" || ($order->order_type == "online" && $order->customer?->customer_type == 'wholesale'))
+            <a href="{{ route('admin.order.view_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @elseif($order->order_type == "retail")
+            <a href="{{ route('admin.order.view_retail_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+        @elseif( $order->order_type == "online" && (empty($order->customer_id) || $order->customer?->customer_type == 'retail'))
+           <a href="{{ route('admin.order.view_online_invoice', $order->id) }}"
+                class="btn-smart btn-green">
+
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+        @endif
+    
 
     @elseif($order->status == 'approved')
     {{-- Confirm & Invoice Button --}}
-    @if(empty($order->customer_id))
+    @if(empty($order->customer_id) || $order->customer?->customer_type == 'retail')
     <a href="{{ route('manager.order.online_confirm', $order->id) }}" class="btn-smart btn-green">
       <i class="fas fa-file-invoice"></i> Confirm Order & Generate Invoice
     </a>

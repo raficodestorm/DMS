@@ -488,13 +488,44 @@ class OrderController extends Controller
 
   public function approve($id)
   {
-    $order = Order::findOrFail($id);
+    $order = Order::with('customer')->findOrFail($id);
 
-    $order->update([
+    $updateData = [
       'status' => 'approved'
-    ]);
+    ];
 
-    return back()->with('success', "Order BRS{$id} has been approved successfully.");
+    if (empty($order->branch_id) && !empty($order->customer?->branch_id)) {
+      $updateData['branch_id'] = $order->customer->branch_id;
+    }
+
+    $order->update($updateData);
+
+    $branchId = $order->branch_id ?? $order->customer?->branch_id;
+    if ($branchId) {
+      $managers = User::where('role', 'manager')
+        ->where('branch_id', $branchId)
+        ->get();
+
+      $orderLabel = $order->order_id ?? ('BRS' . $order->id);
+      $notificationData = [
+        'title'   => ($order->order_type === 'online') ? 'New Online Order Approved' : 'Order Approved',
+        'message' => [
+          'text' => ($order->order_type === 'online')
+            ? 'An online order has been approved for your branch. Order ID:'
+            : 'An order has been approved for your branch. Order ID:',
+          'from' => $orderLabel,
+        ],
+        'url'     => route('manager.order.show', $order->id),
+        'type'    => 'new_order',
+      ];
+
+      foreach ($managers as $manager) {
+        $manager->notify(new \App\Notifications\SystemNotification($notificationData));
+      }
+    }
+
+    $orderLabel = $order->order_id ?? ("BRS" . $order->id);
+    return back()->with('success', "Order #{$orderLabel} has been approved successfully.");
   }
 
 

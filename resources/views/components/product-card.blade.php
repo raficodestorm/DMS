@@ -36,7 +36,10 @@
     $offerDiscountVal = 0;
     $offerText = null;
     if ($offer) {
-        if ($offer->type === 'percentage') {
+        if ($offer->type === 'free_shipping') {
+            $offerDiscountVal = 0;
+            $offerText = 'Free Shipping';
+        } elseif ($offer->type === 'percentage') {
             $offerDiscountVal = ($priceAfterDeduction * (float)$offer->discount_amount / 100);
             $offerAmountFormatted = ((float)$offer->discount_amount == (int)$offer->discount_amount) ? (int)$offer->discount_amount : (float)$offer->discount_amount;
             $offerText = $offerAmountFormatted . '% OFF';

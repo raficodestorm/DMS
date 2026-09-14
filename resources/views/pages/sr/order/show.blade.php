@@ -347,35 +347,76 @@
   </div>
 
   {{-- 🔘 Button Logic Based on Status --}}
-  <div class="action-bar">
+<div class="action-bar">
+
     @if($order->status == 'pending_sr')
-    <a href="{{ route('sr.order.edit', $order->id) }}" class="btn-smart btn-blue">
-      <i class="fas fa-edit"></i> Edit
-    </a>
 
-    @elseif($order->status == 'complete')
-    <a href="{{ route('sr.order.view_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i>Invoice
-    </a>
+        <a href="{{ route('sr.order.edit', $order->id) }}"
+           class="btn-smart btn-blue">
+            <i class="fas fa-edit"></i> Edit
+        </a>
 
 
-    <form action="{{ route('sr.order.delivered', $order->id) }}" method="POST">
-      @csrf
-      @method('PATCH')
+    @elseif($order->status == 'complete' || $order->status == 'delivered')
 
-      <button type="submit" class="btn-smart btn-blue"
-        onclick="return confirm('আপনি কি নিশ্চিত, এই অর্ডারটি ডেলিভার করা হয়েছে?')">
+        {{-- Invoice Button --}}
+        @if(
+            $order->order_type == "field_order" ||
+            ($order->order_type == "online" && $order->customer?->customer_type == 'wholesale')
+        )
 
-        <i class="fas fa-truck-check"></i>Confirm Delivered
-      </button>
-    </form>
+            <a href="{{ route('admin.order.view_invoice', $order->id) }}"
+               class="btn-smart btn-green">
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
 
-    @elseif($order->status == 'delivered')
-    <a href="{{ route('sr.order.view_invoice', $order->id) }}" class="btn-smart btn-green">
-      <i class="fas fa-file-invoice"></i>Invoice
-    </a>
+        @elseif($order->order_type == "retail")
+
+            <a href="{{ route('admin.order.view_retail_invoice', $order->id) }}"
+               class="btn-smart btn-green">
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @elseif(
+            $order->order_type == "online" &&
+            (
+                empty($order->customer_id) ||
+                $order->customer?->customer_type == 'retail'
+            )
+        )
+
+            <a href="{{ route('admin.order.view_online_invoice', $order->id) }}"
+               class="btn-smart btn-green">
+                <i class="fas fa-file-invoice"></i> Invoice
+            </a>
+
+        @endif
+
+
+        {{-- Confirm Delivered: Only for Complete --}}
+        @if($order->status == 'complete')
+
+            <form action="{{ route('sr.order.delivered', $order->id) }}"
+                  method="POST">
+
+                @csrf
+                @method('PATCH')
+
+                <button type="submit"
+                        class="btn-smart btn-blue"
+                        onclick="return confirm('আপনি কি নিশ্চিত, এই অর্ডারটি ডেলিভার করা হয়েছে?')">
+
+                    <i class="fas fa-truck-check"></i>
+                    Confirm Delivered
+                </button>
+
+            </form>
+
+        @endif
+
     @endif
-  </div>
+
+</div>
 </div>
 
 <div style="text-align: center; margin-top: 20px;">

@@ -271,9 +271,9 @@
             </div>
             <div style="text-align:right">
                 <small class="note">Not a member?</small>
-                {{-- <div><a href="{{ route('register') }}" class="note"
+                 <div><a href="{{ route('register') }}" class="note"
                         style="font-weight:700; color:var(--accent); text-decoration:none">Create
-                        account</a></div> --}}
+                        account</a></div> 
             </div>
         </div>
 

@@ -174,7 +174,11 @@ h5 {
     transform: scale(1.08);
 }
 
-/* User Profile Account Block */
+/* User Profile Account Block & Dropdown */
+.header-user-dropdown-wrap {
+    position: relative;
+}
+
 .header-user-btn {
     display: flex;
     align-items: center;
@@ -182,18 +186,56 @@ h5 {
     color: var(--text-main);
     text-decoration: none;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: background 0.2s ease, color 0.2s ease;
     cursor: pointer;
+    background: transparent;
+    border: none;
 }
 
-.header-user-btn:hover {
+.header-user-btn:hover,
+.header-user-dropdown-wrap:hover .header-user-btn,
+.header-user-dropdown-wrap.active .header-user-btn {
     background: var(--primary-soft);
     color: var(--primary);
 }
 
+.header-user-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+    background: var(--primary-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px var(--glass);
+}
+
+.user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.user-chevron {
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
+    margin-left: 2px;
+}
+
+.header-user-dropdown-wrap:hover .user-chevron,
+.header-user-dropdown-wrap.active .user-chevron {
+    transform: rotate(180deg);
+    color: var(--primary);
+}
+
 .header-user-icon {
-    font-size: 24px;
+    font-size: 22px;
     color: var(--secondary);
     display: flex;
     align-items: center;
@@ -217,9 +259,173 @@ h5 {
 }
 
 .header-user-text .main {
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-main);
+}
+
+/* Smart Dropdown Menu */
+.header-user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 220px;
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px var(--glass), 0 4px 12px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.97);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+    overflow: hidden;
+}
+
+.header-user-dropdown-wrap:hover .header-user-dropdown-menu,
+.header-user-dropdown-wrap.active .header-user-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-user-info {
+    padding: 12px 14px;
+    background: var(--primary-soft);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-user-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--primary);
+}
+
+.dropdown-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dropdown-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dropdown-user-meta strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-user-meta small {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-links-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+}
+
+.dropdown-links-list li {
+    margin: 0;
+}
+
+.dropdown-links-list .dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-main);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+
+.dropdown-links-list .dropdown-link i {
+    font-size: 13px;
+    width: 16px;
+    text-align: center;
+    color: var(--text-muted);
+    transition: color 0.16s ease;
+}
+
+.dropdown-links-list .dropdown-link:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.dropdown-links-list .dropdown-link:hover i {
+    color: var(--primary);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 6px;
+    list-style: none;
+}
+
+.dropdown-logout-form {
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown-links-list .dropdown-logout-btn {
+    color: #ef4444;
+}
+
+.dropdown-links-list .dropdown-logout-btn i {
+    color: #ef4444;
+}
+
+.dropdown-links-list .dropdown-logout-btn:hover {
+    background: #ef444415;
+    color: #dc2626;
+}
+
+.dropdown-links-list .dropdown-logout-btn:hover i {
+    color: #dc2626;
+}
+
+.mobile-user-wrap {
+    position: relative;
+}
+
+.mobile-user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 190px;
+    z-index: 9999;
+}
+
+.dropdown-links-list .dropdown-logout-btn:hover i {
+    color: #dc2626;
 }
 
 /* Widget Pill Buttons (Wishlist & Cart) */

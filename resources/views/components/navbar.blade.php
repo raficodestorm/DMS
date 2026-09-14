@@ -30,17 +30,57 @@
           <i class="fas fa-moon theme-toggle-icon"></i>
         </button>
 
-        <!-- User / Sign In -->
+        <!-- User / Profile Dropdown -->
         @auth
-          <a href="{{ route('dashboards') }}" class="header-user-btn" title="My Account">
-            <div class="header-user-icon">
-              <i class="far fa-user"></i>
+          <div class="header-user-dropdown-wrap" id="headerUserDropdownWrap">
+            <div class="header-user-btn" id="headerUserBtn" title="My Account" tabindex="0" role="button">
+              <div class="header-user-avatar">
+                <img
+                  src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username ?? auth()->user()->name ?? 'User').'&background=0202e2&color=fff' }}"
+                  alt="{{ auth()->user()->username ?? 'User' }}"
+                  class="user-avatar-img">
+              </div>
+              <div class="header-user-text">
+                <span class="sub">Welcome,</span>
+                <strong class="main">{{ auth()->user()->username ?? auth()->user()->fullname }}</strong>
+              </div>
+              <i class="fas fa-chevron-down user-chevron"></i>
             </div>
-            <div class="header-user-text">
-              <span class="sub">Welcome,</span>
-              <strong class="main">{{ auth()->user()->username ?? auth()->user()->name }}</strong>
+
+            <!-- Smart Dropdown Menu -->
+            <div class="header-user-dropdown-menu" id="headerUserDropdown">
+              <ul class="dropdown-links-list">
+                <li>
+                  <a class="dropdown-link" href="{{ route('dashboards') }}">
+                    <i class="fas fa-gauge-high"></i>
+                    <span>Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-link" href="{{ route('profile.index') }}">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-link" href="{{ route('settings') }}">
+                    <i class="fas fa-gear"></i>
+                    <span>settings</span>
+                  </a>
+                </li>
+                <li class="dropdown-divider"></li>
+                <li class="dropdown-link-item">
+                  <form method="POST" action="{{ route('logout') }}" class="dropdown-logout-form">
+                    @csrf
+                    <button type="submit" class="dropdown-link dropdown-logout-btn">
+                      <i class="fas fa-right-from-bracket"></i>
+                      <span>Logout</span>
+                    </button>
+                  </form>
+                </li>
+              </ul>
             </div>
-          </a>
+          </div>
         @else
           <a href="javascript:void(0)" onclick="openLoginModal(event)" class="header-user-btn" title="Sign In">
             <div class="header-user-icon">
@@ -162,9 +202,46 @@
 
       <!-- User Profile / Login -->
       @auth
-        <a href="{{ route('dashboards') }}" class="mobile-icon-btn" title="Dashboard">
-          <i class="far fa-user"></i>
-        </a>
+        <div class="header-user-dropdown-wrap mobile-user-wrap" id="mobileUserDropdownWrap">
+          <button type="button" class="mobile-icon-btn mobile-avatar-btn" id="mobileUserBtn" title="My Account" onclick="toggleMobileUserDropdown(event)" aria-label="User Menu">
+            <img
+              src="{{ auth()->user()->profile_photo_path ? (str_starts_with(auth()->user()->profile_photo_path, 'uploads/') ? asset(auth()->user()->profile_photo_path) : asset('uploads/' . auth()->user()->profile_photo_path)) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->username ?? auth()->user()->name ?? 'User').'&background=0202e2&color=fff' }}"
+              alt="Avatar"
+              style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--primary); display: block;">
+          </button>
+          <div class="header-user-dropdown-menu mobile-user-dropdown-menu" id="mobileUserDropdown">
+            <ul class="dropdown-links-list">
+              <li>
+                <a class="dropdown-link" href="{{ route('dashboards') }}">
+                  <i class="fas fa-gauge-high"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-link" href="{{ route('profile.index') }}">
+                  <i class="fas fa-user"></i>
+                  <span>Profile</span>
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-link" href="{{ route('settings') }}">
+                  <i class="fas fa-gear"></i>
+                  <span>settings</span>
+                </a>
+              </li>
+              <li class="dropdown-divider"></li>
+              <li class="dropdown-link-item">
+                <form method="POST" action="{{ route('logout') }}" class="dropdown-logout-form">
+                  @csrf
+                  <button type="submit" class="dropdown-link dropdown-logout-btn">
+                    <i class="fas fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
       @else
         <a href="javascript:void(0)" onclick="openLoginModal(event)" class="mobile-icon-btn" title="Sign In">
           <i class="far fa-user"></i>

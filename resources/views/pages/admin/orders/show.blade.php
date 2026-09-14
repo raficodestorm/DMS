@@ -248,7 +248,7 @@
       </div>
       <div class="info-details">
         <label>Customer</label>
-        <p>{{ $order->customer_name ?? $order->customer->shop_name }}</p>
+        <p>{{ $order->customer_name ?: ($order->customer?->shop_name ?? 'N/A') }}</p>
       </div>
     </div>
 
@@ -268,7 +268,7 @@
       </div>
       <div class="info-details">
         <label>Customer Phone</label>
-        <p>{{ $order->customer->phone ?? 'N/A' }}</p>
+        <p>{{ $order->customer_phone ?: ($order->customer?->phone ?? 'N/A') }}</p>
       </div>
     </div>
 
@@ -482,7 +482,7 @@
             </button>
         </form>
 
-        @if($order->order_type == 'online')
+        @if($order->order_type == 'online' && empty($order->customer_id))
             <button type="button" class="btn-smart btn-green" onclick="openAssignBranchModal()">
                 <i class="fas fa-check-circle"></i> Approve
             </button>
@@ -496,11 +496,11 @@
                 </button>
             </form>
         @endif
+    @endif
 
-    @elseif(in_array($order->status, ['complete', 'delivered']))
 
-        @if($order->order_type == "field_order")
-
+    @if($order->status == 'complete' || $order->status == 'delivered')
+    @if($order->order_type == "field_order" || ($order->order_type == "online" && $order->customer?->customer_type == 'wholesale'))
             <a href="{{ route('admin.order.view_invoice', $order->id) }}"
                 class="btn-smart btn-green">
 
@@ -508,37 +508,27 @@
             </a>
 
         @elseif($order->order_type == "retail")
-
             <a href="{{ route('admin.order.view_retail_invoice', $order->id) }}"
                 class="btn-smart btn-green">
 
                 <i class="fas fa-file-invoice"></i> Invoice
             </a>
-
-        @elseif($order->order_type == "online" || empty($order->customer_id))
-
-            <a href="{{ route('admin.order.view_online_invoice', $order->id) }}"
+        @elseif( $order->order_type == "online" && (empty($order->customer_id) || $order->customer?->customer_type == 'retail'))
+           <a href="{{ route('admin.order.view_online_invoice', $order->id) }}"
                 class="btn-smart btn-green">
 
                 <i class="fas fa-file-invoice"></i> Invoice
             </a>
-
-        @else
-
-            <a href="{{ route('admin.order.view_invoice', $order->id) }}"
-                class="btn-smart btn-green">
-
-                <i class="fas fa-file-invoice"></i> Invoice
-            </a>
-
         @endif
-
+    
     @endif
 
+   
+
 </div>
 </div>
 
-@if($order->order_type == 'online')
+@if($order->order_type == 'online' && empty($order->customer_id))
 @php
   $branches = $branches ?? \App\Models\Branch::select('id', 'name')->orderBy('name', 'asc')->get();
 @endphp

@@ -52,11 +52,11 @@ class CheckoutController extends Controller
 
         if ($user) {
             $customer = $user->customer;
-            $prefillData['fullname'] = $user->fullname ?: ($customer->manager ?? ($customer->shop_name ?? ''));
-            $prefillData['phone']    = $customer->phone ?? '';
-            $prefillData['country']  = $customer->country ?: 'Bangladesh';
-            $prefillData['city']     = $customer->city ?: 'Dhaka';
-            $prefillData['address']  = $customer->address ?? '';
+            $prefillData['fullname'] = $user->fullname ?: ($customer?->manager ?? ($customer?->shop_name ?? ''));
+            $prefillData['phone']    = $customer?->phone ?? '';
+            $prefillData['country']  = $customer?->country ?: 'Bangladesh';
+            $prefillData['city']     = $customer?->city ?: 'Dhaka';
+            $prefillData['address']  = $customer?->address ?? '';
         }
 
         $activeShippingRates = ShippingRate::where('status', 1)->get();

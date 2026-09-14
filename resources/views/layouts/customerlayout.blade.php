@@ -183,6 +183,7 @@
         <div class="dropdown-box" id="profileDropdown">
           <ul>
             <li><a class="dropdown-link" href="{{ route('dashboards') }}">Dashboard</a></li>
+            <li><a class="dropdown-link" href="{{ route('home-page') }}">Shop Now</a></li>
             <li><a class="dropdown-link" href="{{ route('profile.index') }}">Profile</a></li>
             <li><a class="dropdown-link" href="{{ route('settings') }}">settings</a></li>
             <li class="dropdown-link">
