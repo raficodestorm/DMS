@@ -117,6 +117,7 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   // ── Retail Sales (Manager direct orders) ─────────────────────────────
   Route::prefix('retail')->name('retail.')->group(function () {
     Route::get('/',                          [RetailOrderController::class, 'index'])  ->name('index');
+    Route::get('/pos',                       [RetailOrderController::class, 'pos'])    ->name('pos');
     Route::get('/data',                      [RetailOrderController::class, 'fetchData'])->name('data');
     Route::get('/create',                    [RetailOrderController::class, 'create']) ->name('create');
     Route::post('/',                         [RetailOrderController::class, 'store'])  ->name('store');

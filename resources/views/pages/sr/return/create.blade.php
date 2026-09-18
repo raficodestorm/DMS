@@ -163,7 +163,7 @@
                                     <div class="row align-items-center">
                                         <div class="col-md-5">
                                             <strong>{{ $item->product->name }}</strong><br>
-                                            <small class="text-muted">Purchased: {{ $item->quantity }} | Price: {{ number_format($item->selling_rate, 2) }} ৳</small>
+                                            <small class="text-muted">Purchased: {{ $item->quantity }} | Price: {{ round($item->selling_rate) }} ৳</small>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="small text-muted d-block">Available to Return: {{ $item->available_to_return }}</label>
@@ -200,7 +200,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <p class="mb-0 text-muted">Total Return Amount</p>
-                            <h3 class="mb-0 text-primary" id="total-display">0.00 ৳</h3>
+                            <h3 class="mb-0 text-primary" id="total-display">0 ৳</h3>
                         </div>
                     </div>
                 </div>
@@ -244,10 +244,10 @@
                 row.classList.remove('selected');
             }
 
-            input.closest('.row').querySelector('.item-subtotal').innerText = subtotal.toFixed(2);
+            input.closest('.row').querySelector('.item-subtotal').innerText = Math.round(subtotal);
             total += subtotal;
         });
-        document.getElementById('total-display').innerText = total.toFixed(2) + ' ৳';
+        document.getElementById('total-display').innerText = Math.round(total) + ' ৳';
     }
 
     document.addEventListener('DOMContentLoaded', function () {

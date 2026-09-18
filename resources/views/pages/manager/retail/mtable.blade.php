@@ -2,7 +2,7 @@
 <div class="manage-card">
   <div class="card-body">
     <div><span>Order</span><p><strong style="color: var(--primary);">BRS{{ $order->id }}</strong></p></div>
-    <div><span>Customer</span><p>{{ $order->customer->shop_name ?? '—' }}</p></div>
+    <div><span>Customer</span><p>{{ $order->customer_name ?? ($order->customer->shop_name ?? 'Retail Customer') }}</p></div>
     <div><span>Net Total</span><p>৳ {{ number_format($order->net_total, 2) }}</p></div>
     <div><span>Deduction</span><p>{{ $order->applied_deduction_percent ?? 0 }}%</p></div>
     <div><span>Status</span>

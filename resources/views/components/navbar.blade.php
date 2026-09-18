@@ -94,14 +94,14 @@
         @endauth
 
         <!-- Wishlist Widget Pill -->
-        <a href="javascript:void(0)" class="header-pill-widget" title="Wishlist">
+        <a href="javascript:void(0)" class="header-pill-widget" title="Wishlist" onclick="openWishlistModal()">
           <div class="widget-icon-wrap">
             <i class="far fa-heart icon-heart"></i>
-            <span class="widget-badge">0</span>
+            <span class="widget-badge wishlist-count-badge" style="display:none;">0</span>
           </div>
           <div class="widget-text">
             <span class="sub">Wishlist</span>
-            <strong class="main">Items</strong>
+            <strong class="main wishlist-total-text">Items</strong>
           </div>
         </a>
 
@@ -249,10 +249,10 @@
       @endauth
 
       <!-- Wishlist with Badge -->
-      <a href="javascript:void(0)" class="mobile-icon-btn" title="Wishlist">
+      <a href="javascript:void(0)" class="mobile-icon-btn" title="Wishlist" onclick="openWishlistModal()">
         <div class="widget-icon-wrap">
           <i class="far fa-heart icon-heart" style="font-size: 20px;"></i>
-          <span class="widget-badge">0</span>
+          <span class="widget-badge wishlist-count-badge" style="display:none;">0</span>
         </div>
       </a>
 

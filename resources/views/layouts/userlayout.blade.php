@@ -39,6 +39,7 @@
   @vite(['resources/css/app.css','resources/js/app.js'])
 
   <link rel="stylesheet" href="{{ asset('./css/user/userstyle.css') }}">
+  <link rel="stylesheet" href="{{ asset('./css/user/product_card.css') }}">
 
   @if(request()->is('/') || request()->routeIs('home-page'))
   <style>
@@ -129,6 +130,7 @@
   @include('components.navbar')
   @include('components.login-modal')
   @include('components.cart-modal')
+  @include('components.wishlist-modal')
 
   <div>
     @yield('content')

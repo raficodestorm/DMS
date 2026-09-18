@@ -28,13 +28,17 @@ class DeductionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => [
+                'required',
+                'exists:suppliers,id',
+                'unique:deductions,supplier_id',
+            ],
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
             'retail_deduction' => 'required|numeric|min:0',
             'my_deduction' => 'required|numeric|min:0',
-            
-
+        ], [
+            'supplier_id.unique' => 'A deduction record already exists for this supplier.',
         ]);
 
         Deduction::create($validated);
@@ -59,12 +63,17 @@ class DeductionController extends Controller
     public function update(Request $request, Deduction $deduction)
     {
         $validated = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => [
+                'required',
+                'exists:suppliers,id',
+                Rule::unique('deductions', 'supplier_id')->ignore($deduction->id),
+            ],
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
             'retail_deduction' => 'required|numeric|min:0',
             'my_deduction' => 'required|numeric|min:0',
-            
+        ], [
+            'supplier_id.unique' => 'A deduction record already exists for this supplier.',
         ]);
 
         $deduction->update($validated);

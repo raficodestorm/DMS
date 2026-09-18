@@ -18,6 +18,8 @@ Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(functio
   Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
 
   Route::get('/orders', [OrderSrController::class, 'index'])->name('order.index');
+  Route::get('/orders/pos', [OrderSrController::class, 'pos'])->name('order.pos');
+  Route::get('/orders/pos/cart', [OrderSrController::class, 'posCart'])->name('order.cart');
   Route::get('/orders/data', [OrderSrController::class, 'fetchOrdersData'])->name('order.index.data');
   Route::get('/orders/create', [OrderSrController::class, 'create'])->name('order.create');
   Route::post('/orders/store', [OrderSrController::class, 'store'])->name('order.store');

@@ -1,7 +1,7 @@
 @forelse($orders as $order)
 <tr>
   <td><strong style="color: var(--primary);">BRS{{ $order->id }}</strong></td>
-  <td>{{ $order->customer->shop_name ?? '—' }}</td>
+  <td>{{ $order->customer_name ?? ($order->customer->shop_name ?? 'Retail Customer') }}</td>
   <td>৳ {{ number_format($order->net_total, 2) }}</td>
   <td>{{ $order->applied_deduction_percent ?? 0 }}%</td>
   <td>

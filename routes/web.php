@@ -42,6 +42,15 @@ Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
 
+// Wishlist Routes (work for both guests via cookie and authenticated users via DB)
+Route::post('/wishlist/toggle',   [\App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+Route::get('/wishlist/items',     [\App\Http\Controllers\WishlistController::class, 'items'])->name('wishlist.items');
+Route::get('/wishlist/count',     [\App\Http\Controllers\WishlistController::class, 'count'])->name('wishlist.count');
+Route::post('/wishlist/sync',     [\App\Http\Controllers\WishlistController::class, 'syncAfterLogin'])->name('wishlist.sync')->middleware('auth');
+
+// Product details page (public)
+Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
+
 // Cart Live Calculation & Coupon Routes (Pricing Engine)
 Route::post('/cart/calculate', [\App\Http\Controllers\CartController::class, 'calculate'])->name('cart.calculate');
 Route::post('/cart/apply-coupon', [\App\Http\Controllers\CartController::class, 'applyCoupon'])->name('cart.apply_coupon');

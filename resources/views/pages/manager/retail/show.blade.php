@@ -161,9 +161,15 @@
 
   {{-- Order Details --}}
   <div class="detail-row">
-    <span class="detail-label">Customer</span>
-    <span class="detail-value">{{ $order->customer->shop_name ?? '—' }}</span>
+    <span class="detail-label">Customer Name</span>
+    <span class="detail-value">{{ $order->customer_name ?? ($order->customer->shop_name ?? 'Retail Customer') }}</span>
   </div>
+  @if($order->customer_phone)
+  <div class="detail-row">
+    <span class="detail-label">Customer Phone</span>
+    <span class="detail-value">{{ $order->customer_phone }}</span>
+  </div>
+  @endif
   <div class="detail-row">
     <span class="detail-label">Status</span>
     <span>
@@ -172,10 +178,6 @@
         {{ ucfirst(str_replace('_', ' ', $order->status)) }}
       </span>
     </span>
-  </div>
-  <div class="detail-row">
-    <span class="detail-label">Custom Deduction</span>
-    <span class="detail-value">{{ $order->applied_deduction_percent ?? 0 }}%</span>
   </div>
   <div class="detail-row">
     <span class="detail-label">Discount Amount</span>

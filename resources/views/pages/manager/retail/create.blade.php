@@ -248,27 +248,23 @@
     <form method="POST" action="{{ route('manager.retail.store') }}" id="orderForm">
       @csrf
 
-      {{-- Custom Deduction ONLY --}}
-      <div class="deduction-control-card p-3 mb-4 border rounded shadow-sm" style="background: var(--section-bg);">
-        <div class="row align-items-center">
-          <div class="col-md-5 mb-2 mb-md-0">
-            <label class="fw-bold" style="font-size: 13px; color: var(--text-muted);">
-              <i class="fas fa-percent me-1 text-success"></i> Custom Deduction (%)
+      {{-- Customer Information (Optional) --}}
+      <div class="p-3 mb-4 border rounded shadow-sm" style="background: var(--section-bg); border-color: var(--border-color);">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold" style="font-size: 13px; color: var(--text-main);">
+              <i class="fas fa-user text-success me-1"></i> Customer Name <small class="text-muted">(Optional)</small>
             </label>
+            <input type="text" name="customer_name" class="input-form" placeholder="Enter customer name..." value="{{ old('customer_name') }}">
           </div>
-          <div class="col-md-7">
-            <div class="input-group">
-              <span class="input-group-text" style="background: var(--section-bg); border-color: var(--border-color);">
-                <i class="fas fa-tag text-success"></i>
-              </span>
-              <input type="number" name="applied_custom_deduction" id="customDeductionRate" class="form-control" placeholder="0.00" step="0.01" min="0" max="100" style="background: var(--section-bg); color: var(--text-main); border-color: var(--border-color);" onkeyup="refreshAllCards()" oninput="refreshAllCards()">
-              <span class="input-group-text" style="background: var(--section-bg); border-color: var(--border-color);">%</span>
-            </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold" style="font-size: 13px; color: var(--text-main);">
+              <i class="fas fa-phone text-success me-1"></i> Customer Phone <small class="text-muted">(Optional)</small>
+            </label>
+            <input type="text" name="customer_phone" class="input-form" placeholder="01XXXXXXXXX" value="{{ old('customer_phone') }}">
           </div>
         </div>
       </div>
-
-      
 
       {{-- Product Grid --}}
       <div id="product-wrapper" class="row"></div>
@@ -297,12 +293,12 @@
               <span class="input-group-text bg-warning text-dark border-warning">Special Disc</span>
               <input type="number" name="special_discount" id="specialDiscountInput" class="form-control border-warning" placeholder="0.00" step="0.01" min="0" oninput="calculateTotal()">
             </div>
-            <p class="mb-0 opacity-75 mt-1">Total Discount: <span id="totalDiscount">0.00</span> TK</p>
+            <p class="mb-0 opacity-75 mt-1">Total Discount: <span id="totalDiscount">0</span> TK</p>
           </div>
           <div class="col-6 text-end">
             <small class="d-block opacity-75">Net Payable</small>
             <h2 class="mb-0" style="font-weight:700; font-size:28px; color:var(--primary);">
-              <span id="netTotalDisplay">0.00</span> ৳
+              <span id="netTotalDisplay">0</span> ৳
             </h2>
           </div>
         </div>
@@ -362,9 +358,10 @@
     let html = '';
     matches.forEach(p => {
       const isAdded = selectedIds.includes(String(p.id));
+      const priceDisplay = p.selling_rate ? p.selling_rate : p.price;
       const badgeHtml = isAdded
         ? `<span style="font-size:11px; background:#dc3545; color:#fff; padding:2px 8px; border-radius:10px; margin-left:8px;">(Already Added)</span>`
-        : `<span style="font-size:12px; color:var(--text-muted);">Stock: ${p.available_qty}</span>`;
+        : `<span style="font-size:12px; color:var(--text-muted);">Stock: ${p.available_qty} | Rate: ৳${parseFloat(priceDisplay).toFixed(2)}</span>`;
 
       html += `
         <div class="ps-option ${isAdded ? 'ps-already-added' : ''}" data-id="${p.id}" data-name="${p.name}" data-added="${isAdded ? '1' : '0'}">
@@ -378,10 +375,6 @@
   }
 
   $(document).ready(function() {
-    $('#customDeductionRate').on('input', function() {
-      window.refreshAllCards();
-    });
-
     $(document).on('input focus', '#product-search-input', function() {
       renderOptions($(this).val());
       $('#product-search-dropdown').addClass('open');
@@ -411,12 +404,6 @@
     });
   });
 
-  window.refreshAllCards = function() {
-    $('.qty-input').each(function() {
-      window.calculateCard(this);
-    });
-  };
-
   window.addProductCardById = function(productId) {
     if (!productId) return;
 
@@ -438,14 +425,17 @@
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff`;
 
     $.get(`{{ url('manager/retail/product-data') }}/${productId}`, function(data) {
-      let basePrice = parseFloat(data.price);
-      let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-      let totalDeduct = Math.min(customRate, 100);
+      let basePrice = parseFloat(data.price) || 0;
+      let retailDeductPct = parseFloat(data.retail_deduction) || 0;
+      let sellingRate = parseFloat(data.selling_rate);
+      if (isNaN(sellingRate)) {
+        let deductAmt = basePrice * retailDeductPct / 100;
+        sellingRate = basePrice - deductAmt;
+      }
 
-      let deductAmt = basePrice * totalDeduct / 100;
-      let sellingRate = basePrice - deductAmt;
-      let disc = data.discount_type === 'percentage' ? (sellingRate * data.discount / 100) : data.discount;
+      let disc = data.discount_type === 'percentage' ? (sellingRate * data.discount / 100) : parseFloat(data.discount || 0);
       let showDisc = data.discount_type === 'percentage' ? data.discount + '%' : data.discount + ' TK';
+      let hasDeduction = (retailDeductPct > 0 && sellingRate < basePrice);
 
       let cardHtml = `
     <div class="col-12 col-md-6 col-lg-4 mb-3 product-card-container">
@@ -467,16 +457,17 @@
           <div class="col-8 d-flex flex-column justify-content-between" style="min-height:110px;">
             <div class="ps-2">
               <h6 class="product-name mb-1 fw-bold text-wrap">${name}</h6>
-              <div class="price-info small text-muted">Base Rate: <del class="base-price-display">${basePrice.toFixed(2)}</del> ৳</div>
-              <div class="price-info small">Selling Rate: <b class="text-success selling-price-display">${sellingRate.toFixed(2)} ৳</b></div>
-              <div class="price-info small text-muted">Offer Disc: ${disc.toFixed(2)} ৳ <small style="color:red;">(${showDisc})</small></div>
+              ${hasDeduction ? `<div class="price-info small text-muted">Base Rate: <del class="base-price-display">${basePrice.toFixed(2)}</del> ৳</div>` : ''}
+              <div class="price-info small">Selling Rate: <b class="text-success selling-price-display">${sellingRate.toFixed(2)} ৳</b>${hasDeduction ? ` <span class="badge bg-light text-dark border" style="font-size:10px;">-${retailDeductPct}%</span>` : ''}</div>
+              ${disc > 0 ? `<div class="price-info small text-muted">Offer Disc: ${disc.toFixed(2)} ৳ <small style="color:red;">(${showDisc})</small></div>` : ''}
             </div>
             <div class="mt-2 ps-2">
               <div class="subtotal-badge w-100 py-1 text-center">Total: <span class="card-subtotal">0.00</span> ৳</div>
             </div>
-            <input type="hidden" name="products[${index}][product_id]" value="${productId}">
-            <input type="hidden" name="products[${index}][price]"      class="card-price"    value="${data.price}">
-            <input type="hidden" name="products[${index}][discount]"   class="card-discount" value="${disc}">
+            <input type="hidden" name="products[${index}][product_id]"   value="${productId}">
+            <input type="hidden" name="products[${index}][price]"        class="card-price"        value="${basePrice}">
+            <input type="hidden" name="products[${index}][selling_rate]" class="card-selling-rate" value="${sellingRate}">
+            <input type="hidden" name="products[${index}][discount]"     class="card-discount"     value="${disc}">
             <input type="hidden" class="card-subtotal-val" value="0">
           </div>
         </div>
@@ -502,20 +493,13 @@
 
   window.calculateCard = function(el) {
     let card = $(el).closest('.product-card');
-    let basePrice = parseFloat(card.find('.card-price').val()) || 0;
+    let sellingRate = parseFloat(card.find('.card-selling-rate').val()) || parseFloat(card.find('.card-price').val()) || 0;
     let qty = parseFloat(card.find('.qty-input').val()) || 0;
     let offerDisc = parseFloat(card.find('.card-discount').val()) || 0;
-    let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-    let totalDeduct = Math.min(customRate, 100);
-
-    let deductAmt = basePrice * totalDeduct / 100;
-    let sellingRate = basePrice - deductAmt;
     let subtotal = (sellingRate - offerDisc) * qty;
 
-    card.find('.selling-price-display').text(sellingRate.toFixed(2) + ' ৳');
     card.find('.card-subtotal').text(subtotal.toFixed(2));
     card.find('.card-subtotal-val').val(subtotal.toFixed(2));
-    card.find('.base-price-display').parent().toggle(totalDeduct > 0);
 
     window.calculateTotal();
   };
@@ -531,16 +515,12 @@
     let totalItems = 0;
     let totalSubtotal = 0;
     let totalOfferDisc = 0;
-    let customRate = parseFloat($('#customDeductionRate').val()) || 0;
-    let totalDeduct = Math.min(customRate, 100);
 
     $('.product-card').each(function() {
       let card = $(this);
-      let basePrice = parseFloat(card.find('.card-price').val()) || 0;
+      let sellingRate = parseFloat(card.find('.card-selling-rate').val()) || parseFloat(card.find('.card-price').val()) || 0;
       let qty = parseFloat(card.find('.qty-input').val()) || 0;
       let offerDisc = parseFloat(card.find('.card-discount').val()) || 0;
-      let deductAmt = basePrice * totalDeduct / 100;
-      let sellingRate = basePrice - deductAmt;
       let cardSub = (sellingRate - offerDisc) * qty;
 
       totalOfferDisc += offerDisc * qty;
@@ -549,16 +529,14 @@
     });
 
     let specialDisc = parseFloat($('#specialDiscountInput').val()) || 0;
-    let finalNet = Math.max(totalSubtotal - specialDisc, 0);
-    let totalDisc = totalOfferDisc + specialDisc;
+    let finalNet = Math.round(Math.max(totalSubtotal - specialDisc, 0));
+    let totalDisc = Math.round(totalOfferDisc + specialDisc);
 
     $('#itemCount').text(totalItems);
-    $('#totalDiscount').text(totalDisc.toFixed(2));
-    $('#netTotalDisplay').text(finalNet.toLocaleString('en-US', {
-      minimumFractionDigits: 2
-    }));
-    $('#netTotalInput').val(finalNet.toFixed(2));
-    $('#totalDiscountInput').val(totalDisc.toFixed(2));
+    $('#totalDiscount').text(totalDisc);
+    $('#netTotalDisplay').text(finalNet);
+    $('#netTotalInput').val(finalNet);
+    $('#totalDiscountInput').val(totalDisc);
   };
 </script>
 

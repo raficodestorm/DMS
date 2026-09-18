@@ -369,9 +369,8 @@ class ReturnManagerController extends Controller
                  * return price = original selling rate.
                  * -----------------------------------------------------
                  */
-                $price = round(
-                    (float) $orderItem->selling_rate,
-                    2
+                $price = (int) round(
+                    (float) $orderItem->selling_rate
                 );
 
 
@@ -380,9 +379,8 @@ class ReturnManagerController extends Controller
                  * Return subtotal
                  * -----------------------------------------------------
                  */
-                $subtotal = round(
-                    $quantity * $price,
-                    2
+                $subtotal = (int) round(
+                    $quantity * $price
                 );
 
 
@@ -448,7 +446,7 @@ class ReturnManagerController extends Controller
              * ---------------------------------------------------------
              */
             $productReturn->update([
-                'total_amount' => round($totalAmount, 2),
+                'total_amount' => (int) round($totalAmount),
             ]);
 
             
@@ -903,9 +901,8 @@ class ReturnManagerController extends Controller
                  * original selling rate.
                  * -----------------------------------------------------
                  */
-                $price = round(
-                    (float) $orderItem->selling_rate,
-                    2
+                $price = (int) round(
+                    (float) $orderItem->selling_rate
                 );
 
 
@@ -914,9 +911,8 @@ class ReturnManagerController extends Controller
                  * Return subtotal
                  * -----------------------------------------------------
                  */
-                $subtotal = round(
-                    $quantity * $price,
-                    2
+                $subtotal = (int) round(
+                    $quantity * $price
                 );
 
 
@@ -979,7 +975,7 @@ class ReturnManagerController extends Controller
              * ---------------------------------------------------------
              */
             $return->update([
-                'total_amount' => round($totalAmount, 2),
+                'total_amount' => (int) round($totalAmount),
             ]);
 
 

@@ -294,6 +294,31 @@
     padding: 6px 14px;
     display: flex; align-items: center; justify-content: space-between;
   }
+
+  /* Simple Confirm Modal */
+  .confirm-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .confirm-modal-content {
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
 </style>
 <div class="container py-4">
   <div class="form-card">
@@ -303,7 +328,7 @@
 
     @include('components.alert')
 
-    <form method="POST" action="{{ route('sr.order.store') }}" id="orderForm">
+    <form method="POST" action="{{ route('sr.order.store') }}" id="orderForm" onsubmit="return handleCreateOrderSubmit(event)">
       @csrf
 
       <div class="row">
@@ -435,6 +460,44 @@
         Confirm & Submit Order <i class="fas fa-check-circle ms-2"></i>
       </button>
     </form>
+  </div>
+</div>
+
+{{-- Simple Confirm Modal --}}
+<div class="confirm-modal-backdrop" id="createOrderConfirmModal" style="display: none;">
+  <div class="confirm-modal-content">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <h6 class="m-0 fw-bold"><i class="fas fa-file-invoice text-primary me-1"></i> Order Confirmation</h6>
+      <button type="button" class="btn-close btn-sm" onclick="closeCreateOrderConfirmModal()"></button>
+    </div>
+
+    <div class="mb-3">
+      <div class="p-2 mb-3 rounded bg-light border small">
+        <strong id="modalCustomerName">-</strong>
+      </div>
+
+      <div class="d-flex justify-content-between py-1 border-bottom small">
+        <span class="text-muted">Order Net Total:</span>
+        <strong class="text-primary">৳ <span id="modalNetTotal">0</span></strong>
+      </div>
+
+      <div class="d-flex justify-content-between py-1 border-bottom small">
+        <span class="text-muted">Previous Due:</span>
+        <strong class="text-danger">৳ <span id="modalPreviousDue">0</span></strong>
+      </div>
+
+      <div class="d-flex justify-content-between py-2 small fw-bold bg-light px-2 rounded mt-2">
+        <span>Current Total Due:</span>
+        <span class="text-dark">৳ <span id="modalCurrentDue">0</span></span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3 pt-2 border-top">
+      <button type="button" class="btn btn-sm btn-secondary px-3" onclick="closeCreateOrderConfirmModal()">Cancel</button>
+      <button type="button" class="btn btn-sm btn-primary px-3" id="btnModalSubmitOrder" onclick="executeCreateOrderSubmit()">
+        <i class="fas fa-check-circle me-1"></i> Confirm
+      </button>
+    </div>
   </div>
 </div>
 @endsection
@@ -795,6 +858,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 300);
     });
 
+    var currentCustomerDue = 0;
+
     clsDropdown.addEventListener('click', function (e) {
       var item = e.target.closest('.cls-item');
       if (!item) return;
@@ -802,6 +867,7 @@ document.addEventListener('DOMContentLoaded', function () {
       selectedCustId.value        = item.dataset.id;
       clsSelectedName.textContent = item.dataset.name;
       clsSelectedDue.textContent  = 'Due: ' + item.dataset.due + ' TK';
+      currentCustomerDue          = parseFloat(item.dataset.due) || 0;
 
       clsInput.value            = '';
       clsDropdown.style.display = 'none';
@@ -813,6 +879,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (clsClearBtn) {
       clsClearBtn.addEventListener('click', function () {
         selectedCustId.value                                   = '';
+        currentCustomerDue                                     = 0;
         clsSelectedBox.style.display                           = 'none';
         document.getElementById('cls-container').style.display = 'block';
         clsInput.focus();
@@ -832,12 +899,52 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedCustId.value        = oldCust.id;
         clsSelectedName.textContent = oldCust.shop_name;
         clsSelectedDue.textContent  = 'Due: ' + (oldCust.due || 0) + ' TK';
+        currentCustomerDue          = parseFloat(oldCust.due || 0);
         document.getElementById('cls-container').style.display = 'none';
         clsSelectedBox.style.display                           = 'flex';
       }
     @endif
   }
 });
+
+function handleCreateOrderSubmit(e) {
+  e.preventDefault();
+
+  if ($('.product-card').length === 0) {
+    alert('Please add at least one product to the order.');
+    return false;
+  }
+
+  let customerId = $('#selected_customer_id').val();
+  if (!customerId) {
+    alert('Please select a customer / shop.');
+    $('#cls-input').focus();
+    return false;
+  }
+
+  let customerName = $('#cls-selected-name').text().trim() || 'Selected Customer';
+  let previousDue = parseFloat($('#cls-selected-due').text().replace(/[^0-9.]/g, '')) || 0;
+  let netTotal = parseFloat($('#netTotalInput').val()) || parseFloat($('#netTotalDisplay').text().replace(/,/g, '')) || 0;
+  let currentDue = previousDue + netTotal;
+
+  $('#modalCustomerName').text(customerName);
+  $('#modalNetTotal').text(Math.round(netTotal).toLocaleString('en-US'));
+  $('#modalPreviousDue').text(Math.round(previousDue).toLocaleString('en-US'));
+  $('#modalCurrentDue').text(Math.round(currentDue).toLocaleString('en-US'));
+
+  $('#createOrderConfirmModal').css('display', 'flex');
+  return false;
+}
+
+function closeCreateOrderConfirmModal() {
+  $('#createOrderConfirmModal').hide();
+}
+
+function executeCreateOrderSubmit() {
+  let btn = $('#btnModalSubmitOrder');
+  btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin me-1"></i> Submitting...');
+  document.getElementById('orderForm').submit();
+}
 
 </script>
 @endpush

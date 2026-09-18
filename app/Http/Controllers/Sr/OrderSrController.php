@@ -316,6 +316,98 @@ class OrderSrController extends Controller
 
 
 
+  public function pos()
+  {
+    $branchId = auth()->user()->branch_id;
+    $today = Carbon::today();
+
+    $suppliers = \App\Models\Supplier::with('deductions')->orderBy('company_name', 'asc')->get();
+    $categories = \App\Models\Category::pluck('name', 'id');
+    $branchStocks = Stock::where('branch_id', $branchId)->pluck('quantity', 'product_id');
+
+    $activeOffers = Offer::where('status', 1)
+      ->where('customer_type', 'wholesale')
+      ->whereDate('start_date', '<=', $today)
+      ->whereDate('end_date', '>=', $today)
+      ->get()
+      ->keyBy('product_id');
+
+    $products = Product::with(['supplier.deductions'])
+      ->get()
+      ->map(function ($product) use ($branchStocks, $activeOffers) {
+        $basePrice = (float) $product->price;
+
+        $supplier = $product->supplier;
+        $customerDeduction = 0;
+        if ($supplier) {
+          $deduction = $supplier->deductions->first();
+          $customerDeduction = (float) ($deduction->customer_deduction ?? 0);
+        }
+
+        $deductionAmount = round($basePrice * $customerDeduction / 100, 2);
+        $sellingRate = (int) round($basePrice - $deductionAmount);
+        if ($sellingRate < 0) {
+          $sellingRate = 0;
+        }
+
+        $offer = $activeOffers->get($product->id);
+        $offerDisc = 0;
+        $offerText = null;
+        $offerType = 'fixed';
+        if ($offer) {
+          $offerType = $offer->type;
+          if ($offer->type === 'percentage') {
+            $offerDisc = round($sellingRate * $offer->discount_amount / 100, 2);
+            $offerText = ((float) $offer->discount_amount) . '% OFF';
+          } else {
+            $offerDisc = (float) $offer->discount_amount;
+            $offerText = '৳' . ((float) $offer->discount_amount) . ' OFF';
+          }
+        }
+
+        return [
+          'id'                 => $product->id,
+          'name'               => $product->name,
+          'image'              => $product->image,
+          'price'              => $basePrice,
+          'customer_deduction' => $customerDeduction,
+          'selling_rate'       => $sellingRate,
+          'category_id'        => $product->category_id,
+          'supplier_id'        => $product->supplier_id,
+          'supplier_name'      => $supplier?->company_name ?? ($supplier?->name ?? 'N/A'),
+          'available_qty'      => (int) ($branchStocks->get($product->id) ?? 0),
+          'has_offer'          => $offer ? true : false,
+          'offer_text'         => $offerText,
+          'offer_discount'     => $offerDisc,
+          'offer_type'         => $offerType,
+        ];
+      });
+
+    return view('pages.sr.order.pos', compact('suppliers', 'categories', 'products'));
+  }
+
+  public function posCart()
+  {
+    $branchId = auth()->user()->branch_id;
+
+    $customers = Customer::where('branch_id', $branchId)
+      ->where(function ($q) {
+        $q->whereNull('customer_group')
+          ->orWhere('customer_group', '!=', 'retail');
+      })
+      ->orderBy('shop_name', 'asc')
+      ->get();
+
+    if ($customers->isEmpty()) {
+      $customers = Customer::where('branch_id', $branchId)->orderBy('shop_name', 'asc')->get();
+    }
+
+    $suppliers = \App\Models\Supplier::with('deductions')->orderBy('company_name', 'asc')->get();
+    $deductionSettings = \App\Models\Deduction::where('type', 'main')->first() ?? \App\Models\Deduction::first();
+
+    return view('pages.sr.order.cart', compact('customers', 'suppliers', 'deductionSettings'));
+  }
+
   public function create()
   {
     $branchId = auth()->user()->branch_id;

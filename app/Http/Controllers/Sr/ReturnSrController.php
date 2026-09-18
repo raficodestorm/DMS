@@ -361,9 +361,8 @@ class ReturnSrController extends Controller
                  * return price = original selling rate.
                  * -----------------------------------------------------
                  */
-                $price = round(
-                    (float) $orderItem->selling_rate,
-                    2
+                $price = (int) round(
+                    (float) $orderItem->selling_rate
                 );
 
 
@@ -372,9 +371,8 @@ class ReturnSrController extends Controller
                  * Return subtotal
                  * -----------------------------------------------------
                  */
-                $subtotal = round(
-                    $quantity * $price,
-                    2
+                $subtotal = (int) round(
+                    $quantity * $price
                 );
 
 
@@ -440,7 +438,7 @@ class ReturnSrController extends Controller
              * ---------------------------------------------------------
              */
             $productReturn->update([
-                'total_amount' => round($totalAmount, 2),
+                'total_amount' => (int) round($totalAmount),
             ]);
 
             
@@ -842,9 +840,8 @@ class ReturnSrController extends Controller
                  * original selling rate.
                  * -----------------------------------------------------
                  */
-                $price = round(
-                    (float) $orderItem->selling_rate,
-                    2
+                $price = (int) round(
+                    (float) $orderItem->selling_rate
                 );
 
 
@@ -853,9 +850,8 @@ class ReturnSrController extends Controller
                  * Return subtotal
                  * -----------------------------------------------------
                  */
-                $subtotal = round(
-                    $quantity * $price,
-                    2
+                $subtotal = (int) round(
+                    $quantity * $price
                 );
 
 
@@ -918,7 +914,7 @@ class ReturnSrController extends Controller
              * ---------------------------------------------------------
              */
             $return->update([
-                'total_amount' => round($totalAmount, 2),
+                'total_amount' => (int) round($totalAmount),
             ]);
 
 

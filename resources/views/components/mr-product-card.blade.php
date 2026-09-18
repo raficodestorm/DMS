@@ -4,16 +4,6 @@
     $isInStock = ($product->status == 1);
     $basePrice = (float) ($product->price ?? 0);
 
-    // Wishlist state check
-    if (auth()->check()) {
-        $inWishlist = \App\Models\Wishlist::where('user_id', auth()->id())
-            ->where('product_id', $product->id)->exists();
-    } else {
-        $raw = request()->cookie('guest_wishlist', '[]');
-        $guestIds = json_decode($raw, true);
-        $inWishlist = is_array($guestIds) && in_array($product->id, $guestIds);
-    }
-
     if ($customerDeduction !== null) {
         $deductionPct = (float) $customerDeduction;
     } else {
@@ -47,39 +37,7 @@
     $hasDeduction = ($deductionPct > 0);
     $priceAfterDeduction = $hasDeduction ? ($basePrice * (1 - ($deductionPct / 100))) : $basePrice;
 
-    // Check for active retail offer
-    $today = now()->toDateString();
-    $offer = $product->relationLoaded('activeRetailOffer') 
-        ? $product->activeRetailOffer 
-        : ($product->relationLoaded('offers')
-            ? $product->offers->first(fn($o) => $o->status == 1 && $o->customer_type === 'retail' && $o->start_date <= $today && $o->end_date >= $today)
-            : \App\Models\Offer::where('product_id', $product->id)
-                ->where('status', 1)
-                ->where('customer_type', 'retail')
-                ->whereDate('start_date', '<=', $today)
-                ->whereDate('end_date', '>=', $today)
-                ->first()
-          );
-
-    $offerDiscountVal = 0;
-    $offerText = null;
-    if ($offer) {
-        if ($offer->type === 'free_shipping') {
-            $offerDiscountVal = 0;
-            $offerText = 'Free Shipping';
-        } elseif ($offer->type === 'percentage') {
-            $offerDiscountVal = ($priceAfterDeduction * (float)$offer->discount_amount / 100);
-            $offerAmountFormatted = ((float)$offer->discount_amount == (int)$offer->discount_amount) ? (int)$offer->discount_amount : (float)$offer->discount_amount;
-            $offerText = $offerAmountFormatted . '% OFF';
-        } else {
-            $offerDiscountVal = (float)$offer->discount_amount;
-            $offerAmountFormatted = ((float)$offer->discount_amount == (int)$offer->discount_amount) ? (int)$offer->discount_amount : number_format($offer->discount_amount, 2);
-            $offerText = '৳' . $offerAmountFormatted . ' OFF';
-        }
-    }
-
-    $finalPrice = max(0, $priceAfterDeduction - $offerDiscountVal);
-    $sellingPrice = round($finalPrice);
+    $sellingPrice = round($priceAfterDeduction);
     $roundedBasePrice = round($basePrice);
     $hasDiscount = ($sellingPrice < $roundedBasePrice);
 @endphp
@@ -87,19 +45,9 @@
 <div class="product-card-main">
     {{-- Top Badges & Wishlist --}}
     <div class="product-card-top">
-        @if($offer && !empty($offerText))
-            <span class="product-badge-offer">
-                <i class="fas fa-bolt"></i> {{ $offerText }}
-            </span>
-        @else
-            <span class="product-badge-new">R</span>
-        @endif
-        <button type="button"
-            class="product-btn-wishlist {{ $inWishlist ? 'wishlisted' : '' }}"
-            title="{{ $inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}"
-            data-product-id="{{ $product->id }}"
-            onclick="toggleWishlist(this, event)">
-            <i class="{{ $inWishlist ? 'fas' : 'far' }} fa-heart"></i>
+        <span class="product-badge-new">R</span>
+        <button type="button" class="product-btn-wishlist" title="Add to Wishlist" onclick="event.preventDefault();">
+            <i class="far fa-heart"></i>
         </button>
     </div>
 
@@ -122,23 +70,13 @@
 
         <div class="product-card-price-wrap">
             <div class="product-card-price-group">
-                @if($offer && !empty($offerText) && round($priceAfterDeduction) < $roundedBasePrice && $sellingPrice < round($priceAfterDeduction))
-                    <span class="product-card-price">৳{{ number_format($sellingPrice) }}</span>
-                    <del class="product-card-mid-price">৳{{ number_format(round($priceAfterDeduction)) }}</del>
-                    <del class="product-card-base-price">৳{{ number_format($roundedBasePrice) }}</del>
-                @elseif($hasDiscount)
+                @if($hasDiscount)
                     <span class="product-card-price">৳{{ number_format($sellingPrice) }}</span>
                     <del class="product-card-old-price">৳{{ number_format($roundedBasePrice) }}</del>
                 @else
                     <span class="product-card-price">৳{{ number_format($roundedBasePrice) }}</span>
                 @endif
             </div>
-
-            @if($offer && !empty($offer->coupon_code))
-                <span class="product-coupon-pill" title="Coupon Code: {{ $offer->coupon_code }}">
-                    Coupon: {{ $offer->coupon_code }}
-                </span>
-            @endif
         </div>
 
         <div class="product-card-stock {{ $isInStock ? '' : 'out-of-stock' }}">
@@ -162,7 +100,7 @@
                 <i class="fas fa-ban"></i> Out of Stock
             </button>
             @endif
-            <a href="{{ route('products.show', $product) }}" class="btn-card-view">
+            <a href="javascript:void(0)" class="btn-card-view">
                 <i class="fas fa-eye"></i> View Product
             </a>
         </div>

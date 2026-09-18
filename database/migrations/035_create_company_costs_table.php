@@ -15,16 +15,15 @@ return new class extends Migration
             $table->id();
             $table->decimal('amount', 15, 2);
             $table->date('cost_date');
-            $table->enum('category', [
-                'office', 
-                'transport', 
-                'salary', 
-                'maintenance', 
-                'product', 
-                'utility', 
-                'marketing', 
-                'miscellaneous'
-            ]);
+             $table->string('category');
+                //'office', 
+                //'transport', 
+                //'salary', 
+                //'maintenance', 
+                //'product', 
+                //'utility', 
+                //'marketing', 
+                //'miscellaneous'
             $table->string('description');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();

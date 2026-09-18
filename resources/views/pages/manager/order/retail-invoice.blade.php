@@ -208,9 +208,10 @@
         <div class="fixed-col-6">
           <div class="info-card">
             <b>Customer Details:</b><br>
-            Customer: Retail<br>
-            Address: unknown<br>
-            Phone: unknown
+            Customer: {{ $order->customer_name ?? 'Retail Customer' }}<br>
+            @if($order->customer_phone)
+            Phone: {{ $order->customer_phone }}<br>
+            @endif
           </div>
         </div>
 

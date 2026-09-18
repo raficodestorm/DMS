@@ -98,6 +98,11 @@
 
         <ul class="sub-menu" style="{{ isOpen('sr.order.*') }}">
           <li>
+            <a href="{{ route('sr.order.pos') }}" class="sub-link {{ isActive('sr.order.pos') }}">
+              <i class="fas fa-cash-register me-1"></i> POS
+            </a>
+          </li>
+          <li>
             <a href="{{ route('sr.order.create') }}" class="sub-link {{ isActive('sr.order.create') }}">
               <i class="fas fa-user-plus me-1"></i> Create Order
             </a>
@@ -191,6 +196,14 @@
 
 
     <div class="nav-right">
+
+    {{-- POS Cart Shortcut --}}
+      <a href="{{ route('sr.order.cart') }}" class="theme-toggle" title="View POS Cart" style="text-decoration:none; color:inherit; display:inline-flex; align-items:center; justify-content:center; position:relative;">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="globalSrCartBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; min-width:17px; height:17px; border-radius:50%; align-items:center; justify-content:center; padding:0 3px; line-height:1; border:1.5px solid var(--section-bg);">
+          0
+        </span>
+      </a>
 
     {{-- Calculator Toggle --}}
       <button class="theme-toggle" onclick="toggleCalculator(event)" title="Calculator">
@@ -621,6 +634,25 @@ function toggleTheme() {
       })
       .catch(err => console.error('Error clearing notifications:', err));
     }
+
+    // Update global SR POS Cart badge
+    function updateGlobalSrCartBadge() {
+      try {
+        const cart = JSON.parse(localStorage.getItem('sr_pos_cart') || '{}');
+        const count = Object.values(cart).reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
+        const badge = document.getElementById('globalSrCartBadge');
+        if (badge) {
+          if (count > 0) {
+            badge.innerText = count;
+            badge.style.display = 'inline-flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', updateGlobalSrCartBadge);
+    window.addEventListener('storage', updateGlobalSrCartBadge);
   </script>
   <x-calculator />
   @stack('scripts')

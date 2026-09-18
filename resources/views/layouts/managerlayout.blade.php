@@ -185,10 +185,15 @@
 
         <ul class="sub-menu" style="{{ isOpen('manager.retail.*') }}">
           <li>
-            <a href="{{ route('manager.retail.create') }}" class="sub-link {{ isActive('manager.retail.create') }}">
-              <i class="fas fa-plus-circle me-1"></i> New Retail Order
+            <a href="{{ route('manager.retail.pos') }}" class="sub-link {{ isActive('manager.retail.pos') }}">
+              <i class="fas fa-cash-register me-1"></i> POS
             </a>
           </li>
+          <!-- <li>
+            <a href="{{ route('manager.retail.create') }}" class="sub-link {{ isActive('manager.retail.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> Retail Terminal
+            </a>
+          </li> -->
           <li>
             <a href="{{ route('manager.retail.index') }}" class="sub-link {{ isActive('manager.retail.index') }}">
               <i class="fas fa-list-check me-1"></i> Retail Orders
