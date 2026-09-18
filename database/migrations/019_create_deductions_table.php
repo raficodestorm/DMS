@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('deductions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
             $table->string('type')->default('main'); // main, specific, console
             $table->decimal('customer_deduction', 10, 2);
             $table->decimal('retail_deduction', 10, 2);

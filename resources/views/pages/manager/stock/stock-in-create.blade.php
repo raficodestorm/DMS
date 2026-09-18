@@ -231,14 +231,14 @@
 
 <script type="module">
   /*
-   * ── Deduction constants from PurchasePriceCalculator ──────────────────────
+   * ── Dynamic Deduction percentages from PurchasePriceCalculator ─────────────
    * Mirrors: Step 1 → base_price
    *          Step 2 → after_customer_cut = base × (1 - customer_deduction%)
    *          Step 3 → after_tree_cut    = after_customer × (1 - tree_deduction%)
    *          Step 4 → purchase_price    = after_tree × (1 - my_deduction%)
    */
-  const CUSTOMER_DEDUCTION_PCT = {{ (float) ($deduction->customer_deduction ?? 0) }};
-  const MY_DEDUCTION_PCT       = {{ (float) ($deduction->my_deduction ?? 0) }};
+  let customerDeductionPct = {{ (float) ($deduction->customer_deduction ?? 0) }};
+  let myDeductionPct       = {{ (float) ($deduction->my_deduction ?? 0) }};
 
   let index = 0;
   let currentSupplierProducts = [];
@@ -251,7 +251,7 @@
       toggleTreeDeductionInputs();
     });
 
-    /* ── Supplier change → fetch products ────────────── */
+    /* ── Supplier change → fetch products & deduction ─── */
     $('select[name="supplier_id"]').on('change', function () {
       const supplierId = $(this).val();
       const productWrapper = $('#product-wrapper');
@@ -261,11 +261,17 @@
           url: '/manager/stock/get-products/' + supplierId,
           type: 'GET',
           success: function (data) {
-            currentSupplierProducts = data;
+            const products = Array.isArray(data) ? data : (data.products || []);
+            if (data && data.deduction) {
+              customerDeductionPct = parseFloat(data.deduction.customer_deduction) || 0;
+              myDeductionPct       = parseFloat(data.deduction.my_deduction) || 0;
+            }
+
+            currentSupplierProducts = products;
             productWrapper.empty();
             index = 0;
 
-            if (data.length > 0) {
+            if (products.length > 0) {
               $('#addMoreBtn').prop('disabled', false);
               window.addRow();
             } else {
@@ -418,9 +424,9 @@
    *  Step 4 → purchase_price     = after_tree × (1 − my_deduction%)
    */
   function calculatePurchaseRate(basePrice, treePct) {
-    const afterCustomer = basePrice * (1 - CUSTOMER_DEDUCTION_PCT / 100);
+    const afterCustomer = basePrice * (1 - customerDeductionPct / 100);
     const afterTree     = afterCustomer * (1 - treePct / 100);
-    const purchasePrice = afterTree * (1 - MY_DEDUCTION_PCT / 100);
+    const purchasePrice = afterTree * (1 - myDeductionPct / 100);
     return Math.max(0, Math.round(purchasePrice * 100) / 100);
   }
 

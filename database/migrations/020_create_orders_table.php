@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('sr_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->string('status')->default('pending_sr');
             // 'pending_sr', 'pending_manager', 'approved', 'rejected', 'complete', 'delivered'
             $table->decimal('special_discount', 10, 2)->default(0)->nullable();

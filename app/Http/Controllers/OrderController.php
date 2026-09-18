@@ -63,6 +63,7 @@ class OrderController extends Controller
   {
     $rawSearch = $_GET['search'] ?? $request->search ?? '';
     $search = trim($rawSearch);
+    $supplierId = $request->supplier_id;
     $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
 
     if (!$isAll) {
@@ -74,15 +75,22 @@ class OrderController extends Controller
     $branchId = auth()->user()?->branch_id;
 
     $query = Stock::with('product')
-      ->whereHas('product');
+      ->whereHas('product', function ($q) use ($supplierId) {
+        if ($supplierId) {
+          $q->where('supplier_id', $supplierId);
+        }
+      });
 
     if ($branchId) {
       $query->where('branch_id', $branchId);
     }
 
     if (!$isAll && $search !== '') {
-      $query->whereHas('product', function ($q) use ($search) {
+      $query->whereHas('product', function ($q) use ($search, $supplierId) {
         $q->where('name', 'like', "%{$search}%");
+        if ($supplierId) {
+          $q->where('supplier_id', $supplierId);
+        }
       });
     }
 
@@ -99,6 +107,9 @@ class OrderController extends Controller
     }
 
     $prodQuery = Product::query();
+    if ($supplierId) {
+      $prodQuery->where('supplier_id', $supplierId);
+    }
     if (!$isAll && $search !== '') {
       $prodQuery->where('name', 'like', "%{$search}%");
     }
@@ -156,14 +167,14 @@ class OrderController extends Controller
 
   public function showForManager($id)
   {
-    $order = Order::with(['customer', 'sr', 'items.product'])->findOrFail($id);
+    $order = Order::with(['customer', 'sr', 'supplier', 'items.product'])->findOrFail($id);
 
     return view('pages.manager.order.show', compact('order'));
   }
 
   public function showForAdmin($id)
   {
-    $order = Order::with(['customer', 'sr', 'items.product', 'branch'])->findOrFail($id);
+    $order = Order::with(['customer', 'sr', 'supplier', 'items.product', 'branch'])->findOrFail($id);
     $branches = \App\Models\Branch::select('id', 'name')->orderBy('name', 'asc')->get();
 
     return view('pages.admin.orders.show', compact('order', 'branches'));
@@ -172,17 +183,25 @@ class OrderController extends Controller
 
   public function edit($id)
   {
-    $order = Order::with(['items.product.stock', 'customer'])->findOrFail($id);
+    $order = Order::with(['items.product.stock', 'customer', 'supplier'])->findOrFail($id);
 
-    if ($order->sr->branch_id != auth()->user()->branch_id) {
+    if ($order->sr && $order->sr->branch_id != auth()->user()->branch_id) {
       return redirect()->back()->with('error', 'Unauthorized access.');
     }
 
     $branchId = auth()->user()->branch_id;
+    $suppliers = \App\Models\Supplier::with('deductions')->orderBy('company_name', 'asc')->get();
     $customers = Customer::orderBy('shop_name', 'asc')->where('branch_id', $branchId)->get();
 
-    // আপনার দেওয়া পদ্ধতি (নিরাপদ ভার্সন)
-    $deductionSettings = Deduction::first();
+    // Fetch deduction matching order's supplier
+    $deductionSettings = null;
+    if ($order->supplier_id) {
+      $deductionSettings = Deduction::where('supplier_id', $order->supplier_id)->where('type', 'main')->first()
+        ?? Deduction::where('supplier_id', $order->supplier_id)->first();
+    }
+    if (!$deductionSettings) {
+      $deductionSettings = Deduction::where('type', 'main')->first() ?? Deduction::first();
+    }
 
     $products = Stock::with('product')
       ->where('branch_id', $branchId)
@@ -198,7 +217,7 @@ class OrderController extends Controller
         ];
       });
 
-    return view("pages." . auth()->user()->role . ".order.edit", compact('order', 'customers', 'products', 'deductionSettings'));
+    return view("pages." . auth()->user()->role . ".order.edit", compact('order', 'customers', 'suppliers', 'products', 'deductionSettings'));
   }
 
 
@@ -210,6 +229,7 @@ class OrderController extends Controller
 {
     $request->validate([
         'customer_id' => ['required', 'exists:customers,id'],
+        'supplier_id' => ['nullable', 'exists:suppliers,id'],
         'products'    => ['required', 'array', 'min:1'],
         'net_total'   => ['required', 'numeric', 'min:0'],
     ]);
@@ -234,12 +254,18 @@ class OrderController extends Controller
 
             /*
              * ---------------------------------------------------------
-             * 1. Get deduction settings
+             * 1. Get deduction settings for supplier
              * ---------------------------------------------------------
              */
-            $deductionSettings = DB::table('deductions')
-                ->where('type', 'main')
-                ->first();
+            $supplierId = $request->supplier_id ?? $order->supplier_id;
+            $deductionSettings = null;
+            if ($supplierId) {
+                $deductionSettings = Deduction::where('supplier_id', $supplierId)->where('type', 'main')->first()
+                    ?? Deduction::where('supplier_id', $supplierId)->first();
+            }
+            if (!$deductionSettings) {
+                $deductionSettings = Deduction::where('type', 'main')->first() ?? Deduction::first();
+            }
 
             $globalRate = $request->boolean('apply_global')
                 ? ($deductionSettings->customer_deduction ?? 0)
@@ -289,10 +315,11 @@ class OrderController extends Controller
              * ---------------------------------------------------------
              */
             $order->update([
+                'supplier_id'                => $supplierId,
                 'status'                     => 'pending_sr',
                 'special_discount'           => $request->special_discount ?? 0,
                 'discount_amount'            => $request->total_discount ?? 0,
-                'net_total'                  => $request->net_total,
+                'net_total'                  => (int) round($request->net_total),
                 'applied_deduction_percent' => $totalDeductionPercent,
                 'note'                       => $request->note,
             ]);
@@ -362,9 +389,8 @@ class OrderController extends Controller
                  * Selling rate after deduction
                  * -----------------------------------------------------
                  */
-                $sellingRate = round(
-                    $basePrice - $deductionAmount,
-                    2
+                $sellingRate = (int) round(
+                    $basePrice - $deductionAmount
                 );
 
 

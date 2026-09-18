@@ -34,7 +34,19 @@ class StockRequestController extends Controller
       ->orderBy('name', 'asc')
       ->get();
 
-    return response()->json($products);
+    $deduction = Deduction::where('supplier_id', $supplier_id)->where('type', 'main')->first()
+      ?? Deduction::where('supplier_id', $supplier_id)->first()
+      ?? Deduction::where('type', 'main')->first()
+      ?? Deduction::first();
+
+    return response()->json([
+      'products'  => $products,
+      'deduction' => [
+        'customer_deduction' => (float) ($deduction->customer_deduction ?? 0),
+        'retail_deduction'   => (float) ($deduction->retail_deduction ?? 0),
+        'my_deduction'       => (float) ($deduction->my_deduction ?? 0),
+      ],
+    ]);
   }
 
 
@@ -58,11 +70,14 @@ class StockRequestController extends Controller
             | STEP 1: Get active deduction policy
             |--------------------------------------------------------------------------
             */
-            $deduction = Deduction::where('type', 'main')->first();
+            $deduction = Deduction::where('supplier_id', $validated['supplier_id'])->where('type', 'main')->first()
+                ?? Deduction::where('supplier_id', $validated['supplier_id'])->first()
+                ?? Deduction::where('type', 'main')->first()
+                ?? Deduction::first();
 
             if (!$deduction) {
                 throw new \Exception(
-                    'No main deduction policy found. Please configure deductions first.'
+                    'No deduction policy found. Please configure deductions first.'
                 );
             }
 
@@ -325,8 +340,11 @@ class StockRequestController extends Controller
       return back()->with('error', 'You cannot edit approved request.');
     }
 
-    // Pass deduction policy so the blade JS can mirror PurchasePriceCalculator live.
-    $deduction = Deduction::where('type', 'main')->first();
+    // Pass deduction policy for this request's supplier so the blade JS can mirror PurchasePriceCalculator live.
+    $deduction = Deduction::where('supplier_id', $request->supplier_id)->where('type', 'main')->first()
+      ?? Deduction::where('supplier_id', $request->supplier_id)->first()
+      ?? Deduction::where('type', 'main')->first()
+      ?? Deduction::first();
 
     return view('pages.manager.stock.stock-in-edit', compact('request', 'suppliers', 'deduction'));
   }
@@ -374,11 +392,14 @@ class StockRequestController extends Controller
             | STEP 3: Get deduction policy
             |--------------------------------------------------------------------------
             */
-            $deduction = Deduction::where('type', 'main')->first();
+            $deduction = Deduction::where('supplier_id', $validated['supplier_id'])->where('type', 'main')->first()
+                ?? Deduction::where('supplier_id', $validated['supplier_id'])->first()
+                ?? Deduction::where('type', 'main')->first()
+                ?? Deduction::first();
 
             if (!$deduction) {
                 throw new \Exception(
-                    'No main deduction policy found. Please configure deductions first.'
+                    'No deduction policy found. Please configure deductions first.'
                 );
             }
 
@@ -545,6 +566,9 @@ class StockRequestController extends Controller
                     ]
                 );
 
+                // Capture existing quantity BEFORE increment for WAC calculation
+                $existingQty = (float) $stock->quantity;
+
                 $stock->increment(
                     'quantity',
                     $item->quantity
@@ -552,16 +576,29 @@ class StockRequestController extends Controller
 
                 /*
                 |--------------------------------------------------------------------------
-                | 3B. Update product purchase price
+                | 3B. Update product purchase price — Weighted Average Cost (WAC)
                 |--------------------------------------------------------------------------
                 |
-                | NO CALCULATION HERE.
+                | WAC = (existing_qty × old_purchase_price + new_qty × new_cost_price)
+                |        ÷ (existing_qty + new_qty)
                 |
-                | stock_in_items.cost_price is the source of truth.
+                | If no existing stock exists, new cost_price is used directly.
                 |--------------------------------------------------------------------------
                 */
+                $newQty          = (float) $item->quantity;
+                $newCostPrice    = (float) $item->cost_price;
+                $oldPurchasePrice = (float) ($item->product->purchase_price ?? 0);
+                $totalQty        = $existingQty + $newQty;
+
+                $wac = ($totalQty > 0)
+                    ? round(
+                        (($existingQty * $oldPurchasePrice) + ($newQty * $newCostPrice)) / $totalQty,
+                        2
+                    )
+                    : $newCostPrice;
+
                 $item->product->update([
-                    'purchase_price' => $item->cost_price,
+                    'purchase_price' => $wac,
                 ]);
             }
 
@@ -662,8 +699,11 @@ public function stockInAdminEdit($id)
     $request = StockInRequest::findOrFail($id);
     $suppliers = Supplier::select('id', 'company_name')->orderBy('company_name', 'asc')->get();
 
-    // Pass deduction policy so the blade JS can mirror PurchasePriceCalculator live.
-    $deduction = Deduction::where('type', 'main')->first();
+    // Pass deduction policy for this request's supplier so the blade JS can mirror PurchasePriceCalculator live.
+    $deduction = Deduction::where('supplier_id', $request->supplier_id)->where('type', 'main')->first()
+      ?? Deduction::where('supplier_id', $request->supplier_id)->first()
+      ?? Deduction::where('type', 'main')->first()
+      ?? Deduction::first();
 
     return view('pages.admin.stock.stock-in-edit', compact('request', 'suppliers', 'deduction'));
   }
@@ -723,11 +763,14 @@ public function stockInAdminEdit($id)
             | stock_in_items.cost_price.
             |
             */
-            $deduction = Deduction::where('type', 'main')->first();
+            $deduction = Deduction::where('supplier_id', $validated['supplier_id'])->where('type', 'main')->first()
+                ?? Deduction::where('supplier_id', $validated['supplier_id'])->first()
+                ?? Deduction::where('type', 'main')->first()
+                ?? Deduction::first();
 
             if (!$deduction) {
                 throw new \Exception(
-                    'No main deduction policy found. Please configure deductions first.'
+                    'No deduction policy found. Please configure deductions first.'
                 );
             }
 
@@ -964,25 +1007,39 @@ public function stockInAdminEdit($id)
                         ]
                     );
 
+                    // Capture existing quantity BEFORE increment for WAC calculation
+                    $existingQty = (float) $stock->quantity;
+
                     $stock->increment(
                         'quantity',
                         $item->quantity
                     );
 
-
                     /*
                     |--------------------------------------------------------------------------
-                    | 9B. Update product purchase price
+                    | 9B. Update product purchase price — Weighted Average Cost (WAC)
                     |--------------------------------------------------------------------------
                     |
-                    | IMPORTANT:
+                    | WAC = (existing_qty × old_purchase_price + new_qty × new_cost_price)
+                    |        ÷ (existing_qty + new_qty)
                     |
-                    | Use the already calculated cost_price.
-                    | Do NOT calculate again.
-                    |
+                    | If no existing stock exists, new cost_price is used directly.
+                    |--------------------------------------------------------------------------
                     */
+                    $newQty           = (float) $item->quantity;
+                    $newCostPrice     = (float) $item->cost_price;
+                    $oldPurchasePrice = (float) ($item->product->purchase_price ?? 0);
+                    $totalQty         = $existingQty + $newQty;
+
+                    $wac = ($totalQty > 0)
+                        ? round(
+                            (($existingQty * $oldPurchasePrice) + ($newQty * $newCostPrice)) / $totalQty,
+                            2
+                        )
+                        : $newCostPrice;
+
                     $item->product->update([
-                        'purchase_price' => $item->cost_price,
+                        'purchase_price' => $wac,
                     ]);
                 }
             }

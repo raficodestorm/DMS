@@ -270,7 +270,7 @@ class OrderSrController extends Controller
 
   public function showForSr($id)
   {
-    $order = Order::with(['customer', 'sr', 'items.product'])->findOrFail($id);
+    $order = Order::with(['customer', 'sr', 'supplier', 'items.product'])->findOrFail($id);
 
     return view('pages.sr.order.show', compact('order'));
   }
@@ -319,7 +319,8 @@ class OrderSrController extends Controller
   public function create()
   {
     $branchId = auth()->user()->branch_id;
-    $deductionSettings = \DB::table('deductions')->where('type', 'main')->first();
+    $suppliers = \App\Models\Supplier::with('deductions')->orderBy('company_name', 'asc')->get();
+    $deductionSettings = \App\Models\Deduction::where('type', 'main')->first() ?? \App\Models\Deduction::first();
     $customers = Customer::orderBy('shop_name', 'asc')->where('branch_id', $branchId)->get();
 
     $products = Stock::with('product')
@@ -336,13 +337,14 @@ class OrderSrController extends Controller
         ];
       });
 
-    return view('pages.sr.order.create', compact('customers', 'products', 'deductionSettings'));
+    return view('pages.sr.order.create', compact('customers', 'suppliers', 'products', 'deductionSettings'));
   }
 
   public function searchProducts(Request $request)
   {
     $rawSearch = $_GET['search'] ?? $request->search ?? '';
     $search = trim($rawSearch);
+    $supplierId = $request->supplier_id;
     $isAll = $request->boolean('all') || (strlen($rawSearch) >= 2 && $search === '');
 
     if (!$isAll) {
@@ -354,15 +356,22 @@ class OrderSrController extends Controller
     $branchId = auth()->user()?->branch_id;
 
     $query = Stock::with('product')
-      ->whereHas('product');
+      ->whereHas('product', function ($q) use ($supplierId) {
+        if ($supplierId) {
+          $q->where('supplier_id', $supplierId);
+        }
+      });
 
     if ($branchId) {
       $query->where('branch_id', $branchId);
     }
 
     if (!$isAll && $search !== '') {
-      $query->whereHas('product', function ($q) use ($search) {
+      $query->whereHas('product', function ($q) use ($search, $supplierId) {
         $q->where('name', 'like', "%{$search}%");
+        if ($supplierId) {
+          $q->where('supplier_id', $supplierId);
+        }
       });
     }
 
@@ -379,6 +388,9 @@ class OrderSrController extends Controller
     }
 
     $prodQuery = Product::query();
+    if ($supplierId) {
+      $prodQuery->where('supplier_id', $supplierId);
+    }
     if (!$isAll && $search !== '') {
       $prodQuery->where('name', 'like', "%{$search}%");
     }
@@ -458,6 +470,7 @@ class OrderSrController extends Controller
 {
     $request->validate([
         'customer_id' => ['required', 'exists:customers,id'],
+        'supplier_id' => ['nullable', 'exists:suppliers,id'],
         'products'    => ['required', 'array', 'min:1'],
         'net_total'   => ['required', 'numeric', 'min:0'],
     ]);
@@ -495,12 +508,19 @@ class OrderSrController extends Controller
 
             /*
              * ---------------------------------------------------------
-             * 2. Get deduction settings
+             * 2. Get deduction settings for selected supplier
              * ---------------------------------------------------------
              */
-            $deductionSettings = DB::table('deductions')
-                ->where('type', 'main')
-                ->first();
+            $supplierId = $request->supplier_id;
+            $deductionSettings = null;
+            if ($supplierId) {
+                $deductionSettings = \App\Models\Deduction::where('supplier_id', $supplierId)->where('type', 'main')->first()
+                    ?? \App\Models\Deduction::where('supplier_id', $supplierId)->first();
+            }
+            if (!$deductionSettings) {
+                $deductionSettings = \App\Models\Deduction::where('type', 'main')->first()
+                    ?? \App\Models\Deduction::first();
+            }
 
             $globalRate = $request->boolean('apply_global')
                 ? ($deductionSettings->customer_deduction ?? 0)
@@ -550,13 +570,14 @@ class OrderSrController extends Controller
             $order = Order::create([
                 'order_id'                    => $orderId,
                 'customer_id'                 => $request->customer_id,
+                'supplier_id'                 => $supplierId,
                 'sr_id'                       => $user->id,
                 'manager_id'                  => $manager?->id,
                 'branch_id'                   => $branchId,
                 'status'                      => 'pending_sr',
                 'special_discount'            => $request->special_discount ?? 0,
                 'discount_amount'             => $request->total_discount ?? 0,
-                'net_total'                   => $request->net_total,
+                'net_total'                   => (int) round($request->net_total),
                 'applied_deduction_percent'   => $totalDeductionPercent,
                 'note'                        => $request->note,
                 'order_type'                  => 'field_order',
@@ -604,9 +625,8 @@ class OrderSrController extends Controller
                 /*
                  * Selling rate after deduction
                  */
-                $sellingRate = round(
-                    $basePrice - $deductionAmount,
-                    2
+                $sellingRate = (int) round(
+                    $basePrice - $deductionAmount
                 );
 
                 /*

@@ -33,11 +33,7 @@ Route::get('/', function () {
         ->take(8)
         ->get();
 
-    $customerDeduction = (float) (Deduction::where('type', 'main')->value('retail_deduction')
-        ?? Deduction::value('retail_deduction')
-        ?? 30);
-
-    return view('welcome', compact('featuredCategories', 'featuredProducts', 'bestSellingProducts', 'customerDeduction'));
+    return view('welcome', compact('featuredCategories', 'featuredProducts', 'bestSellingProducts'));
 })->name('home-page');
 Route::get('/about', function () {
     return view('about');

@@ -9,6 +9,7 @@ class Deduction extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'supplier_id',
         'type',
         'customer_deduction',
         'retail_deduction',
@@ -16,4 +17,8 @@ class Deduction extends Model
         'tree_deduction',
         'floor_deduction',
     ];
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 }

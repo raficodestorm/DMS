@@ -22,6 +22,16 @@ class Supplier extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function deductions()
+    {
+        return $this->hasMany(Deduction::class);
+    }
+
+    public function deduction()
+    {
+        return $this->hasOne(Deduction::class)->latestOfMany();
+    }
+
     public function stockRequests()
     {
         return $this->hasMany(StockInRequest::class);

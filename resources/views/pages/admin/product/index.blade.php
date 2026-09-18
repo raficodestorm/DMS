@@ -89,6 +89,7 @@
                     <th>SKU</th>
                     <th>Price</th>
                     <th>Status</th>
+                    <th>P.P</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -183,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (productTable) {
             productTable.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
+                    <td colspan="9" class="text-center py-4 text-muted">
                         <i class="fas fa-spinner fa-spin me-2"></i> Loading products...
                     </td>
                 </tr>`;
@@ -200,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (productTable) {
             productTable.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-danger">
+                    <td colspan="9" class="text-center py-4 text-danger">
                         <i class="fas fa-exclamation-circle me-1"></i> Failed to load product data. Please try again.
                     </td>
                 </tr>`;

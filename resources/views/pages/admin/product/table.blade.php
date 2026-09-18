@@ -21,6 +21,7 @@
         <span class="status-inactive-badge">● Inactive</span>
         @endif
     </td>
+    <td>{{ number_format($product->purchase_price, 2) ?? "N/A" }} TK</td>
 
     <td class="action-icons">
         <div class="d-flex align-items-center gap-1 justify-content-center">

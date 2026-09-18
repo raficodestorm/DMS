@@ -233,10 +233,25 @@
       }
       @endphp
 
+      <div>
+
+      @if($order->order_type == "field_order")
+          <span class="emerald-type-badge">Field Order</span>
+          @elseif($order->order_type == 'retail')
+          <span class="pink-type-badge">Retail</span>
+          @elseif($order->order_type == 'online')
+          <span class="purple-type-badge">Online</span>
+          @else
+          <span class="status-undefined-badge">Undefined</span>
+          @endif
+      
       <span class="request-status-badge" style="background: {{ $bg }}; color: {{ $color }};">
         {{ $text }}
       </span>
     </div>
+
+    </div>
+
 
     @include('components.alert')
   </div>
@@ -297,18 +312,8 @@
         <i class="fas fa-layer-group"></i>
       </div>
       <div class="info-details">
-        <label>Order Type</label>
-        <p>
-          @if($order->order_type == "field_order")
-          <span class="emerald-type-badge">Field Order</span>
-          @elseif($order->order_type == 'retail')
-          <span class="pink-type-badge">Retail</span>
-          @elseif($order->order_type == 'online')
-          <span class="purple-type-badge">Online</span>
-          @else
-          <span class="status-undefined-badge">Undefined</span>
-          @endif
-        </p>
+        <label>Supplier</label>
+        <p>{{ $order->supplier->company_name ?? 'N/A' }}</p>
       </div>
     </div>
 

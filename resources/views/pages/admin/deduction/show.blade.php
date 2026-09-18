@@ -10,9 +10,15 @@
     <div class="content-area">
 
         <div class="info-list">
+
+            <div class="info-group">
+                <span class="i-label">Supplier</span>
+                <span class="i-value">{{ $deduction->supplier->company_name ?? 'N/A' }}</span>
+            </div>
+
             <div class="info-group">
                 <span class="i-label">Type</span>
-                <span class="i-value">{{ $deduction->name }}</span>
+                <span class="i-value">{{ $deduction->type }}</span>
             </div>
             <div class="info-group">
                 <span class="i-label">Cust-Deduction</span>

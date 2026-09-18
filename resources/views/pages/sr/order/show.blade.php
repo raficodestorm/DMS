@@ -170,9 +170,25 @@
       }
       @endphp
 
+      <div>
+
+      @if($order->order_type == "field_order")
+          <span class="emerald-type-badge">Field Order</span>
+          @elseif($order->order_type == 'retail')
+          <span class="pink-type-badge">Retail</span>
+          @elseif($order->order_type == 'online')
+          <span class="purple-type-badge">Online</span>
+          @else
+          <span class="status-undefined-badge">Undefined</span>
+          @endif
+
+
       <span class="request-status-badge" style="background: {{ $bg }}; color: {{ $color }};">
         {{ $text }}
       </span>
+
+       
+      </div>
     </div>
 
     @include('components.alert')
@@ -186,6 +202,16 @@
       <div class="info-details">
         <label>Customer</label>
         <p>{{ $order->customer_name ?? $order->customer->shop_name }}</p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-box">
+        <i class="fas fa-building"></i>
+      </div>
+      <div class="info-details">
+        <label>Supplier</label>
+        <p>{{ $order->supplier->company_name ?? 'N/A' }}</p>
       </div>
     </div>
 

@@ -29,14 +29,32 @@ class PurchasePriceCalculator
      *   Step 3 → after_tree_cut     = after_customer_cut × (1 - tree_deduction / 100)
      *   Step 4 → purchase_price     = after_tree_cut × (1 - my_deduction / 100)
      *
-     * @param  StockInItem  $item       Must have product relation eager-loaded.
-     * @param  Deduction    $deduction  The active deduction policy (type = 'main').
+     * @param  StockInItem      $item       Must have product relation eager-loaded (or accessible).
+     * @param  Deduction|null   $deduction  Optional active deduction policy. If null or mismatched, resolves by supplier_id.
      * @return float
      * @throws \RuntimeException If calculated purchase price would be negative.
      */
-    public function calculate(StockInItem $item, Deduction $deduction): float
+    public function calculate(StockInItem $item, ?Deduction $deduction = null): float
     {
-        $basePrice = (float) $item->product->price;
+        $basePrice = (float) ($item->product->price ?? 0);
+
+        // Determine matching supplier ID
+        $supplierId = $item->product->supplier_id
+            ?? $item->stockInRequest?->supplier_id
+            ?? null;
+
+        // If no deduction provided, or the passed deduction belongs to another supplier, resolve the supplier's deduction
+        if (!$deduction || ($supplierId && $deduction->supplier_id && $deduction->supplier_id != $supplierId)) {
+            if ($supplierId) {
+                $deduction = Deduction::where('supplier_id', $supplierId)->where('type', 'main')->first()
+                    ?? Deduction::where('supplier_id', $supplierId)->first();
+            }
+
+            if (!$deduction) {
+                $deduction = Deduction::where('type', 'main')->first()
+                    ?? Deduction::first();
+            }
+        }
 
         // Step 2: customer_deduction %
         $customerPct = max(0.0, (float) ($deduction->customer_deduction ?? 0));
@@ -51,8 +69,9 @@ class PurchasePriceCalculator
         $purchasePrice = $afterTree * (1 - $myPct / 100);
 
         if ($purchasePrice < 0) {
+            $productName = $item->product->name ?? 'Unknown Product';
             throw new \RuntimeException(
-                "Purchase price for product [{$item->product->name}] cannot be negative. " .
+                "Purchase price for product [{$productName}] cannot be negative. " .
                 "Calculated: {$purchasePrice}. Check your deduction percentages."
             );
         }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('sku')->unique();
             $table->string('barcode', 100)->nullable()->unique();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('price', 10, 2);
             $table->decimal('purchase_price', 10, 2)->nullable();
             $table->integer('stock_alert')->default(0);

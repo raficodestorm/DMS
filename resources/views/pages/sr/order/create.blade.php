@@ -259,7 +259,7 @@
   .cls-search-icon { color: var(--text-muted); margin-right: 10px; font-size: 15px; }
   .cls-input {
     flex: 1; border: none; outline: none; background: transparent;
-    padding: 12px 0; font-size: 15px; color: var(--text-main);
+    padding: 8px 0; font-size: 15px; color: var(--text-main);
   }
   .cls-input::placeholder { color: var(--text-muted); }
   .cls-spinner { color: var(--primary); font-size: 14px; margin-left: 8px; }
@@ -291,7 +291,7 @@
     background: var(--section-bg);
     border: 2px solid var(--primary);
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 6px 14px;
     display: flex; align-items: center; justify-content: space-between;
   }
 </style>
@@ -306,13 +306,66 @@
     <form method="POST" action="{{ route('sr.order.store') }}" id="orderForm">
       @csrf
 
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-bold">Select Supplier <span class="text-danger">*</span></label>
+          <select name="supplier_id" id="supplierSelect" class="form-select" required onchange="handleSupplierChange(this)">
+            <option value="">-- Choose Supplier --</option>
+            @foreach($suppliers as $supplier)
+              @php
+                $sDeduction = (float) ($supplier->deduction?->customer_deduction ?? ($supplier->deductions->first()?->customer_deduction ?? 0));
+              @endphp
+              <option value="{{ $supplier->id }}" data-deduction="{{ $sDeduction }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                {{ $supplier->company_name ?? $supplier->name }} ({{ $sDeduction }}% Deduction)
+              </option>
+            @endforeach
+          </select>
+          @error('supplier_id') <div class="error-msg text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-bold">Select Shop / Customer <span class="text-danger">*</span></label>
+          <input type="hidden" name="customer_id" id="selected_customer_id" value="{{ old('customer_id') }}" required>
+          
+          <div id="cls-selected-box" class="cls-selected-box mb-2" style="display: none;">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <i class="fas fa-store text-primary fs-5"></i>
+              <strong id="cls-selected-name" class="fs-6 text-dark"></strong>
+              <span class="cls-item-due" id="cls-selected-due"></span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="cls-clear-btn">
+              <i class="fas fa-times me-1"></i> Change
+            </button>
+          </div>
+
+          <div class="cls-container" id="cls-container">
+            <div class="cls-input-wrap">
+              <span class="cls-search-icon"><i class="fas fa-user-check"></i></span>
+              <input
+                type="text"
+                id="cls-input"
+                class="cls-input"
+                placeholder="Type shop name to search customer or 2 spaces for all..."
+                autocomplete="off"
+                inputmode="search">
+              <span class="cls-spinner" id="cls-spinner" style="display:none">
+                <i class="fas fa-circle-notch fa-spin"></i>
+              </span>
+            </div>
+            <div id="cls-dropdown" class="cls-dropdown" style="display:none"></div>
+          </div>
+
+          @error('customer_id') <div class="error-msg text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
+      </div>
+
       <div class="deduction-control-card p-3 mb-4 border rounded shadow-sm">
         <div class="row align-items-center">
           <div class="col-md-6 mb-2 mb-md-0">
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" name="apply_global" id="applyGlobalDeduction"
                 data-percentage="{{ $deductionSettings->customer_deduction ?? 0 }}" checked>
-              <label class="form-check-label fw-bold" for="applyGlobalDeduction">
+              <label class="form-check-label fw-bold" for="applyGlobalDeduction" id="globalDeductionLabel">
                 Apply Standard Deduction ({{ $deductionSettings->customer_deduction ?? 0 }}%)
               </label>
             </div>
@@ -325,42 +378,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="customer-section mb-4">
-        <label class="form-label fw-bold">Select Shop / Customer</label>
-        
-        <input type="hidden" name="customer_id" id="selected_customer_id" value="{{ old('customer_id') }}" required>
-        
-        <div id="cls-selected-box" class="cls-selected-box mb-2" style="display: none;">
-          <div class="d-flex align-items-center flex-wrap gap-2">
-            <i class="fas fa-store text-primary fs-5"></i>
-            <strong id="cls-selected-name" class="fs-6 text-dark"></strong>
-            <span class="cls-item-due" id="cls-selected-due"></span>
-          </div>
-          <button type="button" class="btn btn-sm btn-outline-danger" id="cls-clear-btn">
-            <i class="fas fa-times me-1"></i> Change
-          </button>
-        </div>
-
-        <div class="cls-container" id="cls-container">
-          <div class="cls-input-wrap">
-            <span class="cls-search-icon"><i class="fas fa-user-check"></i></span>
-            <input
-              type="text"
-              id="cls-input"
-              class="cls-input"
-              placeholder="Type shop name to search customer or 2 spaces for all..."
-              autocomplete="off"
-              inputmode="search">
-            <span class="cls-spinner" id="cls-spinner" style="display:none">
-              <i class="fas fa-circle-notch fa-spin"></i>
-            </span>
-          </div>
-          <div id="cls-dropdown" class="cls-dropdown" style="display:none"></div>
-        </div>
-
-        @error('customer_id') <div class="error-msg">{{ $message }}</div> @enderror
       </div>
 
       <div id="product-wrapper" class="row">
@@ -428,8 +445,27 @@
   
 
 
-function refreshAllCards() {
+function handleSupplierChange(selectEl) {
+    let selectedOption = $(selectEl).find('option:selected');
+    let deductionPct = parseFloat(selectedOption.data('deduction')) || 0;
     
+    // Update Standard Deduction Rate & Label
+    $('#applyGlobalDeduction').data('percentage', deductionPct);
+    $('#globalDeductionLabel').text(`Apply Standard Deduction (${deductionPct}%)`);
+    
+    // If cards already added, prompt or refresh
+    if ($('.product-card').length > 0) {
+        if (confirm('সাপ্লায়ার পরিবর্তন করলে বর্তমান প্রোডাক্ট লিস্ট ক্লিয়ার হবে। আপনি কি নিশ্চিত?')) {
+            $('#product-wrapper').empty();
+            index = 0;
+            calculateTotal();
+        } else {
+            refreshAllCards();
+        }
+    }
+}
+
+function refreshAllCards() {
     $('.qty-input').each(function() {
         calculateCard(this);
     });
@@ -486,7 +522,7 @@ function addProductCard(productId, name, stock, imageName) {
                         <div class="ps-2">
                             <h6 class="product-name mb-1 fw-bold text-dark text-wrap">${name}</h6>
                             <div class="price-info small text-muted">Base Rate: <del class="base-price-display">${basePrice.toFixed(2)}</del> ৳</div>
-                            <div class="price-info small">Selling Rate: <b class="text-success selling-price-display">${sellingPricePerUnit.toFixed(2)} ৳</b></div>
+                            <div class="price-info small">Selling Rate: <b class="text-success selling-price-display">${Math.round(sellingPricePerUnit)} ৳</b></div>
                             <div class="price-info small text-muted">Offer Disc: ${disc.toFixed(2)} ৳  <small style="color:red;">(${showDisc})</small></div>
                         </div>
 
@@ -540,7 +576,7 @@ function calculateCard(el) {
     let subtotal = (sellingPricePerUnit - offerDisc) * qty;
 
     // UI Updates
-    card.find('.selling-price-display').text(sellingPricePerUnit.toFixed(2) + ' ৳');
+    card.find('.selling-price-display').text(Math.round(sellingPricePerUnit) + ' ৳');
     card.find('.card-subtotal').text(subtotal.toFixed(2));
     card.find('.card-subtotal-val').val(subtotal.toFixed(2));
     
@@ -603,10 +639,10 @@ function calculateTotal() {
     // 5. Update UI Displays
     $('#itemCount').text(totalItemCount);
     $('#totalDiscount').text(totalPromotionalDiscount.toFixed(2)); // Show only Offers + Special
-    $('#netTotalDisplay').text(finalNetTotal.toLocaleString('en-US', {minimumFractionDigits: 2}));
+    $('#netTotalDisplay').text(Math.round(finalNetTotal).toLocaleString('en-US'));
 
     // 6. Update Hidden Inputs for Form Submission
-    $('#netTotalInput').val(finalNetTotal.toFixed(2));
+    $('#netTotalInput').val(Math.round(finalNetTotal));
     $('#totalDiscountInput').val(totalPromotionalDiscount.toFixed(2));
 }
 
@@ -640,6 +676,14 @@ document.addEventListener('DOMContentLoaded', function () {
     clearTimeout(timer);
     var raw = this.value;
     var q = raw.trim();
+    var supplierId = $('#supplierSelect').val();
+
+    if (!supplierId) {
+      plsDropdown.innerHTML     = '<div class="pls-empty"><i class="fas fa-exclamation-triangle me-1 text-warning"></i> প্রথমে সাপ্লায়ার সিলেক্ট করুন</div>';
+      plsDropdown.style.display = 'block';
+      return;
+    }
+
     if (raw.length < 2 || (q.length > 0 && q.length < 2)) {
       plsDropdown.style.display = 'none';
       plsDropdown.innerHTML     = '';
@@ -647,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     timer = setTimeout(function () {
       plsSpinner.style.display = 'inline';
-      var url = '/sr/products/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '');
+      var url = '/sr/products/search?search=' + encodeURIComponent(raw) + (q === '' ? '&all=1' : '') + '&supplier_id=' + encodeURIComponent(supplierId);
       fetch(url, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       })
@@ -655,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function (products) {
         plsSpinner.style.display = 'none';
         if (!products.length) {
-          plsDropdown.innerHTML     = '<div class="pls-empty"><i class="fas fa-box-open me-1"></i> No products found</div>';
+          plsDropdown.innerHTML     = '<div class="pls-empty"><i class="fas fa-box-open me-1"></i> এই সাপ্লায়ারের কোনো প্রোডাক্ট পাওয়া যায়নি</div>';
           plsDropdown.style.display = 'block';
           return;
         }

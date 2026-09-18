@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Deduction;
 use App\Models\Product;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,20 +14,21 @@ class DeductionController extends Controller
 
     public function index()
     {
-        $deductions = Deduction::latest()->paginate(10);
+        $deductions = Deduction::with('supplier')->latest()->paginate(10);
         return view('pages.admin.deduction.index', compact('deductions'));
     }
 
 
     public function create()
     {
-        return view('pages.admin.deduction.create');
+        $suppliers = Supplier::orderBy('name', 'asc')->get();
+        return view('pages.admin.deduction.create', compact('suppliers'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-
+            'supplier_id' => 'required|exists:suppliers,id',
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
             'retail_deduction' => 'required|numeric|min:0',
@@ -49,14 +51,15 @@ class DeductionController extends Controller
 
     public function edit(Deduction $deduction)
     {
-
-        return view('pages.admin.deduction.edit', compact('deduction'));
+        $suppliers = Supplier::orderBy('name', 'asc')->get();
+        return view('pages.admin.deduction.edit', compact('deduction','suppliers'));
     }
 
 
     public function update(Request $request, Deduction $deduction)
     {
         $validated = $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
             'type'            => 'required|in:main,specific',
             'customer_deduction' => 'required|numeric|min:0',
             'retail_deduction' => 'required|numeric|min:0',

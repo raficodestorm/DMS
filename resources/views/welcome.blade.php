@@ -862,7 +862,7 @@ TRUST
 
       @forelse($featuredProducts ?? [] as $product)
       <div class="col-lg-3 col-6 d-flex">
-        @include('components.product-card', ['product' => $product, 'customerDeduction' => $customerDeduction])
+        @include('components.product-card', ['product' => $product])
       </div>
       @empty
       <div class="col-12 text-center py-4">
@@ -889,7 +889,7 @@ TRUST
 
       @forelse($bestSellingProducts ?? [] as $product)
       <div class="col-lg-3 col-6 d-flex">
-        @include('components.product-card', ['product' => $product, 'customerDeduction' => $customerDeduction])
+        @include('components.product-card', ['product' => $product])
       </div>
       @empty
       <div class="col-12 text-center py-4">

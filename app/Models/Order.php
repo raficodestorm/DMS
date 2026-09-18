@@ -20,6 +20,7 @@ class Order extends Model
         'delivered_by',
         'delivered_at',
         'branch_id',
+        'supplier_id',
         'order_type',
         'payment_status',
         'payment_amount',
@@ -43,6 +44,11 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function sr()

@@ -4,16 +4,34 @@
     $isInStock = ($product->status == 1);
     $basePrice = (float) ($product->price ?? 0);
 
-    if ($customerDeduction === null) {
-        static $cachedDeductionPct = null;
-        if ($cachedDeductionPct === null) {
-            $cachedDeductionPct = (float) (\App\Models\Deduction::where('type', 'main')->value('retail_deduction') 
-                ?? \App\Models\Deduction::value('retail_deduction') 
-                ?? 30);
-        }
-        $deductionPct = $cachedDeductionPct;
-    } else {
+    if ($customerDeduction !== null) {
         $deductionPct = (float) $customerDeduction;
+    } else {
+        // Cache all supplier deductions to prevent multiple queries across repeated cards
+        static $supplierDeductionsMap = null;
+        static $defaultDeductionPct = null;
+
+        if ($supplierDeductionsMap === null) {
+            $supplierDeductionsMap = [];
+            $allDeductions = \App\Models\Deduction::orderByRaw("CASE WHEN type = 'main' THEN 1 ELSE 2 END")->get();
+            foreach ($allDeductions as $d) {
+                if ($d->supplier_id && !isset($supplierDeductionsMap[$d->supplier_id])) {
+                    $supplierDeductionsMap[$d->supplier_id] = (float) $d->retail_deduction;
+                }
+            }
+            $defaultDeductionPct = (float) (
+                \App\Models\Deduction::where('type', 'main')->value('retail_deduction') 
+                ?? \App\Models\Deduction::value('retail_deduction') 
+                ?? 0
+            );
+        }
+
+        $supplierId = $product->supplier_id ?? ($product->supplier?->id ?? null);
+        if ($supplierId && isset($supplierDeductionsMap[$supplierId])) {
+            $deductionPct = $supplierDeductionsMap[$supplierId];
+        } else {
+            $deductionPct = $defaultDeductionPct;
+        }
     }
 
     $hasDeduction = ($deductionPct > 0);

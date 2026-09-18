@@ -32,6 +32,9 @@
                 @endif
             </p>
         </div>
+        <div><span>P.P</span>
+            <p>{{ number_format($product->purchase_price, 2) ?? "N/A" }} TK</p>
+        </div>
     </div>
 
     <div class="card-actions d-flex align-items-center gap-1">

@@ -12,23 +12,37 @@ class PricingEngineService
 {
     /**
      * Cache the retail deduction percentage per request.
+    /**
+     * Cache supplier deductions map and default deduction.
      */
-    protected ?float $retailDeduction = null;
+    protected ?array $supplierDeductions = null;
+    protected ?float $defaultRetailDeduction = null;
 
     /**
-     * Get the global retail deduction percentage.
+     * Get the retail deduction percentage for a specific supplier, or global fallback.
      */
-    public function getRetailDeductionPercent(): float
+    public function getRetailDeductionPercent(?int $supplierId = null): float
     {
-        if ($this->retailDeduction === null) {
-            $this->retailDeduction = (float) (
+        if ($this->supplierDeductions === null) {
+            $this->supplierDeductions = [];
+            $allDeductions = Deduction::orderByRaw("CASE WHEN type = 'main' THEN 1 ELSE 2 END")->get();
+            foreach ($allDeductions as $d) {
+                if ($d->supplier_id && !isset($this->supplierDeductions[$d->supplier_id])) {
+                    $this->supplierDeductions[$d->supplier_id] = (float) $d->retail_deduction;
+                }
+            }
+            $this->defaultRetailDeduction = (float) (
                 Deduction::where('type', 'main')->value('retail_deduction')
                 ?? Deduction::value('retail_deduction')
-                ?? 30.0
+                ?? 0.0
             );
         }
 
-        return $this->retailDeduction;
+        if ($supplierId && isset($this->supplierDeductions[$supplierId])) {
+            return $this->supplierDeductions[$supplierId];
+        }
+
+        return $this->defaultRetailDeduction ?? 0.0;
     }
 
     /**
@@ -42,7 +56,7 @@ class PricingEngineService
     public function calculateItemPrice(Product|int $product, int $quantity = 1, ?string $couponCode = null): array
     {
         if (is_numeric($product)) {
-            $product = Product::with(['category', 'activeRetailOffer'])->find($product);
+            $product = Product::with(['category', 'supplier', 'activeRetailOffer'])->find($product);
         }
 
         if (!$product) {
@@ -54,7 +68,7 @@ class PricingEngineService
 
         $quantity = max(1, (int) $quantity);
         $basePrice = (float) ($product->price ?? 0);
-        $deductionPercent = $this->getRetailDeductionPercent();
+        $deductionPercent = $this->getRetailDeductionPercent($product->supplier_id ?? null);
 
         // 1. Initial price after retail deduction
         $deductionAmount = ($basePrice * ($deductionPercent / 100));
@@ -261,6 +275,7 @@ class PricingEngineService
         $products = Product::whereIn('id', $productIds)
             ->with([
                 'category',
+                'supplier',
                 'activeRetailOffer',
             ])
             ->get()
