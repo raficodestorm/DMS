@@ -1,5 +1,9 @@
 @php
-    $navbarCategories = \App\Models\Category::orderBy('name', 'asc')->take(10)->get();
+    $navbarCategories = \App\Models\Category::withCount(['products' => function($q) {
+        $q->where('status', 1);
+    }])
+    ->orderBy('name', 'asc')
+    ->get();
 @endphp
 
 <header class="main-header">
@@ -14,7 +18,7 @@
 
       <!-- Search Bar Pill -->
       <div class="header-search">
-        <form action="{{ route('home-page') }}" method="GET" class="search-form">
+        <form action="{{ route('shop') }}" method="GET" class="search-form">
           <input type="text" name="search" class="search-input" placeholder="I'm shopping for..." value="{{ request('search') }}" autocomplete="off">
           <button type="submit" class="search-btn">
             <i class="fas fa-search"></i>
@@ -122,6 +126,7 @@
   </div>
 
   <!-- ================= DESKTOP: BOTTOM NAV ROW ================= -->
+  <div class="header-nav-wrap">
   <div class="header-nav">
     <div class="container header-nav-container">
 
@@ -138,17 +143,24 @@
         <ul class="categories-dropdown-menu">
           @forelse($navbarCategories as $cat)
             <li>
-              <a href="{{ route('home-page') }}?category={{ $cat->id }}">
+              <a href="{{ route('shop') }}?category={{ $cat->id }}">
                 <span>{{ $cat->name }}</span>
+                @if($cat->products_count > 0)
+                  <span class="badge" style="font-size: 10.5px; opacity: .75; font-weight: 600; margin-left: auto; margin-right: 6px;">({{ $cat->products_count }})</span>
+                @endif
                 <i class="fas fa-chevron-right"></i>
               </a>
             </li>
           @empty
-            <li><a href="#"><span>Lighting Solutions</span><i class="fas fa-chevron-right"></i></a></li>
-            <li><a href="#"><span>Switches & Plugs</span><i class="fas fa-chevron-right"></i></a></li>
-            <li><a href="#"><span>Industrial Wiring</span><i class="fas fa-chevron-right"></i></a></li>
-            <li><a href="#"><span>Professional Tools</span><i class="fas fa-chevron-right"></i></a></li>
+            <li><a href="{{ route('shop') }}"><span>All Products</span><i class="fas fa-chevron-right"></i></a></li>
           @endforelse
+          <li class="dropdown-divider" style="margin: 4px 0; border-top: 1px solid var(--border-color);"></li>
+          <li>
+            <a href="{{ route('shop') }}" style="color: var(--primary); font-weight: 700;">
+              <span><i class="fas fa-grip me-1"></i> View All Products</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -161,13 +173,11 @@
           <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About Us</a>
         </li>
         <li>
-          <a href="{{ route('home-page') }}#products">Shop</a>
+          <a href="{{ route('shop') }}" class="{{ request()->routeIs('shop') ? 'active' : '' }}">Shop</a>
         </li>
+        
         <li>
-          <a href="{{ route('home-page') }}#best-sellers">Best Sellers</a>
-        </li>
-        <li>
-          <a href="{{ route('home-page') }}#deals">Today's Deals</a>
+          <a href="{{ route('deals') }}" class="{{ request()->routeIs('deals') ? 'active' : '' }}">Today's Deals</a>
         </li>
         <li>
           <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Contact Us</a>
@@ -175,12 +185,13 @@
       </ul>
 
       <!-- Special Offers Link -->
-      <a href="{{ route('home-page') }}#offers" class="special-offers-link">
+      <a href="{{ route('shop') }}?offer=1" class="special-offers-link {{ request()->routeIs('shop') && (request('offer') || request('offers')) ? 'active' : '' }}">
         <i class="fas fa-percent"></i>
         <span>Special Offers!</span>
       </a>
 
     </div>
+  </div>
   </div>
 
   <!-- ================= MOBILE HEADER BAR ================= -->
@@ -273,7 +284,7 @@
 
   <!-- Mobile Collapsible Search Container -->
   <div class="mobile-search-drawer" id="mobileSearchDrawer">
-    <form action="{{ route('home-page') }}" method="GET" class="search-form">
+    <form action="{{ route('shop') }}" method="GET" class="search-form">
       <input type="text" name="search" class="search-input" placeholder="I'm shopping for..." value="{{ request('search') }}" autocomplete="off">
       <button type="submit" class="search-btn">
         <i class="fas fa-search"></i>
@@ -282,6 +293,32 @@
     </form>
   </div>
 </header>
+
+<script>
+/* ---- Header-Nav Hide on Scroll Down / Show on Scroll Up ---- */
+(function() {
+  const wrap = document.querySelector('.header-nav-wrap');
+  if (!wrap) return;
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        const currentY = window.scrollY;
+        if (currentY > lastY && currentY > 80) {
+          wrap.classList.add('nav-hidden');
+        } else {
+          wrap.classList.remove('nav-hidden');
+        }
+        lastY = currentY;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+})();
+</script>
 
 <!-- ================= MOBILE SIDEBAR / OFFCANVAS ================= -->
 <div id="mobileSidebar">
@@ -301,15 +338,18 @@
       </div>
       <div class="mobile-cat-list">
         @forelse($navbarCategories as $cat)
-          <a href="{{ route('home-page') }}?category={{ $cat->id }}" class="mobile-cat-item">
-            {{ $cat->name }}
+          <a href="{{ route('shop') }}?category={{ $cat->id }}" class="mobile-cat-item">
+            <span>{{ $cat->name }}</span>
+            @if($cat->products_count > 0)
+              <span class="badge" style="font-size: 10px; opacity: .75; font-weight: 600; margin-left: auto;">({{ $cat->products_count }})</span>
+            @endif
           </a>
         @empty
-          <a href="#" class="mobile-cat-item">Lighting Solutions</a>
-          <a href="#" class="mobile-cat-item">Switches & Plugs</a>
-          <a href="#" class="mobile-cat-item">Industrial Wiring</a>
-          <a href="#" class="mobile-cat-item">Professional Tools</a>
+          <a href="{{ route('shop') }}" class="mobile-cat-item">All Products</a>
         @endforelse
+        <a href="{{ route('shop') }}" class="mobile-cat-item" style="color: var(--primary); font-weight: 700;">
+          <span><i class="fas fa-grip me-1"></i> View All Products</span>
+        </a>
       </div>
     </div>
 
@@ -320,19 +360,17 @@
     <a href="{{ route('about') }}" class="mobile-nav-link {{ request()->routeIs('about') ? 'active' : '' }}">
       <span><i class="fas fa-circle-info me-2"></i> About Us</span>
     </a>
-    <a href="{{ route('home-page') }}#products" class="mobile-nav-link">
+    <a href="{{ route('shop') }}" class="mobile-nav-link {{ request()->routeIs('shop') ? 'active' : '' }}">
       <span><i class="fas fa-bag-shopping me-2"></i> Shop</span>
     </a>
-    <a href="{{ route('home-page') }}#best-sellers" class="mobile-nav-link">
-      <span><i class="fas fa-fire me-2"></i> Best Sellers</span>
-    </a>
-    <a href="{{ route('home-page') }}#deals" class="mobile-nav-link">
-      <span><i class="fas fa-tags me-2"></i> Today's Deals</span>
+    
+    <a href="{{ route('deals') }}" class="mobile-nav-link {{ request()->routeIs('deals') ? 'active' : '' }}">
+      <span><i class="fas fa-bolt me-2" style="color: #f59e0b;"></i> Today's Deals</span>
     </a>
     <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">
       <span><i class="fas fa-headset me-2"></i> Contact Us</span>
     </a>
-    <a href="{{ route('home-page') }}#offers" class="mobile-nav-link" style="color: var(--accent);">
+    <a href="{{ route('shop') }}?offer=1" class="mobile-nav-link {{ request()->routeIs('shop') && (request('offer') || request('offers')) ? 'active' : '' }}" style="color: var(--accent);">
       <span><i class="fas fa-percent me-2"></i> Special Offers!</span>
     </a>
   </div>

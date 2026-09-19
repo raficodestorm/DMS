@@ -20,6 +20,7 @@ Route::get('/', function () {
 
     $featuredProducts = Product::where('is_featured', true)
         ->where('status', 1)
+        ->withSum('stocks', 'quantity')
         ->with(['category', 'supplier', 'activeRetailOffer'])
         ->latest()
         ->take(16)
@@ -27,6 +28,7 @@ Route::get('/', function () {
 
     $bestSellingProducts = Product::where('status', 1)
         ->withSum('orderItems', 'quantity')
+        ->withSum('stocks', 'quantity')
         ->with(['category', 'supplier', 'activeRetailOffer'])
         ->orderByDesc('order_items_sum_quantity')
         ->latest()
@@ -41,6 +43,12 @@ Route::get('/about', function () {
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+
+// Shop page (public)
+Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('shop');
+
+// Today's Deals page (public)
+Route::get('/todays-deals', [\App\Http\Controllers\DealController::class, 'index'])->name('deals');
 
 // Wishlist Routes (work for both guests via cookie and authenticated users via DB)
 Route::post('/wishlist/toggle',   [\App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');

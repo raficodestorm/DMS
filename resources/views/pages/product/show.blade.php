@@ -634,7 +634,7 @@
 
       {{-- Actions (under Gallery) --}}
       <div class="pd-actions">
-        @if($product->status == 1)
+        @if($product->is_in_stock)
           <button type="button" class="pd-btn-cart"
             id="pdAddCartBtn"
             data-id="{{ $product->id }}"
@@ -668,7 +668,7 @@
             <i class="fas fa-layer-group"></i> {{ $product->category->name }}
           </span>
         @endif
-        @if($product->status == 1)
+        @if($product->is_in_stock)
           <span class="pd-stock-pill in-stock"><i class="fas fa-check-circle"></i> In Stock</span>
         @else
           <span class="pd-stock-pill out-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
@@ -746,7 +746,7 @@
           'Dimensions'  => ($product->length && $product->width && $product->height)
                             ? "{$product->length} × {$product->width} × {$product->height} cm"
                             : null,
-          'Availability' => $product->status == 1 ? 'In Stock' : 'Out of Stock',
+          'Availability' => $product->is_in_stock ? 'In Stock' : 'Out of Stock',
         ]);
       @endphp
       @if(count($specs) > 0)

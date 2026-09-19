@@ -1,7 +1,7 @@
 @props(['product', 'customerDeduction' => null])
 
 @php
-    $isInStock = ($product->status == 1);
+    $isInStock = (bool) $product->is_in_stock;
     $basePrice = (float) ($product->price ?? 0);
 
     // Wishlist state check
@@ -84,7 +84,7 @@
     $hasDiscount = ($sellingPrice < $roundedBasePrice);
 @endphp
 
-<div class="product-card-main">
+<div class="product-card-main" onclick="if (!event.target.closest('button, a, .product-btn-wishlist, .btn-card-cart')) { window.location.href = '{{ route('products.show', $product) }}'; }" style="cursor: pointer;">
     {{-- Top Badges & Wishlist --}}
     <div class="product-card-top">
         @if($offer && !empty($offerText))
@@ -104,7 +104,7 @@
     </div>
 
     {{-- Product Image --}}
-    <a href="javascript:void(0)" class="product-img-box">
+    <a href="{{ route('products.show', $product) }}" class="product-img-box">
         @if(!empty($product->image))
             <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" loading="lazy">
         @else
@@ -116,7 +116,7 @@
 
     {{-- Product Body --}}
     <div class="product-card-body">
-        <a href="javascript:void(0)" class="product-card-title" title="{{ $product->name }}">
+        <a href="{{ route('products.show', $product) }}" class="product-card-title" title="{{ $product->name }}">
             {{ $product->name }}
         </a>
 
@@ -162,9 +162,6 @@
                 <i class="fas fa-ban"></i> Out of Stock
             </button>
             @endif
-            <a href="{{ route('products.show', $product) }}" class="btn-card-view">
-                <i class="fas fa-eye"></i> View Product
-            </a>
         </div>
     </div>
 </div>

@@ -180,7 +180,7 @@ class WishlistController extends Controller
     {
         return Product::whereIn('id',
             Wishlist::where('user_id', Auth::id())->pluck('product_id')
-        )->with(['activeRetailOffer'])->get();
+        )->with(['activeRetailOffer'])->withSum('stocks', 'quantity')->get();
     }
 
     private function getCookieItems(Request $request): \Illuminate\Support\Collection
@@ -189,7 +189,7 @@ class WishlistController extends Controller
         if (empty($ids)) {
             return collect();
         }
-        return Product::whereIn('id', $ids)->with(['activeRetailOffer'])->get();
+        return Product::whereIn('id', $ids)->with(['activeRetailOffer'])->withSum('stocks', 'quantity')->get();
     }
 
     private function renderWishlistCard(Product $product): string
@@ -223,7 +223,7 @@ class WishlistController extends Controller
         $finalPrice    = round(max(0, $priceAfterDeduction - $offerDiscountVal));
         $originalPrice = round($basePrice);
         $hasDiscount   = $finalPrice < $originalPrice;
-        $isInStock     = $product->status == 1;
+        $isInStock     = (bool) $product->is_in_stock;
 
         $imageUrl = $product->image
             ? asset($product->image)

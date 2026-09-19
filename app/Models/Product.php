@@ -38,9 +38,36 @@ class Product extends Model
     }
 
     public function stock()
-{
-    return $this->hasMany(Stock::class);
-}
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+    public function getTotalStockAttribute(): int
+    {
+        if (array_key_exists('stocks_sum_quantity', $this->attributes)) {
+            return (int) ($this->attributes['stocks_sum_quantity'] ?? 0);
+        }
+        if (array_key_exists('stock_sum_quantity', $this->attributes)) {
+            return (int) ($this->attributes['stock_sum_quantity'] ?? 0);
+        }
+        if ($this->relationLoaded('stocks')) {
+            return (int) $this->stocks->sum('quantity');
+        }
+        if ($this->relationLoaded('stock')) {
+            return (int) $this->stock->sum('quantity');
+        }
+        return (int) $this->stocks()->sum('quantity');
+    }
+
+    public function getIsInStockAttribute(): bool
+    {
+        return $this->total_stock > 0;
+    }
 
     public function orderItems()
     {

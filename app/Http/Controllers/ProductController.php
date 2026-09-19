@@ -36,7 +36,8 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        $product->load(['category', 'supplier', 'images', 'activeRetailOffer']);
+        $product->load(['category', 'supplier', 'images', 'activeRetailOffer'])
+            ->loadSum('stocks', 'quantity');
 
         $today = now()->toDateString();
 
@@ -85,6 +86,7 @@ class ProductController extends Controller
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('status', 1)
+            ->withSum('stocks', 'quantity')
             ->with(['activeRetailOffer'])
             ->inRandomOrder()
             ->take(8)

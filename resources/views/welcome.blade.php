@@ -825,7 +825,7 @@ TRUST
 
       @forelse($featuredCategories ?? [] as $cat)
       <div class="col-xl-3 col-lg-4 col-md-4 col-6">
-        <div class="category-card">
+        <a href="{{ route('shop') }}?category={{ $cat->id }}" class="category-card" style="text-decoration: none; color: inherit; display: flex;">
           <div class="category-img-wrapper">
             @if(!empty($cat->image))
               <img src="{{ asset($cat->image) }}" alt="{{ $cat->name }}">
@@ -835,7 +835,7 @@ TRUST
           </div>
           <h6 class="category-title">{{ $cat->name }}</h6>
           <p class="category-count">{{ $cat->products_count ?? 0 }} {{ Str::plural('Product', $cat->products_count ?? 0) }}</p>
-        </div>
+        </a>
       </div>
       @empty
       <div class="col-12 text-center py-4">
