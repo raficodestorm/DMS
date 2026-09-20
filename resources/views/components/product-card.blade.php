@@ -154,8 +154,9 @@
             <button type="button" class="btn-card-cart"
                 data-id="{{ $product->id }}"
                 data-name="{{ $product->name }}"
+                data-img="{{ !empty($product->image) ? asset($product->image) : '' }}"
                 onclick="addToCart(this)">
-                <i class="fas fa-shopping-bag"></i> Add to Cart
+                <i class="fas fa-basket-shopping"></i> Add to Cart
             </button>
             @else
             <button type="button" class="btn-card-cart" style="opacity: 0.6; cursor: not-allowed;" disabled>

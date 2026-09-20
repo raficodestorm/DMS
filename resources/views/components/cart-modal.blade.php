@@ -981,6 +981,7 @@
   function addToCart(btnElement) {
     const id = parseInt(btnElement.getAttribute('data-id'), 10);
     const name = btnElement.getAttribute('data-name') || '';
+    const imgSrc = btnElement.getAttribute('data-img') || '';
 
     if (!id || isNaN(id)) return;
 
@@ -990,11 +991,7 @@
     if (existingIndex > -1) {
       items[existingIndex].quantity = (parseInt(items[existingIndex].quantity, 10) || 1) + 1;
     } else {
-      items.push({
-        id: id,
-        name: name,
-        quantity: 1
-      });
+      items.push({ id, name, quantity: 1 });
     }
 
     saveCartItems(items);
@@ -1009,8 +1006,63 @@
       btnElement.style.opacity = '';
     }, 1000);
 
+    // Flying image animation
+    if (imgSrc) flyToCart(btnElement, imgSrc);
+
     // Sync live pricing with server & update navbar badges
     syncCartPricing();
+  }
+
+  function flyToCart(btn, imgSrc) {
+    const card = btn.closest('.product-card-main');
+    const srcImg = card ? card.querySelector('.product-img-box img') : null;
+
+    // Pick the cart icon that is actually visible on screen
+    const allCartIcons = document.querySelectorAll('.icon-cart');
+    let cartTarget = null;
+    for (const el of allCartIcons) {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) { cartTarget = el; break; }
+    }
+    if (!cartTarget) return;
+
+    const srcRect  = srcImg ? srcImg.getBoundingClientRect() : btn.getBoundingClientRect();
+    const destRect = cartTarget.getBoundingClientRect();
+    const size     = Math.min(srcRect.width, srcRect.height, 90);
+
+    // Full translation: from element's original layout position → cart center
+    const dx = destRect.left + destRect.width  / 2 - (srcRect.left + srcRect.width  / 2);
+    const dy = destRect.top  + destRect.height / 2 - (srcRect.top  + srcRect.height / 2);
+
+    const clone = document.createElement('img');
+    clone.src = imgSrc;
+    clone.className = 'fly-to-cart-clone';
+    Object.assign(clone.style, {
+      width:  size + 'px',
+      height: size + 'px',
+      top:    (srcRect.top  + scrollY + (srcRect.height - size) / 2) + 'px',
+      left:   (srcRect.left + scrollX + (srcRect.width  - size) / 2) + 'px',
+    });
+    document.body.appendChild(clone);
+
+    // Phase 1: lift above card (0.4s)
+    requestAnimationFrame(() => {
+      clone.style.transition = 'transform 0.4s ease';
+      clone.style.transform  = 'translateY(-130px) scale(1.08)';
+
+      // Phase 2: fly to cart after lift completes
+      setTimeout(() => {
+        clone.style.transition = 'transform 0.52s cubic-bezier(0.4, 0, 0.6, 1), opacity 0.52s ease';
+        clone.style.transform  = `translate(${dx}px, ${dy}px) scale(0.12)`;
+        clone.style.opacity    = '0';
+
+        setTimeout(() => {
+          clone.remove();
+          cartTarget.classList.add('cart-icon-pop');
+          cartTarget.addEventListener('animationend', () => cartTarget.classList.remove('cart-icon-pop'), { once: true });
+        }, 540);
+      }, 420);
+    });
   }
 
   function updateItemQuantity(id, delta) {

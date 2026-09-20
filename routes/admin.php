@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\OrderAdminController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\ShippingRateController;
+use App\Http\Controllers\Admin\SlideController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\OrderController;
@@ -165,10 +166,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/bonuses/index/data', [BonusController::class, 'fetchBonusesIndexData'])->name('bonuses.index.data');
   Route::get('/shipping-rates/index/data', [ShippingRateController::class, 'fetchShippingRatesIndexData'])->name('shipping-rates.index.data');
   Route::match(['post', 'patch'], '/shipping-rates/{shippingRate}/toggle-status', [ShippingRateController::class, 'toggleStatus'])->name('shipping-rates.toggle-status');
-    
+  
+  Route::get('/slides/index/data', [SlideController::class, 'fetchSlidesIndexData'])->name('slides.index.data');
+  Route::match(['post', 'patch'], '/slides/{slide}/toggle-status', [SlideController::class, 'toggleStatus'])->name('slides.toggle-status');
 
   Route::resource('products', ProductController::class);
   Route::resource('offers', OfferController::class);
+  Route::resource('slides', SlideController::class);
   Route::resource('deductions', DeductionController::class);
   Route::resource('suppliers', SupplierController::class);
   Route::resource('bonuses', BonusController::class);

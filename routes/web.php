@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    $slides = \App\Models\Slide::active()
+        ->ordered()
+        ->with(['offers.product'])
+        ->get();
+
     $featuredCategories = Category::where('is_featured', true)
         ->withCount('products')
         ->orderBy('name', 'asc')
@@ -35,7 +40,7 @@ Route::get('/', function () {
         ->take(8)
         ->get();
 
-    return view('welcome', compact('featuredCategories', 'featuredProducts', 'bestSellingProducts'));
+    return view('welcome', compact('slides', 'featuredCategories', 'featuredProducts', 'bestSellingProducts'));
 })->name('home-page');
 Route::get('/about', function () {
     return view('about');
@@ -43,6 +48,12 @@ Route::get('/about', function () {
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+
+// Slide campaign offer products page (public)
+Route::get('/campaign/{slide}', [\App\Http\Controllers\SlideOfferController::class, 'show'])->name('slide.offers');
+
+// Order Live Tracking API Route
+Route::post('/order/track', [\App\Http\Controllers\OrderTrackController::class, 'track'])->name('order.track');
 
 // Shop page (public)
 Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('shop');

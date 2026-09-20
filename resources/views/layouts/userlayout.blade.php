@@ -131,6 +131,7 @@
   @include('components.login-modal')
   @include('components.cart-modal')
   @include('components.wishlist-modal')
+  @include('components.track-order-modal')
 
   <div>
     @yield('content')

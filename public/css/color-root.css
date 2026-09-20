@@ -17,9 +17,10 @@
   --green: #007200;
 
 
-  --background: #f1f2f4;
-  --section-bg: #fafcfd;
-  /* --section-bg: #ffffff; */
+  --background: #f1f3f8;
+  /* --background: #f1f2f4; */
+  /* --section-bg: #fafcfd; */
+  --section-bg: #fcffff;
 
   --text-main: #080d14;
   --text-muted: #64748b;

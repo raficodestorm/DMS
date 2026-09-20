@@ -387,6 +387,30 @@
         </ul>
       </li>
 
+      <!-- Slide Control -->
+      <li class="nav-item {{ request()->routeIs('admin.slides.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.slides.*') }}">
+          <i class="fa-solid fa-images"></i>
+          <span>Slide Controll</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.slides.*') }}">
+          <li>
+            <a href="{{ route('admin.slides.create') }}" class="sub-link {{ isActive('admin.slides.create') }}">
+              <i class="fa-solid fa-plus me-1"></i> Add New Slide
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.slides.index') }}" class="sub-link {{ isActive('admin.slides.index') }}">
+              <i class="fa-solid fa-layer-group me-1"></i> All Slides
+            </a>
+          </li>
+
+        </ul>
+      </li>
+
       <!-- shipping rate -->
       <li class="nav-item {{ request()->routeIs('admin.shipping-rates.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.shipping-rates.*') }}">

@@ -169,18 +169,23 @@
         <li>
           <a href="{{ route('home-page') }}" class="{{ request()->routeIs('home-page') && !request('category') && !request('search') ? 'active' : '' }}">Home</a>
         </li>
+
         <li>
-          <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About Us</a>
+          <a href="{{ route('deals') }}" class="{{ request()->routeIs('deals') ? 'active' : '' }}">Today's Deals</a>
         </li>
+        
         <li>
           <a href="{{ route('shop') }}" class="{{ request()->routeIs('shop') ? 'active' : '' }}">Shop</a>
         </li>
         
         <li>
-          <a href="{{ route('deals') }}" class="{{ request()->routeIs('deals') ? 'active' : '' }}">Today's Deals</a>
+          <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About Us</a>
         </li>
         <li>
           <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Contact Us</a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" onclick="openTrackOrderModal()">Track Order</a>
         </li>
       </ul>
 
@@ -357,18 +362,23 @@
     <a href="{{ route('home-page') }}" class="mobile-nav-link {{ request()->routeIs('home-page') ? 'active' : '' }}">
       <span><i class="fas fa-house me-2"></i> Home</span>
     </a>
-    <a href="{{ route('about') }}" class="mobile-nav-link {{ request()->routeIs('about') ? 'active' : '' }}">
-      <span><i class="fas fa-circle-info me-2"></i> About Us</span>
-    </a>
-    <a href="{{ route('shop') }}" class="mobile-nav-link {{ request()->routeIs('shop') ? 'active' : '' }}">
-      <span><i class="fas fa-bag-shopping me-2"></i> Shop</span>
-    </a>
-    
+
     <a href="{{ route('deals') }}" class="mobile-nav-link {{ request()->routeIs('deals') ? 'active' : '' }}">
       <span><i class="fas fa-bolt me-2" style="color: #f59e0b;"></i> Today's Deals</span>
     </a>
+    
+    <a href="{{ route('shop') }}" class="mobile-nav-link {{ request()->routeIs('shop') ? 'active' : '' }}">
+      <span><i class="fas fa-bag-shopping me-2"></i> Shop</span>
+    </a>
+
+    <a href="{{ route('about') }}" class="mobile-nav-link {{ request()->routeIs('about') ? 'active' : '' }}">
+      <span><i class="fas fa-circle-info me-2"></i> About Us</span>
+    </a>
     <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">
       <span><i class="fas fa-headset me-2"></i> Contact Us</span>
+    </a>
+    <a href="javascript:void(0)" onclick="toggleSidebar(); openTrackOrderModal();" class="mobile-nav-link">
+      <span><i class="fas fa-location-crosshairs me-2" style="color: #0e69fc;"></i> Track Order</span>
     </a>
     <a href="{{ route('shop') }}?offer=1" class="mobile-nav-link {{ request()->routeIs('shop') && (request('offer') || request('offers')) ? 'active' : '' }}" style="color: var(--accent);">
       <span><i class="fas fa-percent me-2"></i> Special Offers!</span>
