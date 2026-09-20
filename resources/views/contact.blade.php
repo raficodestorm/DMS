@@ -1,664 +1,491 @@
 @extends('layouts.userlayout')
 
-@section('title','Contact Us')
+@section('title', 'Contact Us — ' . config('app.name'))
 
 @section('content')
-
 <style>
-  .contact-page {
-    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-    min-height: 100vh;
-    overflow: hidden;
-  }
+/* ===== CONTACT PAGE — SMART & MINIMAL ===== */
+.contact-wrap { padding: 40px 0 70px; }
 
-  .contact-hero {
-    padding: 90px 0 70px;
-    position: relative;
-  }
+/* Hero */
+.ct-hero {
+  background: var(--section-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 44px 36px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.ct-hero::after {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(2,2,226,.1), transparent 70%);
+  top: -80px; right: -80px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.ct-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--primary-soft); color: var(--primary);
+  padding: 5px 14px; border-radius: 30px;
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  margin-bottom: 14px;
+}
+.ct-title {
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 900;
+  font-family: "El Messiri", sans-serif;
+  color: var(--text-main);
+  line-height: 1.18;
+  margin-bottom: 12px;
+}
+.ct-title span {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ct-desc { font-size: 14.5px; color: var(--text-muted); line-height: 1.8; max-width: 660px; margin: 0; }
 
-  .contact-glow {
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(49, 49, 255, 0.16) 0%, rgba(174, 4, 241, 0.08) 45%, transparent 75%);
-    top: -120px;
-    left: -120px;
-    pointer-events: none;
-  }
+/* Quick Action Cards Grid */
+.ct-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.ct-quick-card {
+  background: var(--section-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.ct-quick-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  border-color: var(--primary);
+  color: inherit;
+}
+.ct-icon-box {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  transition: transform .25s;
+}
+.ct-quick-card:hover .ct-icon-box { transform: scale(1.08); }
+.ct-icon-box.wa-icon { background: rgba(37, 211, 102, 0.14); color: #25d366; }
+.ct-icon-box.mail-icon { background: rgba(234, 67, 53, 0.12); color: #ea4335; }
+.ct-icon-box.map-icon { background: rgba(66, 133, 244, 0.14); color: #4285f4; }
 
-  .contact-card {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 34px;
-    padding: 55px;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
-    position: relative;
-    z-index: 2;
-  }
+.ct-quick-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.ct-quick-val { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; word-break: break-word; }
+.ct-quick-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4; }
+.ct-action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 700; color: var(--primary);
+  margin-top: auto;
+}
+.ct-quick-card:hover .ct-action-btn { text-decoration: underline; }
 
-  .section-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--primary-soft);
-    color: var(--primary);
-    padding: 10px 18px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 22px;
-  }
+/* Section Headings */
+.ct-section-head { margin-bottom: 20px; }
+.ct-section-head h2 { font-size: clamp(20px, 2.5vw, 26px); font-weight: 800; color: var(--text-main); font-family: "El Messiri", sans-serif; margin-bottom: 6px; }
+.ct-section-head p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; max-width: 600px; margin: 0; }
 
-  .contact-title {
-    font-size: 60px;
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--text-main);
-    margin-bottom: 24px;
-  }
+/* Department Info Cards */
+.ct-dept-card {
+  background: var(--section-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  height: 100%;
+  transition: transform .25s, box-shadow .25s;
+  border-top: 3px solid var(--primary);
+}
+.ct-dept-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+.ct-dept-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ct-dept-icon {
+  width: 42px; height: 42px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.ct-dept-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0; }
+.ct-dept-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
 
-  .gradient-text {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.ct-item-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.ct-item-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--text-main);
+  background: var(--background);
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+.ct-item-list li i { color: var(--primary); font-size: 13px; margin-top: 3px; flex-shrink: 0; }
+.ct-item-list li strong { color: var(--text-main); font-weight: 700; }
+.ct-item-list li a { color: var(--primary); text-decoration: none; font-weight: 600; word-break: break-all; }
+.ct-item-list li a:hover { text-decoration: underline; }
 
-  .contact-description {
-    font-size: 18px;
-    line-height: 1.9;
-    color: var(--text-muted);
-    max-width: 760px;
-    margin-bottom: 45px;
-  }
+/* Map & Location Block */
+.ct-map-card {
+  background: var(--section-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 28px;
+  overflow: hidden;
+}
+.ct-map-iframe {
+  width: 100%;
+  height: 320px;
+  border: 0;
+  border-radius: 12px;
+  display: block;
+}
 
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
+/* Bottom Wholesale CTA */
+.ct-cta {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 18px;
+  padding: 36px 28px;
+  text-align: center;
+  margin-top: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.ct-cta::before {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,.07);
+  border-radius: 50%;
+  top: -60px; left: -60px;
+}
+.ct-cta h3 { font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: #fff; font-family: "El Messiri", sans-serif; margin-bottom: 8px; position: relative; z-index: 1; }
+.ct-cta p { font-size: 14px; color: rgba(255,255,255,.88); max-width: 540px; margin: 0 auto 20px; line-height: 1.65; position: relative; z-index: 1; }
+.ct-cta-actions {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.ct-btn-light {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; color: var(--primary);
+  font-size: 13.5px; font-weight: 700;
+  padding: 10px 22px; border-radius: 10px;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+}
+.ct-btn-light:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.15); color: var(--primary); }
+.ct-btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.12); color: #fff;
+  border: 1px solid rgba(255,255,255,.35);
+  font-size: 13.5px; font-weight: 700;
+  padding: 10px 22px; border-radius: 10px;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  transition: transform .2s, background .2s;
+}
+.ct-btn-outline:hover { transform: translateY(-2px); background: rgba(255,255,255,.2); color: #fff; }
 
-  .info-card {
-    background: var(--white);
-    border-radius: 24px;
-    padding: 30px;
-    border: 1px solid var(--border-color);
-    transition: 0.35s ease;
-    height: 100%;
-  }
+/* ===== RESPONSIVE ===== */
+@media (max-width: 991px) {
+  .contact-wrap { padding: 24px 0 48px; }
+  .ct-hero { padding: 28px 20px; margin-bottom: 20px; border-radius: 16px; }
+  .ct-quick-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  .ct-map-card { padding: 18px; margin-top: 20px; }
+  .ct-map-iframe { height: 260px; }
+  .ct-cta { padding: 28px 18px; margin-top: 20px; }
+}
 
-  .info-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
-  }
-
-  .info-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 22px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    margin-bottom: 22px;
-  }
-
-  .info-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 12px;
-  }
-
-  .info-text {
-    color: var(--text-muted);
-    line-height: 1.9;
-    font-size: 15px;
-  }
-
-  .main-section {
-    padding-bottom: 100px;
-  }
-
-  .contact-form-wrapper {
-    background: var(--white);
-    border-radius: 34px;
-    padding: 50px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.05);
-    height: 100%;
-  }
-
-  .form-title {
-    font-size: 40px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 16px;
-  }
-
-  .form-description {
-    color: var(--text-muted);
-    line-height: 1.8;
-    margin-bottom: 35px;
-  }
-
-  .input-group-modern {
-    margin-bottom: 24px;
-  }
-
-  .input-label {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--text-main);
-    font-weight: 700;
-    font-size: 15px;
-  }
-
-  .form-control-modern {
-    width: 100%;
-    border: 1.5px solid var(--border-color);
-    border-radius: 16px;
-    padding: 16px 18px;
-    font-size: 15px;
-    color: var(--text-main);
-    background: var(--white);
-    transition: 0.3s ease;
-  }
-
-  .form-control-modern:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(49, 49, 255, 0.10);
-  }
-
-  textarea.form-control-modern {
-    min-height: 160px;
-    resize: none;
-  }
-
-  .btn-contact {
-    border: none;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: var(--white);
-    padding: 16px 32px;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 15px;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    transition: 0.35s ease;
-    box-shadow: 0 12px 30px rgba(49, 49, 255, 0.25);
-  }
-
-  .btn-contact:hover {
-    transform: translateY(-5px);
-  }
-
-  .map-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f6f8ff 100%);
-    border-radius: 34px;
-    padding: 50px;
-    border: 1px solid var(--border-color);
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .map-card::after {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(174, 4, 241, 0.08), transparent 70%);
-    bottom: -100px;
-    right: -100px;
-  }
-
-  .map-title {
-    font-size: 40px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 18px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .map-description {
-    color: var(--text-muted);
-    line-height: 1.9;
-    margin-bottom: 35px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .contact-list {
-    position: relative;
-    z-index: 2;
-  }
-
-  .contact-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 18px;
-    margin-bottom: 28px;
-  }
-
-  .contact-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .contact-item-icon {
-    width: 58px;
-    height: 58px;
-    border-radius: 18px;
-    background: var(--primary-soft);
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .contact-item-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 6px;
-  }
-
-  .contact-item-text {
-    color: var(--text-muted);
-    line-height: 1.8;
-    font-size: 15px;
-  }
-
-  .bottom-cta {
-    margin-top: 70px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 38px;
-    padding: 70px 50px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .bottom-cta::before {
-    content: '';
-    position: absolute;
-    width: 250px;
-    height: 250px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 50%;
-    top: -80px;
-    left: -70px;
-  }
-
-  .bottom-cta::after {
-    content: '';
-    position: absolute;
-    width: 320px;
-    height: 320px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-    right: -120px;
-    bottom: -120px;
-  }
-
-  .cta-title {
-    position: relative;
-    z-index: 2;
-    color: var(--white);
-    font-size: 50px;
-    font-weight: 800;
-    margin-bottom: 18px;
-  }
-
-  .cta-text {
-    position: relative;
-    z-index: 2;
-    color: rgba(255, 255, 255, 0.88);
-    max-width: 760px;
-    margin: 0 auto 35px;
-    line-height: 1.9;
-    font-size: 18px;
-  }
-
-  .btn-light-modern {
-    position: relative;
-    z-index: 2;
-    background: var(--white);
-    color: var(--primary);
-    padding: 16px 34px;
-    border-radius: 16px;
-    text-decoration: none;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    transition: 0.35s ease;
-  }
-
-  .btn-light-modern:hover {
-    transform: translateY(-5px);
-    color: var(--primary);
-  }
-
-  @media(max-width: 991px) {
-
-    .contact-card,
-    .contact-form-wrapper,
-    .map-card,
-    .bottom-cta {
-      padding: 35px;
-    }
-
-    .contact-title,
-    .form-title,
-    .map-title,
-    .cta-title {
-      font-size: 38px;
-    }
-
-    .info-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media(max-width: 576px) {
-
-    .contact-title,
-    .form-title,
-    .map-title,
-    .cta-title {
-      font-size: 30px;
-    }
-
-    .contact-description,
-    .map-description,
-    .cta-text {
-      font-size: 15px;
-    }
-
-    .contact-card,
-    .contact-form-wrapper,
-    .map-card,
-    .bottom-cta,
-    .info-card {
-      padding: 24px;
-      border-radius: 24px;
-    }
-
-    .info-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .btn-contact,
-    .btn-light-modern {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+@media (max-width: 575px) {
+  .contact-wrap { padding: 12px 10px 40px; }
+  .ct-hero { padding: 20px 15px; border-radius: 14px; }
+  .ct-hero::after { display: none; }
+  .ct-badge { font-size: 11px; padding: 4px 10px; }
+  .ct-title { font-size: clamp(21px, 7.5vw, 28px); margin-bottom: 8px; }
+  .ct-desc { font-size: 13px; line-height: 1.7; }
+  .ct-quick-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  .ct-quick-card { padding: 16px 14px; border-radius: 12px; }
+  .ct-icon-box { width: 38px; height: 38px; font-size: 17px; margin-bottom: 10px; }
+  .ct-quick-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.ct-quick-val { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; word-break: break-word; }
+.ct-quick-sub { font-size: 10px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4; }
+  .ct-section-head { margin-bottom: 14px; padding: 0 2px; }
+  .ct-section-head h2 { font-size: 19px; }
+  .ct-section-head p { font-size: 12.5px; }
+  .ct-dept-card { padding: 16px 14px; border-radius: 12px; }
+  .ct-dept-header { margin-bottom: 10px; gap: 10px; }
+  .ct-dept-icon { width: 36px; height: 36px; font-size: 15px; }
+  .ct-dept-title { font-size: 15px; }
+  .ct-dept-desc { font-size: 12.5px; margin-bottom: 12px; }
+  .ct-item-list li { padding: 8px 10px; font-size: 12.5px; }
+  .ct-map-card { padding: 14px; border-radius: 14px; }
+  .ct-map-iframe { height: 220px; }
+  .ct-cta { padding: 24px 14px; border-radius: 14px; }
+  .ct-cta h3 { font-size: clamp(18px, 6vw, 22px); margin-bottom: 6px; }
+  .ct-cta p { font-size: 12.5px; margin-bottom: 14px; }
+  .ct-btn-light, .ct-btn-outline { width: 100%; justify-content: center; font-size: 13px; padding: 9px 16px; }
+}
 </style>
 
-<div class="contact-page">
+<div class="container contact-wrap">
 
-  <!-- Hero -->
-  <section class="contact-hero">
+  {{-- Hero --}}
+  <div class="ct-hero">
+    <div class="ct-badge">
+      <i class="fas fa-headset"></i>
+      Direct Wholesale & Support Channels
+    </div>
+    <h1 class="ct-title">
+      Contact <span>{{ config('app.name') }}</span>
+    </h1>
+    <p class="ct-desc">
+      Have a wholesale inquiry, bulk order requirement, or need product specifications? Connect with our dedicated sales and support team directly via phone, WhatsApp, email, or visit our central hub.
+    </p>
+  </div>
 
-    <div class="contact-glow"></div>
-
-    <div class="container">
-
-      <div class="contact-card">
-
-        <span class="section-badge">
-          <i class="fas fa-headset"></i>
-          We’re Always Ready To Help
-        </span>
-
-        <h1 class="contact-title">
-          Contact
-          <span class="gradient-text">R Electric</span>
-        </h1>
-
-        <p class="contact-description">
-          Have questions, business inquiries, or partnership ideas? Our team is here to assist you with fast
-          communication, reliable support, and professional service.
-        </p>
-
-        <div class="info-grid">
-
-          <div class="info-card">
-            <div class="info-icon">
-              <i class="fas fa-phone-alt"></i>
-            </div>
-
-            <h4 class="info-title">Call Us</h4>
-
-            <p class="info-text">
-              +880 1871-923000
-              <br>
-              +880 1871-923000
-            </p>
-          </div>
-
-          <div class="info-card">
-            <div class="info-icon">
-              <i class="fas fa-envelope"></i>
-            </div>
-
-            <h4 class="info-title">Email Address</h4>
-
-            <p class="info-text">
-              relectricbdofficial@gmail.com
-              <br>
-              relectricbdofficial@gmail.com
-            </p>
-          </div>
-
-          <div class="info-card">
-            <div class="info-icon">
-              <i class="fas fa-map-marker-alt"></i>
-            </div>
-
-            <h4 class="info-title">Office Location</h4>
-
-            <p class="info-text">
-              Mistiripara, Chattogram, Bangladesh
-              <br>
-              Corporate Business Area
-            </p>
-          </div>
-
+  {{-- Quick Action Hub --}}
+  <div class="ct-quick-grid">
+    
+    {{-- Call --}}
+    <a href="tel:+8801871923000" class="ct-quick-card">
+      <div>
+        <div class="ct-icon-box">
+          <i class="fas fa-phone-alt"></i>
         </div>
+        <div class="ct-quick-label">Direct Hotline</div>
+        <div class="ct-quick-val">+880 1871-923000</div>
+        <div class="ct-quick-sub">Sat – Thu: 9:00 AM – 9:00 PM</div>
+      </div>
+      <div class="ct-action-btn">
+        <i class="fas fa-phone"></i> Call Now <i class="fas fa-arrow-right ms-1"></i>
+      </div>
+    </a>
 
+    {{-- WhatsApp --}}
+    <a href="https://wa.me/8801871923000" target="_blank" rel="noopener" class="ct-quick-card">
+      <div>
+        <div class="ct-icon-box wa-icon">
+          <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="ct-quick-label">WhatsApp Chat</div>
+        <div class="ct-quick-val">+880 1871-923000</div>
+        <div class="ct-quick-sub">Instant quotes & product catalog</div>
+      </div>
+      <div class="ct-action-btn" style="color: #25d366;">
+        <i class="fab fa-whatsapp"></i> Message Us <i class="fas fa-arrow-right ms-1"></i>
+      </div>
+    </a>
+
+    {{-- Email --}}
+    <a href="mailto:relectricbdofficial@gmail.com" class="ct-quick-card">
+      <div>
+        <div class="ct-icon-box mail-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="ct-quick-label">Official Email</div>
+        <div class="ct-quick-val">relectricbdofficial@gmail.com</div>
+        <div class="ct-quick-sub">Official quotations & business RFQs</div>
+      </div>
+      <div class="ct-action-btn" style="color: #ea4335;">
+        <i class="fas fa-envelope"></i> Send Email <i class="fas fa-arrow-right ms-1"></i>
+      </div>
+    </a>
+
+    {{-- Central Hub --}}
+    <a href="#location-map" class="ct-quick-card">
+      <div>
+        <div class="ct-icon-box map-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div class="ct-quick-label">Central Hub</div>
+        <div class="ct-quick-val">Chattogram, Bangladesh</div>
+        <div class="ct-quick-sub">Mistiripara, Corporate Distribution</div>
+      </div>
+      <div class="ct-action-btn" style="color: #4285f4;">
+        <i class="fas fa-location-arrow"></i> View Location <i class="fas fa-arrow-down ms-1"></i>
+      </div>
+    </a>
+
+  </div>
+
+  {{-- Contact Information & Channels --}}
+  <div class="mb-4">
+    <div class="ct-section-head">
+      <h2>Departmental Information & Support</h2>
+      <p>Select the specific channel best suited for your requirements to get the fastest assistance.</p>
+    </div>
+
+    <div class="row g-3">
+      
+      {{-- Card 1: Wholesale & Bulk Sales --}}
+      <div class="col-lg-4 col-md-6 col-12">
+        <div class="ct-dept-card">
+          <div class="ct-dept-header">
+            <div class="ct-dept-icon">
+              <i class="fas fa-boxes-stacked"></i>
+            </div>
+            <h5 class="ct-dept-title">Wholesale & Bulk Orders</h5>
+          </div>
+          <p class="ct-dept-desc">Dedicated assistance for dealers, retailers, contractors, and project procurement.</p>
+          <ul class="ct-item-list">
+            <li>
+              <i class="fas fa-phone-volume"></i>
+              <div>
+                <strong>Sales Hotline:</strong><br>
+                <a href="tel:+8801871923000">+880 1871-923000</a>
+              </div>
+            </li>
+            <li>
+              <i class="fab fa-whatsapp"></i>
+              <div>
+                <strong>WhatsApp Orders:</strong><br>
+                <a href="https://wa.me/8801871923000" target="_blank" rel="noopener">+880 1871-923000</a>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-file-invoice-dollar"></i>
+              <div>
+                <strong>Quotation Request:</strong><br>
+                <span>Instant bulk price sheets on WhatsApp</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {{-- Card 2: Customer Care & Warranty --}}
+      <div class="col-lg-4 col-md-6 col-12">
+        <div class="ct-dept-card" style="border-top-color: var(--accent);">
+          <div class="ct-dept-header">
+            <div class="ct-dept-icon" style="background: rgba(174, 4, 241, 0.12); color: var(--accent);">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <h5 class="ct-dept-title">Customer Care & Support</h5>
+          </div>
+          <p class="ct-dept-desc">After-sales support, warranty verification, dispatch tracking, and product queries.</p>
+          <ul class="ct-item-list">
+            <li>
+              <i class="fas fa-envelope-open-text" style="color: var(--accent);"></i>
+              <div>
+                <strong>Support Email:</strong><br>
+                <a href="mailto:relectricbdofficial@gmail.com" style="color: var(--accent);">relectricbdofficial@gmail.com</a>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-truck-fast" style="color: var(--accent);"></i>
+              <div>
+                <strong>Dispatch Inquiries:</strong><br>
+                <span>Same-day dispatch updates available</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-award" style="color: var(--accent);"></i>
+              <div>
+                <strong>Authenticity:</strong><br>
+                <span>100% Genuine, tested electrical items</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {{-- Card 3: Business Hours & Warehouse --}}
+      <div class="col-lg-4 col-md-12 col-12">
+        <div class="ct-dept-card" style="border-top-color: #10b981;">
+          <div class="ct-dept-header">
+            <div class="ct-dept-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h5 class="ct-dept-title">Working Hours & Hub</h5>
+          </div>
+          <p class="ct-dept-desc">Warehouse dispatch timings and customer service availability schedule.</p>
+          <ul class="ct-item-list">
+            <li>
+              <i class="fas fa-calendar-check" style="color: #10b981;"></i>
+              <div>
+                <strong>Saturday – Thursday:</strong><br>
+                <span>9:00 AM – 9:00 PM (Full Operations)</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-calendar-day" style="color: #10b981;"></i>
+              <div>
+                <strong>Friday:</strong><br>
+                <span>3:00 PM – 8:00 PM (Emergency WhatsApp)</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-warehouse" style="color: #10b981;"></i>
+              <div>
+                <strong>Warehouse Location:</strong><br>
+                <span>Mistiripara, Chattogram, Bangladesh</span>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
 
     </div>
+  </div>
 
-  </section>
-
-
-  <!-- Main Contact -->
-  <section class="main-section">
-
-    <div class="container">
-
-      <div class="row g-4 align-items-stretch">
-
-        <!-- Form -->
-        <div class="col-lg-7">
-
-          <div class="contact-form-wrapper">
-
-            <h2 class="form-title">
-              Send Us A Message
-            </h2>
-
-            <p class="form-description">
-              Fill out the form below and our team will contact you as soon as possible.
-            </p>
-
-            <form>
-
-              <div class="row">
-
-                <div class="col-md-6">
-                  <div class="input-group-modern">
-                    <label class="input-label">Full Name</label>
-                    <input type="text" class="form-control-modern" placeholder="Enter your full name">
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="input-group-modern">
-                    <label class="input-label">Phone Number</label>
-                    <input type="text" class="form-control-modern" placeholder="Enter phone number">
-                  </div>
-                </div>
-
-              </div>
-
-              <div class="input-group-modern">
-                <label class="input-label">Email Address</label>
-                <input type="email" class="form-control-modern" placeholder="Enter your email">
-              </div>
-
-              <div class="input-group-modern">
-                <label class="input-label">Subject</label>
-                <input type="text" class="form-control-modern" placeholder="Write message subject">
-              </div>
-
-              <div class="input-group-modern">
-                <label class="input-label">Your Message</label>
-                <textarea class="form-control-modern" placeholder="Write your message here..."></textarea>
-              </div>
-
-              <button type="submit" class="btn-contact">
-                <i class="fas fa-paper-plane"></i>
-                Send Message
-              </button>
-
-            </form>
-
-          </div>
-
-        </div>
-
-
-        <!-- Contact Info -->
-        <div class="col-lg-5">
-
-          <div class="map-card">
-
-            <h2 class="map-title">
-              Contact Information
-            </h2>
-
-            <p class="map-description">
-              Reach out to us anytime for support, service inquiries, or business discussions.
-            </p>
-
-            <div class="contact-list">
-
-              <div class="contact-item">
-                <div class="contact-item-icon">
-                  <i class="fas fa-map-marked-alt"></i>
-                </div>
-
-                <div>
-                  <h5 class="contact-item-title">Office Address</h5>
-                  <p class="contact-item-text">
-                    R Electric Corporate Office,
-                    <br>
-                    Chattogram, Bangladesh
-                  </p>
-                </div>
-              </div>
-
-              <div class="contact-item">
-                <div class="contact-item-icon">
-                  <i class="fas fa-phone-volume"></i>
-                </div>
-
-                <div>
-                  <h5 class="contact-item-title">Phone Support</h5>
-                  <p class="contact-item-text">
-                    +880 1871-923000
-                    <br>
-                    Available 24/7
-                  </p>
-                </div>
-              </div>
-
-              <div class="contact-item">
-                <div class="contact-item-icon">
-                  <i class="fas fa-envelope-open-text"></i>
-                </div>
-
-                <div>
-                  <h5 class="contact-item-title">Email Support</h5>
-                  <p class="contact-item-text">
-                    support@relectric.com
-                    <br>
-                    relectricbdofficial@gmail.com
-                  </p>
-                </div>
-              </div>
-
-              <div class="contact-item">
-                <div class="contact-item-icon">
-                  <i class="fas fa-clock"></i>
-                </div>
-
-                <div>
-                  <h5 class="contact-item-title">Working Hours</h5>
-                  <p class="contact-item-text">
-                    Saturday - Thursday
-                    <br>
-                    9:00 AM - 9:00 PM
-                  </p>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
+  {{-- Location Map Section --}}
+  <div id="location-map" class="ct-map-card">
+    <div class="ct-section-head d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+      <div>
+        <h2>Our Central Hub Location</h2>
+        <p>Visit our distribution center or direct your transport for bulk product pickup.</p>
       </div>
-
-
-      <!-- CTA -->
-      <div class="bottom-cta">
-
-        <h2 class="cta-title">
-          Ready To Work With R Electric?
-        </h2>
-
-        <p class="cta-text">
-          We are committed to providing modern electrical solutions, trusted services, and long-term business
-          relationships.
-        </p>
-
-        <a href="#" class="btn-light-modern">
-          <i class="fas fa-arrow-right"></i>
-          Start Conversation
-        </a>
-
-      </div>
-
+      <a href="https://maps.google.com/?q=Mistiripara+Chattogram+Bangladesh" target="_blank" rel="noopener" class="ct-btn-light" style="background: var(--primary-soft); color: var(--primary); border: 1px solid var(--border-color); flex-shrink: 0;">
+        <i class="fas fa-directions"></i> Get Directions
+      </a>
     </div>
 
-  </section>
+    <iframe 
+      class="ct-map-iframe"
+      src="https://maps.google.com/maps?q=Mistiripara,%20Chattogram,%20Bangladesh&t=&z=14&ie=UTF8&iwloc=&output=embed"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      title="{{ config('app.name') }} Location Map">
+    </iframe>
+  </div>
+
+  {{-- Wholesale CTA --}}
+  <div class="ct-cta">
+    <h3>Need Fast Bulk Quotations or Special Pricing?</h3>
+    <p>
+      Contact our wholesale team today for exclusive dealer discounts, customized packaging, and immediate transport arrangements across Bangladesh.
+    </p>
+    <div class="ct-cta-actions">
+      <a href="https://wa.me/8801871923000" target="_blank" rel="noopener" class="ct-btn-light">
+        <i class="fab fa-whatsapp text-success fs-5"></i> Chat on WhatsApp
+      </a>
+      <a href="tel:+8801871923000" class="ct-btn-outline">
+        <i class="fas fa-phone-alt"></i> Call +880 1871-923000
+      </a>
+      <a href="{{ route('home-page') }}#products" class="ct-btn-outline">
+        <i class="fas fa-boxes-stacked"></i> Explore Catalog
+      </a>
+    </div>
+  </div>
 
 </div>
-
 @endsection

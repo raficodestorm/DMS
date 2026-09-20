@@ -293,8 +293,8 @@
 }
 .wl-remove-btn {
   background: none;
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
+  border: 1px solid #e70e02;
+  color: #e70e02;
   border-radius: 7px;
   padding: 6px 9px;
   font-size: 12px;
@@ -304,9 +304,9 @@
   align-items: center;
 }
 .wl-remove-btn:hover {
-  color: var(--danger, #e11d48);
-  border-color: var(--danger, #e11d48);
-  background: rgba(225,29,72,.06);
+  color: #fff;
+  border-color: #e70e02;
+  background: #e70e02;
 }
 
 @media (max-width: 576px) {
