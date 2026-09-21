@@ -313,7 +313,7 @@
 
 .btn-card-cart {
     background: var(--primary-soft);
-    color: var(--secondary);
+    color: var(--text-main);
     border: 1px dashed var(--primary);
     border-radius: 6px;
     padding: 8px 12px;
@@ -382,10 +382,21 @@
 }
 
 @keyframes cartIconPop {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.5); }
-    70%  { transform: scale(0.88); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.5);
+    }
+
+    70% {
+        transform: scale(0.88);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .cart-icon-pop {

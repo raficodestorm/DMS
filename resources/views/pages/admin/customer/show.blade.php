@@ -30,6 +30,10 @@
                 <span class="i-value">{{ $customer->branch?->name ?? '_' }}</span>
             </div>
             <div class="info-group">
+                <span class="i-label">Refered SR</span>
+                <span class="i-value">{{ $customer->sr?->fullname ?? '_' }}</span>
+            </div>
+            <div class="info-group">
                 <span class="i-label">Country</span>
                 <span class="i-value">{{ $customer->country ?? 'N/A' }}</span>
             </div>

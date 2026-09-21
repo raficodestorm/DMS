@@ -35,6 +35,10 @@ class ReturnSrController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('order', function ($order) use ($search) {
+                      $order->where('order_id', 'like', "%{$search}%")
+                            ->orWhere('id', 'like', "%{$search}%");
+                  })
                   ->orWhereHas('customer', function ($customer) use ($search) {
                       $customer->where('shop_name', 'like', "%{$search}%");
                   });
@@ -67,14 +71,21 @@ class ReturnSrController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $orders = Order::where('branch_id', $user->branch_id)
+        $orders = Order::with('customer')
+            ->where('branch_id', $user->branch_id)
             ->where('status', 'delivered')
             ->latest()
             ->get();
 
         $selectedOrder = null;
         if ($request->has('order_id')) {
-            $selectedOrder = Order::with('items.product')->where('branch_id', $user->branch_id)->findOrFail($request->order_id);
+            $selectedOrder = Order::with(['items.product', 'customer'])
+                ->where('branch_id', $user->branch_id)
+                ->where(function ($q) use ($request) {
+                    $q->where('id', $request->order_id)
+                      ->orWhere('order_id', $request->order_id);
+                })
+                ->firstOrFail();
             
             foreach ($selectedOrder->items as $item) {
                 $returnedQty = \App\Models\ReturnItem::whereHas('productReturn', function($q) use ($selectedOrder) {

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('city', 100)->nullable();
             $table->text('address');
             $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->foreignId('sr_id')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('due', 10, 2)->default(0);
             $table->string('customer_type')->default('wholesale');
             $table->string('customer_group')->nullable();

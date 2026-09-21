@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -62,23 +63,24 @@ class CustomerController extends Controller
             $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
         }
 
-        // Get only the country names for selection
         $countries = array_keys($countriesData);
-        $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.admin.customer.create', compact('branches','countries'));
+        $branches  = Branch::orderBy('name', 'asc')->get();
+        // All SRs grouped — JS will filter by selected branch_id
+        $allSrs = User::where('role', 'sr')->get(['id', 'fullname', 'username', 'branch_id']);
+        return view('pages.admin.customer.create', compact('branches', 'countries', 'allSrs'));
     }
 
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'shop_name' => 'required|string|max:150',
-            'manager' => 'required|string|max:100',
-            'phone' => 'required|string|max:30',
-            'country' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
-            'branch_id' => 'required|integer|max:100',
+            'manager'   => 'required|string|max:100',
+            'phone'     => 'required|string|max:30',
+            'country'   => 'required|string|max:100',
+            'city'      => 'required|string|max:100',
+            'address'   => 'required|string|max:255',
+            'branch_id' => 'required|integer',
+            'sr_id'     => 'nullable|exists:users,id',
         ]);
         Customer::create($validated);
 
@@ -103,24 +105,24 @@ class CustomerController extends Controller
             $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
         }
 
-        // Get only the country names for selection
         $countries = array_keys($countriesData);
-        $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.admin.customer.edit', compact('customer', 'branches','countries'));
+        $branches  = Branch::orderBy('name', 'asc')->get();
+        $allSrs    = User::where('role', 'sr')->get(['id', 'fullname', 'username', 'branch_id']);
+        return view('pages.admin.customer.edit', compact('customer', 'branches', 'countries', 'allSrs'));
     }
 
     public function update(Request $request, Customer $customer)
     {
-
         $validated = $request->validate([
             'shop_name' => 'required|string|max:150',
-            'manager' => 'required|string|max:100',
-            'phone' => 'required|string|max:30',
-            'country' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
-            'branch_id' => 'nullable|integer|max:100',
-            'due' => 'nullable|numeric',
+            'manager'   => 'required|string|max:100',
+            'phone'     => 'required|string|max:30',
+            'country'   => 'required|string|max:100',
+            'city'      => 'required|string|max:100',
+            'address'   => 'required|string|max:255',
+            'branch_id' => 'nullable|integer',
+            'due'       => 'nullable|numeric',
+            'sr_id'     => 'nullable|exists:users,id',
         ]);
         $customer->update($validated);
 

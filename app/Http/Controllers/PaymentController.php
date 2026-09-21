@@ -28,7 +28,7 @@ class PaymentController extends Controller
 
     $query = Transaction::with(['customer', 'sr'])
       ->whereHas('customer', function ($q) use ($sr) {
-        $q->where('branch_id', $sr->branch_id);
+        $q->where('sr_id', $sr->id);
       })
       ->latest();
 
@@ -256,10 +256,13 @@ class PaymentController extends Controller
 
   public function create()
   {
-    $customers = Customer::where('branch_id', auth()->user()->branch_id)
-        ->where('due', '>', 0)
-        ->orderBy('shop_name', 'asc')
-        ->get();
+    $srId = auth()->user()->id;
+    $branchId = auth()->user()->branch_id;
+    if(auth()->user()->role == 'sr'){
+      $customers = Customer::where('sr_id', $srId)->where('due', '>', 0)->orderBy('shop_name', 'asc')->get();
+    }else{
+      $customers = Customer::where('branch_id', $branchId)->where('due', '>', 0)->orderBy('shop_name', 'asc')->get();
+    }
     return view('pages.' . auth()->user()->role . '.payment.create', compact('customers'));
   }
 
@@ -886,15 +889,26 @@ public function managerStore(Request $request)
     }
 
     $branchId = auth()->user()->branch_id;
+    $user = auth()->user();
 
-    // Include the current payment's customer even if their due is now 0
-    $customers = Customer::where('branch_id', $branchId)
+    if($user->role == 'sr'){
+        $customers = Customer::where('sr_id', $user->id)
         ->where(function($q) use ($payment) {
             $q->where('due', '>', 0)
               ->orWhere('id', $payment->customer_id);
         })
         ->orderBy('shop_name')
         ->get();
+
+    } else{
+        $customers = Customer::where('branch_id', $branchId)
+        ->where(function($q) use ($payment) {
+            $q->where('due', '>', 0)
+              ->orWhere('id', $payment->customer_id);
+        })
+        ->orderBy('shop_name')
+        ->get();
+    }
 
     return view('pages.sr.payment.edit', compact('payment', 'customers'));
   }

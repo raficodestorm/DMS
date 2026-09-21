@@ -285,10 +285,10 @@ class OrderSrController extends Controller
         'delivered_at' => now(),
     ];
 
-    // Customer নেই OR customer group is retail
+    // Customer নেই OR customer type is retail
     if (
         is_null($order->customer_id) ||
-        $order->customer?->customer_group === 'retail'
+        $order->customer?->customer_type === 'retail'
     ) {
         $updateData += [
             'payment_status' => 'paid',
@@ -388,12 +388,14 @@ class OrderSrController extends Controller
 
   public function posCart()
   {
+    $srId = auth()->user()->id;
     $branchId = auth()->user()->branch_id;
 
-    $customers = Customer::where('branch_id', $branchId)
+    $customers = Customer::where('sr_id', $srId)
+      ->where('branch_id', $branchId)
       ->where(function ($q) {
-        $q->whereNull('customer_group')
-          ->orWhere('customer_group', '!=', 'retail');
+        $q->whereNull('customer_type')
+          ->orWhere('customer_type', 'wholesale');
       })
       ->orderBy('shop_name', 'asc')
       ->get();
@@ -410,10 +412,12 @@ class OrderSrController extends Controller
 
   public function create()
   {
+    $srId = auth()->user()->id;
     $branchId = auth()->user()->branch_id;
     $suppliers = \App\Models\Supplier::with('deductions')->orderBy('company_name', 'asc')->get();
     $deductionSettings = \App\Models\Deduction::where('type', 'main')->first() ?? \App\Models\Deduction::first();
-    $customers = Customer::orderBy('shop_name', 'asc')->where('branch_id', $branchId)->get();
+    $customers = Customer::orderBy('shop_name', 'asc')->where('sr_id', $srId)->get();
+    
 
     $products = Stock::with('product')
       ->where('branch_id', $branchId)
@@ -509,9 +513,9 @@ class OrderSrController extends Controller
       }
     }
 
-    $branchId = auth()->user()->branch_id;
+    $srId = auth()->user()->id;
 
-    $query = Customer::where('branch_id', $branchId);
+    $query = Customer::where('sr_id', $srId);
 
     if (!$isAll && $search !== '') {
       $query->where(function ($q) use ($search) {

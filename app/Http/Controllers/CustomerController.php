@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -19,7 +20,12 @@ class CustomerController extends Controller
      */
     public function fetchCustomersIndexData(Request $request)
     {
-        $query = Customer::where('branch_id', auth()->user()->branch_id)->latest();
+        $user = auth()->user();
+        if($user->role == 'sr') {
+            $query = Customer::where('sr_id', $user->id)->latest();
+        } else {
+            $query = Customer::where('branch_id', $user->branch_id)->latest();
+        }
 
         if ($request->filled('search')) {
             $search = trim($request->search);
@@ -60,24 +66,34 @@ class CustomerController extends Controller
             $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
         }
 
-        // Get only the country names for selection
         $countries = array_keys($countriesData);
-        $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.common.customer.create', compact('branches', 'countries'));
+        $branches  = Branch::orderBy('name', 'asc')->get();
+        $srs       = User::where('role', 'sr')
+                         ->where('branch_id', auth()->user()->branch_id)
+                         ->get(['id', 'fullname', 'username']);
+
+        return view('pages.common.customer.create', compact('branches', 'countries', 'srs'));
     }
 
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'shop_name' => 'required|string|max:150',
-            'manager' => 'required|string|max:100',
-            'phone' => 'required|string|max:30',
-            'country' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
+            'manager'   => 'required|string|max:100',
+            'phone'     => 'required|string|max:30',
+            'country'   => 'required|string|max:100',
+            'city'      => 'required|string|max:100',
+            'address'   => 'required|string|max:255',
+            'sr_id'     => 'nullable|exists:users,id',
         ]);
+
         $validated['branch_id'] = auth()->user()->branch_id;
+
+        // If logged-in user is SR, force assign self
+        if (auth()->user()->role === 'sr') {
+            $validated['sr_id'] = auth()->id();
+        }
+
         Customer::create($validated);
 
         return redirect()->route('customers.index')
@@ -91,6 +107,10 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $user = auth()->user();
+        if ($user->role == 'sr' && $customer->sr_id != $user->id) {
+            return back()->with('error', 'This customer does not belong to you.');
+        }
         $countriesData = [];
         $countriesPath = resource_path('data/countries.json');
 
@@ -98,25 +118,34 @@ class CustomerController extends Controller
             $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
         }
 
-        // Get only the country names for selection
         $countries = array_keys($countriesData);
-        $branches = Branch::orderBy('name', 'asc')->get();
-        return view('pages.common.customer.edit', compact('customer', 'branches', 'countries'));
+        $branches  = Branch::orderBy('name', 'asc')->get();
+        $srs       = User::where('role', 'sr')
+                         ->where('branch_id', auth()->user()->branch_id)
+                         ->get(['id', 'fullname', 'username']);
+
+        return view('pages.common.customer.edit', compact('customer', 'branches', 'countries', 'srs'));
     }
 
     public function update(Request $request, Customer $customer)
     {
-
         $validated = $request->validate([
             'shop_name' => 'required|string|max:150',
-            'manager' => 'required|string|max:100',
-            'phone' => 'required|string|max:30',
-            'country' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
-           
+            'manager'   => 'required|string|max:100',
+            'phone'     => 'required|string|max:30',
+            'country'   => 'required|string|max:100',
+            'city'      => 'required|string|max:100',
+            'address'   => 'required|string|max:255',
+            'sr_id'     => 'nullable|exists:users,id',
         ]);
+
         $validated['branch_id'] = auth()->user()->branch_id;
+
+        // If logged-in user is SR, force assign self
+        if (auth()->user()->role === 'sr') {
+            $validated['sr_id'] = auth()->id();
+        }
+
         $customer->update($validated);
 
         return redirect()->route('customers.index')
@@ -125,7 +154,12 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        $user = auth()->user();
         // check if customer has user account
+        if ($user->role == 'sr' && $customer->sr_id != $user->id) {
+            return back()->with('error', 'This customer does not belong to you.');
+        }
+        
         if ($customer->users()->exists()) {
             return back()->with('error', 'This customer has user account. Please delete the user account first.');
         }

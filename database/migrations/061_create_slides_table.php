@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->integer('position')->default(1);
-            $table->foreignId('offer_id')->nullable()->constrained('offers')->nullOnDelete();
             $table->string('custom_url')->nullable();
             $table->string('image');
             $table->boolean('status')->default(true);

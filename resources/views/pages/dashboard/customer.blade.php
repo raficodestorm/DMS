@@ -179,13 +179,119 @@
     font-family: 'Inter', sans-serif;
     white-space: nowrap;
   }
+
+  /* ── Shop Now Live Pulse Button ───────────────────────────────── */
+  .cust-shop-btn-wrap {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-shop-pulse {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 15px;
+    background: linear-gradient(135deg, var(--primary, #3131ff) 0%, #00b4d8 100%);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border-radius: 40px;
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(49, 49, 255, 0.35);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    z-index: 1;
+    isolation: isolate;
+  }
+
+  .btn-shop-pulse::before,
+  .btn-shop-pulse::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50px;
+    background: var(--primary-light, #3131ff);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .btn-shop-pulse::before {
+    animation: smoothPulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  .btn-shop-pulse::after {
+    animation: smoothPulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) 1.2s infinite;
+  }
+
+  @keyframes smoothPulseRing {
+    0% {
+      transform: scale(1, 1);
+      opacity: 0.65;
+    }
+    50% {
+      opacity: 0.25;
+    }
+    100% {
+      transform: scale(1.18, 1.48);
+      opacity: 0;
+    }
+  }
+
+  .btn-shop-pulse:hover {
+    color: #ffffff;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(49, 49, 255, 0.5);
+  }
+
+  .live-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+  }
+
+  .live-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: rgba(34, 197, 94, 0.55);
+    animation: dotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes dotPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
 </style>
 
 <div class="cust-header animate__animated animate__fadeIn">
-  <h2>My Dashboard</h2>
+  <div>
+    <h2>My Dashboard</h2>
+  </div>
   <span class="date-badge">
     <i class="far fa-calendar-alt"></i> {{ date('d M, Y') }}
   </span>
+</div>
+
+<div class="cust-shop-btn-wrap animate__animated animate__fadeIn">
+  <a href="{{ route('shop') }}" class="btn-shop-pulse">
+    <span class="live-dot"></span>
+    <i class="fas fa-shopping-bag"></i>
+    <span>Shop Now</span>
+    <i class="fas fa-arrow-right ms-1" style="font-size: 11px;"></i>
+  </a>
 </div>
 
 <div class="cust-stat-grid">

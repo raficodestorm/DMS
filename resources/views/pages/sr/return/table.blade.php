@@ -2,7 +2,7 @@
 <tr>
     <td>{{ $returns->firstItem() ? $returns->firstItem() + $loop->index : $loop->iteration }}</td>
     <td>BRET{{ $return->id }}</td>
-    <td>BRS{{ $return->order_id }}</td>
+    <td>{{ $return->order?->order_id ?? ('BRS' . $return->order_id) }}</td>
     <td>{{ $return->customer->shop_name ?? 'N/A' }}</td>
     <td>{{ number_format($return->total_amount, 2) }} ৳</td>
     <td>

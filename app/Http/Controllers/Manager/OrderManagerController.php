@@ -334,12 +334,12 @@ class OrderManagerController extends Controller
               'logo'     => $supplier->image
                               ? asset($supplier->image)
                               : asset('image/relectric-logo.png'),
-              'subtitle' => "Authorized Distributor of {$supplier->company_name} | {$appName} → 01871923000",
+              'subtitle' => "Authorized Distributor of {$supplier->company_name} | {$appName}",
           ];
       } else {
           $invoiceHeader = [
               'logo'     => asset('image/relectric-logo.png'),
-              'subtitle' => "Multi-Brand Authorized Distributor | {$appName} → 01871923000",
+              'subtitle' => "Multi-Brand Authorized Distributor | {$appName}",
           ];
       }
       // ─────────────────────────────────────────────────────────────────────────

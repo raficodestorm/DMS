@@ -73,6 +73,23 @@
                 </select>
             </div> --}}
 
+            <div class="col-md-12">
+                <label>Refer SR</label>
+
+                @php $isSr = auth()->user()->role === 'sr'; @endphp
+
+                <div style="position:relative;">
+                    <input type="text" id="sr_search" class="input-form"
+                        placeholder="Type at least 2 characters to search SR..."
+                        autocomplete="off"
+                        value="{{ $isSr ? (auth()->user()->fullname ?? auth()->user()->username) : ($customer->sr ? ($customer->sr->fullname ?? $customer->sr->username) : '') }}"
+                        {{ $isSr ? 'readonly' : 'required' }}>
+                    <ul id="sr_dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--section-bg); border:1px solid var(--border-color); border-radius:6px; list-style:none; margin:2px 0 0; padding:4px 0; z-index:999; box-shadow:0 6px 20px rgba(0,0,0,.1); max-height:200px; overflow-y:auto;"></ul>
+                </div>
+                <input type="hidden" name="sr_id" id="sr_id" value="{{ $isSr ? auth()->id() : ($customer->sr_id ?? '') }}">
+                @error('sr_id')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
                     </div>
 
 
@@ -87,69 +104,82 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Load country/city JSON directly from Laravel
+    // ---- Country / City logic ----
     let countriesData = {};
-
     try {
         countriesData = @json(
             file_exists(resource_path('data/countries.json'))
                 ? json_decode(file_get_contents(resource_path('data/countries.json')), true)
                 : []
         );
-    } catch (e) {
-        console.error('Failed to load country/cities data', e);
-    }
+    } catch (e) { console.error('Failed to load country/cities data', e); }
 
-    const countrySelect = document.getElementById('country');
-    const citySelect = document.getElementById('city');
-
-    // Existing database values + old input after validation error
-    const selectedCountry = @json(old('country', $customer->country));
-    const selectedCity = @json(old('city', $customer->city));
+    const countrySelect    = document.getElementById('country');
+    const citySelect       = document.getElementById('city');
+    const selectedCountry  = @json(old('country', $customer->country));
+    const selectedCity     = @json(old('city', $customer->city));
 
     function populateCities(country, selectedCity = '') {
-
-        // Reset city dropdown
-        citySelect.innerHTML =
-            '<option value="" disabled>Select City</option>';
-
+        citySelect.innerHTML = '<option value="" disabled>Select City</option>';
         if (country && countriesData[country]) {
-
-            const cities = countriesData[country];
-
-            cities.forEach(function (city) {
-
+            countriesData[country].forEach(function (city) {
                 const option = document.createElement('option');
-
-                option.value = city;
-                option.textContent = city;
-
-                // Select existing/old city
-                if (city === selectedCity) {
-                    option.selected = true;
-                }
-
+                option.value = city; option.textContent = city;
+                if (city === selectedCity) option.selected = true;
                 citySelect.appendChild(option);
             });
-
             citySelect.disabled = false;
-
-        } else {
-
-            citySelect.disabled = true;
-        }
+        } else { citySelect.disabled = true; }
     }
 
-    // Country changed manually
-    countrySelect.addEventListener('change', function () {
-
-        // When country changes, don't keep old city
-        populateCities(this.value);
-    });
-
-    // Load existing city on edit page
+    countrySelect.addEventListener('change', function () { populateCities(this.value); });
     populateCities(selectedCountry, selectedCity);
 
+    // ---- SR Search logic ----
+    const srs        = @json($srs);
+    const srSearch   = document.getElementById('sr_search');
+    const srDropdown = document.getElementById('sr_dropdown');
+    const srIdInput  = document.getElementById('sr_id');
+
+    if (!srSearch.readOnly) {
+        srSearch.addEventListener('input', function () {
+            const raw = this.value;
+            const q   = raw.trim().toLowerCase();
+            srDropdown.innerHTML = '';
+
+            // 2+ spaces → show all branch SRs
+            const showAll = raw.length >= 2 && q === '';
+
+            if (!showAll && q.length < 2) { srDropdown.style.display = 'none'; return; }
+
+            const matches = showAll ? srs : srs.filter(s =>
+                (s.fullname && s.fullname.toLowerCase().includes(q)) ||
+                (s.username && s.username.toLowerCase().includes(q))
+            );
+
+            if (!matches.length) { srDropdown.style.display = 'none'; return; }
+
+            matches.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s.fullname || s.username;
+                li.style.cssText = 'padding:8px 12px; cursor:pointer; font-size:13.5px;';
+                li.addEventListener('mouseenter', () => li.style.background = 'var(--primary-soft)');
+                li.addEventListener('mouseleave', () => li.style.background = '');
+                li.addEventListener('mousedown', () => {
+                    srSearch.value  = s.fullname || s.username;
+                    srIdInput.value = s.id;
+                    srDropdown.style.display = 'none';
+                });
+                srDropdown.appendChild(li);
+            });
+            srDropdown.style.display = 'block';
+        });
+
+        srSearch.addEventListener('blur', () => {
+            setTimeout(() => { srDropdown.style.display = 'none'; }, 150);
+            if (!srSearch.value.trim()) srIdInput.value = '';
+        });
+    }
 });
 </script>
 @endsection

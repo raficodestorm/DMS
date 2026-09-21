@@ -132,18 +132,30 @@
       <form method="POST" action="{{ route('sr.order.store') }}" id="srCartOrderForm" onsubmit="return handleCartSubmit(event)">
         @csrf
 
-        {{-- 1. Customer Select --}}
+        {{-- 1. Customer Smart Search --}}
         <div class="mb-3">
           <label class="form-label fw-bold small">Select Customer / Shop <span class="text-danger">*</span></label>
-          <select name="customer_id" id="srCustomerSelect" class="form-select" required>
-            <option value="" data-due="0" data-name="">-- Choose Wholesale Customer --</option>
-            @foreach($customers as $c)
-              @php $dueVal = (float)($c->due ?: 0); @endphp
-              <option value="{{ $c->id }}" data-due="{{ $dueVal }}" data-name="{{ $c->shop_name }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
-                {{ $c->shop_name }} - {{ $c->phone ?? 'No phone' }} (Due: ৳{{ number_format($dueVal) }})
-              </option>
-            @endforeach
-          </select>
+
+          @php
+            $customersJson = $customers->map(fn($c) => [
+              'id'    => $c->id,
+              'name'  => $c->shop_name,
+              'phone' => $c->phone ?? '',
+              'due'   => (float)($c->due ?: 0),
+            ]);
+          @endphp
+
+          <div style="position:relative;">
+            <input type="text" id="customerSearchInput" class="form-control pe-4" autocomplete="off"
+              placeholder="Type shop name  —  or press 2 spaces to see all">
+            <button type="button" id="clearCustomerBtn" onclick="clearCustomerSelection()"
+              style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted, #6c757d); cursor:pointer; font-size:18px; line-height:1; padding:0 4px;" title="Clear">&times;</button>
+            <ul id="customerDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--section-bg); border:1px solid var(--border-color); border-radius:8px; list-style:none; margin:3px 0 0; padding:4px 0; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:240px; overflow-y:auto;"></ul>
+          </div>
+
+          <input type="hidden" name="customer_id" id="srCustomerId" value="{{ old('customer_id') }}" required>
+          <input type="hidden" id="srCustomerDue" value="0">
+          <input type="hidden" id="srCustomerName" value="">
           @error('customer_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
@@ -480,18 +492,17 @@
       return false;
     }
 
-    const selectEl = document.getElementById('srCustomerSelect');
-    if (!selectEl.value) {
+    const customerId = document.getElementById('srCustomerId').value;
+    if (!customerId) {
       alert('Please select a customer.');
-      selectEl.focus();
+      document.getElementById('customerSearchInput').focus();
       return false;
     }
 
-    const selectedOption = selectEl.options[selectEl.selectedIndex];
-    const customerName = selectedOption.getAttribute('data-name') || selectedOption.text.split('-')[0].trim();
-    const previousDue = parseFloat(selectedOption.getAttribute('data-due')) || 0;
-    const netTotal = parseFloat(document.getElementById('formNetTotal').value) || 0;
-    const currentDue = previousDue + netTotal;
+    const customerName = document.getElementById('srCustomerName').value;
+    const previousDue  = parseFloat(document.getElementById('srCustomerDue').value) || 0;
+    const netTotal     = parseFloat(document.getElementById('formNetTotal').value) || 0;
+    const currentDue   = previousDue + netTotal;
 
     document.getElementById('modalCustomerName').textContent = customerName;
     document.getElementById('modalNetTotal').textContent = Math.round(netTotal).toLocaleString('en-US');
@@ -515,8 +526,98 @@
     document.getElementById('srCartOrderForm').submit();
   }
 
+  // ---- Customer Smart Search ----
+  const allCustomers   = @json($customersJson);
+  let customerDropdownOpen = false;
+
+  function renderCustomerDropdown(matches) {
+    const ul = document.getElementById('customerDropdown');
+    ul.innerHTML = '';
+    if (!matches.length) { ul.style.display = 'none'; return; }
+
+    matches.forEach(c => {
+      const li = document.createElement('li');
+      li.style.cssText = 'padding:9px 14px; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color);';
+      li.innerHTML = `<span style="font-weight:600;">${c.name}</span>
+        <span style="font-size:12px; color:#dc2626; font-weight:600;">৳${Math.round(c.due).toLocaleString('en-US')}</span>`;
+      li.addEventListener('mouseenter', () => li.style.background = 'var(--primary-soft)');
+      li.addEventListener('mouseleave', () => li.style.background = '');
+      li.addEventListener('mousedown', () => selectCustomer(c));
+      ul.appendChild(li);
+    });
+    ul.style.display = 'block';
+  }
+
+  function selectCustomer(c) {
+    document.getElementById('srCustomerId').value   = c.id;
+    document.getElementById('srCustomerDue').value  = c.due;
+    document.getElementById('srCustomerName').value = c.name;
+    document.getElementById('customerSearchInput').value = c.name;
+    document.getElementById('clearCustomerBtn').style.display = 'block';
+    document.getElementById('customerDropdown').style.display = 'none';
+  }
+
+  function clearCustomerSelection() {
+    document.getElementById('srCustomerId').value   = '';
+    document.getElementById('srCustomerDue').value  = '0';
+    document.getElementById('srCustomerName').value = '';
+    document.getElementById('customerSearchInput').value = '';
+    document.getElementById('clearCustomerBtn').style.display = 'none';
+    document.getElementById('customerDropdown').style.display = 'none';
+    document.getElementById('customerSearchInput').focus();
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     loadCart();
+
+    const searchInput = document.getElementById('customerSearchInput');
+    const clearBtn    = document.getElementById('clearCustomerBtn');
+
+    searchInput.addEventListener('focus', function () {
+      this.select();
+    });
+
+    searchInput.addEventListener('input', function () {
+      const raw = this.value;
+      const q   = raw.trim().toLowerCase();
+      const showAll = raw.length >= 2 && q === '';
+
+      clearBtn.style.display = raw.length > 0 ? 'block' : 'none';
+
+      const currentName = (document.getElementById('srCustomerName').value || '').toLowerCase();
+      if (q !== currentName) {
+        document.getElementById('srCustomerId').value = '';
+        document.getElementById('srCustomerDue').value = '0';
+      }
+
+      if (!showAll && q.length < 2) {
+        document.getElementById('customerDropdown').style.display = 'none';
+        return;
+      }
+
+      const matches = showAll ? allCustomers : allCustomers.filter(c =>
+        c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q)
+      );
+      renderCustomerDropdown(matches);
+    });
+
+    searchInput.addEventListener('blur', () => {
+      setTimeout(() => { document.getElementById('customerDropdown').style.display = 'none'; }, 200);
+      if (!searchInput.value.trim()) {
+        document.getElementById('srCustomerId').value = '';
+        document.getElementById('srCustomerDue').value = '0';
+        document.getElementById('srCustomerName').value = '';
+        clearBtn.style.display = 'none';
+      }
+    });
+
+    // Restore old selection after validation error
+    const oldId = document.getElementById('srCustomerId').value;
+    if (oldId) {
+      const found = allCustomers.find(c => c.id == oldId);
+      if (found) selectCustomer(found);
+    }
   });
+
 </script>
 @endpush

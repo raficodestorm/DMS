@@ -17,6 +17,7 @@ class Customer extends Model
         'city',
         'address',
         'branch_id',
+        'sr_id',
         'due',
         'customer_type',
         'customer_group',
@@ -26,6 +27,11 @@ class Customer extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function sr()
+    {
+        return $this->belongsTo(User::class, 'sr_id');
     }
     public function users()
     {

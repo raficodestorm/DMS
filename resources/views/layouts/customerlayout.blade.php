@@ -21,6 +21,51 @@
   <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
   <link rel="stylesheet" href="{{ asset('css/admin/adminstyle.css') }}">
 
+  <style>
+    .customer-nav-cart {
+      position: relative;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .customer-cart-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 800;
+      min-width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--section-bg, #ffffff);
+      padding: 0 4px;
+      line-height: 1;
+      box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+    }
+    .cart-icon-pop {
+      animation: customerCartPop 0.35s ease-in-out;
+    }
+    @keyframes customerCartPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.35); color: var(--primary); }
+      100% { transform: scale(1); }
+    }
+    .fly-to-cart-clone {
+      position: fixed;
+      z-index: 99999;
+      pointer-events: none;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      border: 2.5px solid #fff;
+    }
+  </style>
 </head>
 
 <body id="body">
@@ -41,17 +86,37 @@
         </a>
       </li>
 
+      @if(auth()->user()->customer?->customer_type === 'wholesale')
+      <!-- Wholesale Shop -->
+      <li class="nav-item">
+        <a href="{{ route('customer.orders.shop') }}" class="nav-link {{ isActive(['customer.orders.shop', 'customer.orders.cart']) }}">
+          <i class="fas fa-store"></i> Wholesale Shop
+        </a>
+      </li>
+      @endif
+
+      @if(auth()->user()->customer?->customer_type === 'wholesale')
       <li class="nav-item">
         <a href="{{ route('customer.payments.index') }}" class="nav-link {{ isActive('customer.payments.index') }}">
           <i class="fas fa-money-bill-transfer"></i> Transactions
         </a>
       </li>
+      @endif
 
       <li class="nav-item">
         <a href="{{ route('customer.orders.index') }}" class="nav-link {{ isActive('customer.orders.index') }}">
-          <i class="fas fa-money-bill-transfer"></i> Orders
+          <i class="fas fa-boxes-stacked"></i> Orders
         </a>
       </li>
+
+      @if(auth()->user()->customer?->customer_type === 'wholesale')
+      <!-- Contact -->
+      <li class="nav-item">
+        <a href="{{ route('customer.contact.index') }}" class="nav-link {{ isActive('customer.contact.index') }}">
+          <i class="fas fa-address-book"></i> Contact
+        </a>
+      </li>
+      @endif
 
       <!-- Users -->
       {{-- <li class="nav-item">
@@ -97,7 +162,15 @@
 
     <div class="nav-right">
 
-    {{-- Calculator Toggle --}}
+      @if(auth()->user()->customer?->customer_type === 'wholesale')
+      {{-- Wholesale Cart Button --}}
+      <a href="{{ route('customer.orders.cart') }}" class="theme-toggle icon-cart customer-nav-cart" id="customerNavbarCartBtn" title="Wholesale Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="customer-cart-badge" id="customerNavCartBadge" style="display:none;">0</span>
+      </a>
+      @endif
+
+      {{-- Calculator Toggle --}}
       <button class="theme-toggle" onclick="toggleCalculator(event)" title="Calculator">
         <i class="fa-solid fa-calculator"></i>
       </button>
@@ -533,6 +606,30 @@ document.addEventListener('click', function (e) {
       })
       .catch(err => console.error('Error clearing notifications:', err));
     }
+
+    // Sync Customer Wholesale Cart Badge
+    function updateGlobalCustomerCartBadge() {
+      try {
+        const saved = localStorage.getItem('customer_wholesale_cart');
+        const cart = saved ? JSON.parse(saved) : {};
+        let totalQty = 0;
+        for (let k in cart) {
+          if (cart[k] && cart[k].qty > 0) {
+            totalQty += parseInt(cart[k].qty, 10) || 0;
+          }
+        }
+        const badge = document.getElementById('customerNavCartBadge');
+        if (badge) {
+          if (totalQty > 0) {
+            badge.textContent = totalQty > 99 ? '99+' : totalQty;
+            badge.style.display = 'inline-flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch(e) {}
+    }
+    document.addEventListener('DOMContentLoaded', updateGlobalCustomerCartBadge);
   </script>
   <x-calculator />
   @stack('scripts')

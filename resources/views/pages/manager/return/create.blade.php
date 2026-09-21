@@ -95,7 +95,7 @@
                 <div class="d-flex align-items-center flex-wrap gap-2">
                     <i class="fas fa-file-invoice text-primary fs-5"></i>
                     <strong id="ols-selected-code" class="fs-6 text-primary">
-                        {{ $selectedOrder ? 'BRS' . $selectedOrder->id : '' }}
+                        {{ $selectedOrder ? ($selectedOrder->order_id ?? 'BRS' . $selectedOrder->id) : '' }}
                     </strong>
                     <span class="text-dark fw-bold" id="ols-selected-shop">
                         {{ $selectedOrder?->customer?->shop_name }}
@@ -117,7 +117,7 @@
                         type="text"
                         id="ols-input"
                         class="ols-input"
-                        placeholder="Type Order ID (e.g. BRS12 or 12) or Shop Name (or 2 spaces for all orders)..."
+                        placeholder="Type Order ID or Shop Name (or 2 spaces for all orders)..."
                         autocomplete="off"
                         inputmode="search">
                 </div>
@@ -219,9 +219,11 @@
 
 @php
     $ordersJson = $orders->map(function($o) {
+        $orderCode = $o->order_id ?? ('BRS' . $o->id);
         return [
             'id' => $o->id,
-            'code' => 'BRS' . $o->id,
+            'code' => $orderCode,
+            'order_id' => $o->order_id ?? '',
             'shop_name' => $o->customer->shop_name ?? 'Retail/No Shop',
             'date' => $o->created_at ? $o->created_at->format('d M Y') : '',
         ];
@@ -288,9 +290,10 @@
                     filtered = allOrders.filter(function (o) {
                         var idStr = String(o.id).toLowerCase();
                         var codeStr = String(o.code).toLowerCase();
+                        var orderIdStr = String(o.order_id || '').toLowerCase();
                         var shopStr = String(o.shop_name).toLowerCase();
 
-                        return idStr.includes(q) || codeStr.includes(q) || shopStr.includes(q);
+                        return codeStr.includes(q) || orderIdStr.includes(q) || idStr.includes(q) || shopStr.includes(q);
                     });
                 }
 

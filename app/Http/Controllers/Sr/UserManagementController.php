@@ -35,9 +35,14 @@ class UserManagementController extends Controller
   public function fetchCustomersData(Request $request)
   {
     $branchId = auth()->user()->branch_id;
+    $srId = auth()->id();
+
     $query = User::with('branch')
       ->where('role', 'customer')
-      ->where('branch_id', $branchId);
+      ->where('branch_id', $branchId)
+      ->whereHas('customer', function ($q) use ($srId) {
+        $q->where('sr_id', $srId);
+      });
 
     if ($request->filled('search')) {
       $cleanSearch = trim($request->search);
@@ -72,11 +77,15 @@ class UserManagementController extends Controller
   }
 
   public function create()
-  {
-    // form to create customer 
-    $customers = Customer::orderBy('id', 'desc')->get();
+{
+    $srId = auth()->id();
+
+    $customers = Customer::where('sr_id', $srId)
+        ->orderByDesc('id')
+        ->get();
+
     return view('pages.sr.users.create', compact('customers'));
-  }
+}
 
   public function store(Request $request)
   {

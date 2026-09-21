@@ -8,7 +8,7 @@
       <p>BRET{{ $return->id }}</p>
     </div>
     <div><span>Order ID</span>
-      <p>BRS{{ $return->order_id }}</p>
+      <p>{{ $return->order?->order_id ?? ('BRS' . $return->order_id) }}</p>
     </div>
     <div><span>Customer</span>
       <p>{{ $return->customer->shop_name ?? 'N/A' }}</p>

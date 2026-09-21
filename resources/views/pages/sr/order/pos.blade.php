@@ -417,9 +417,9 @@
     <div class="sr-pos-top-card">
       {{-- Supplier Selector --}}
       <div class="sr-supplier-select-row">
-        <label for="srSupplierSelect"><i class="fas fa-truck text-primary"></i> Filter by Supplier</label>
+        <label for="srSupplierSelect"><i class="fas fa-truck text-primary"></i> Select Supplier <span class="text-danger">*</span></label>
         <select id="srSupplierSelect" class="sr-supplier-select" onchange="filterSrProducts()">
-          <option value="all">-- All Suppliers --</option>
+          <option value="">-- Select Supplier --</option>
           @foreach($suppliers as $s)
             @php
               $ded = (float) ($s->deduction?->customer_deduction ?? ($s->deductions->first()?->customer_deduction ?? 0));
@@ -562,8 +562,25 @@
     } catch(e) {
       srCart = {};
     }
+
+    // Auto-select supplier if cart already contains items
+    let existingSupplierId = '';
+    for (let k in srCart) {
+      if (srCart[k] && srCart[k].qty > 0 && srCart[k].supplier_id) {
+        existingSupplierId = String(srCart[k].supplier_id);
+        break;
+      }
+    }
+
+    const supplierSelect = document.getElementById('srSupplierSelect');
+    if (existingSupplierId && supplierSelect) {
+      supplierSelect.value = existingSupplierId;
+    }
+
     updateAllCardBadges();
     updateStickyBar();
+    filterSrProducts();
+
     if (typeof updateGlobalSrCartBadge === 'function') {
       updateGlobalSrCartBadge();
     }
@@ -581,6 +598,18 @@
 
   // Add Product to Cart
   function addToSrCart(productId) {
+    const supplierSelect = document.getElementById('srSupplierSelect');
+    const selectedSupplierId = supplierSelect ? supplierSelect.value : '';
+
+    if (!selectedSupplierId) {
+      alert('দয়া করে আগে Supplier সিলেক্ট করুন!');
+      if (supplierSelect) {
+        supplierSelect.focus();
+        supplierSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
     const card = document.getElementById('srProdCard_' + productId);
     if (!card) return;
 
@@ -679,7 +708,7 @@
       const cardHasOffer = card.dataset.hasOffer === '1';
       const cardName = card.dataset.name;
 
-      const matchSupplier = (supplierId === 'all' || cardSupplier === supplierId);
+      const matchSupplier = (!supplierId || cardSupplier === supplierId);
       const matchTab = (selectedTab === 'all' || (selectedTab === 'offer' && cardHasOffer));
       const matchSearch = (!searchVal || cardName.includes(searchVal));
 
