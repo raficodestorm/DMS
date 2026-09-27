@@ -286,10 +286,8 @@ class OrderSrController extends Controller
     ];
 
     // Customer নেই OR customer type is retail
-    if (
-        is_null($order->customer_id) ||
-        $order->customer?->customer_type === 'retail'
-    ) {
+    if (is_null($order->customer_id) || $order->customer?->customer_type === 'retail') 
+    {
         $updateData += [
             'payment_status' => 'paid',
             'payment_amount' => $order->net_total,

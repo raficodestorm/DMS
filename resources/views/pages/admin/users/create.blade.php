@@ -53,8 +53,10 @@
       <div class="col-md-6">
         <label>Role</label>
         <select class="input-form" name="role" required>
+          <option value="">--Select Role--</option>
           <option value="manager">Manager</option>
           <option value="sr">SR</option>
+          <option value="dso">DSO</option>
           <option value="customer">Customer</option>
         </select>
         @error('role')<div class="error-text">{{ $message }}</div>@enderror

@@ -218,11 +218,11 @@
         </a>
       </li>
 
-      <!-- Product Return -->
+      <!-- Order Return -->
       <li class="nav-item {{ request()->routeIs('manager.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.return.*') }}">
           <i class="fas fa-undo"></i>
-          <span>Product Return</span>
+          <span>Order Return</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 

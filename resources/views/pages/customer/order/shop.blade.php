@@ -213,7 +213,7 @@
   .cust-prod-card {
     background: var(--background);
     border: 1.5px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 5px;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -271,8 +271,8 @@
 
   .cust-img-box {
     width: 100%;
-    height: 110px;
-    border-radius: 8px;
+    height: 150px;
+    border-radius: 3px;
     overflow: hidden;
     background: var(--section-bg);
     display: flex;
@@ -333,7 +333,7 @@
   .btn-cust-add-cart {
     width: 100%;
     padding: 7px 10px;
-    border-radius: 8px;
+    border-radius: 3px;
     background: var(--primary);
     color: #ffffff;
     font-size: 12px;
@@ -371,7 +371,7 @@
     right: 0;
     background: var(--section-bg);
     border-top: 2px solid var(--primary);
-    padding: 10px 20px;
+    padding: 5px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -387,14 +387,14 @@
   }
 
   .cust-bar-count {
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--text-muted);
     font-weight: 600;
   }
 
   .cust-bar-total {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--primary);
     line-height: 1.1;
   }
@@ -405,7 +405,7 @@
     text-decoration: none;
     padding: 10px 22px;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;

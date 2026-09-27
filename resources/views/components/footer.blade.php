@@ -24,7 +24,7 @@
                     accessibility with a commitment to service that powers your happiness.
                 </p>
                 <div class="mt-4 footer-social-wrap">
-                    <a href="#" class="social-circle" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61594558240858" class="social-circle" title="Facebook"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-circle" title="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-circle" title="YouTube"><i class="fab fa-youtube"></i></a>
                 </div>

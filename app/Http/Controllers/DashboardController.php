@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -202,6 +203,59 @@ class DashboardController extends Controller
         ];
       }
       $data['srDailyChart'] = $dailyChartData;
+    } elseif ($role === 'dso') {
+
+      $dsoId    = $user->id;
+      $branchId = $user->branch_id;
+
+      // 1. Current-month delivered orders total amount & count
+      $data['dsoMonthlyDeliveredAmount'] = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->whereMonth('delivered_at', $currentMonth)
+        ->whereYear('delivered_at', $currentYear)
+        ->sum('net_total');
+
+      $data['dsoMonthlyDeliveredCount'] = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->whereMonth('delivered_at', $currentMonth)
+        ->whereYear('delivered_at', $currentYear)
+        ->count();
+
+      // 2. Today's delivered orders count
+      $data['dsoTodayDeliveredCount'] = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->whereDate('delivered_at', Carbon::today())
+        ->count();
+
+      // 3. Ready to deliver orders in branch
+      $data['branchPendingDeliveryCount'] = Order::where('branch_id', $branchId)
+        ->whereIn('status', ['approved', 'complete'])
+        ->count();
+
+      // 4. Daily delivered orders chart for current month
+      $dailySalesRaw = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->whereMonth('delivered_at', $currentMonth)
+        ->whereYear('delivered_at', $currentYear)
+        ->select(
+          DB::raw('DAY(delivered_at) as day'),
+          DB::raw('SUM(net_total) as total_sales')
+        )
+        ->groupBy('day')
+        ->orderBy('day')
+        ->get()
+        ->pluck('total_sales', 'day')
+        ->toArray();
+
+      $daysInMonth = now()->daysInMonth;
+      $dailyChartData = [];
+      for ($d = 1; $d <= $daysInMonth; $d++) {
+        $dailyChartData[] = [
+          'day'   => $d,
+          'sales' => $dailySalesRaw[$d] ?? 0,
+        ];
+      }
+      $data['dsoDailyChart'] = $dailyChartData;
     } elseif ($role === 'customer') {
 
       $customerId = $user->customer_id;
@@ -264,6 +318,7 @@ class DashboardController extends Controller
       'admin'    => 'pages.dashboard.admin',
       'manager'  => 'pages.dashboard.manager',
       'sr'       => 'pages.dashboard.sr',
+      'dso'      => 'pages.dashboard.dso',
       'customer' => 'pages.dashboard.customer',
       default    => 'dashboards',
     };

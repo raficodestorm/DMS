@@ -32,9 +32,12 @@
       <div class="col-md-6">
         <label>Role</label>
         <select class="input-form" name="role" required>
-          <option value="customer" {{ old('role', $user->role) == 'customer' ? 'selected' : '' }}>Customer</option>
-          <option value="sr" {{ old('role', $user->role) == 'sr' ? 'selected' : '' }}>SR</option>
+          <option value="">--Select Role--</option>
           <option value="manager" {{ old('role', $user->role) == 'manager' ? 'selected' : '' }}>Manager</option>
+
+          <option value="sr" {{ old('role', $user->role) == 'sr' ? 'selected' : '' }}>SR</option>
+          <option value="dso" {{ old('role', $user->role) == 'dso' ? 'selected' : '' }}>DSO</option>
+          <option value="customer" {{ old('role', $user->role) == 'customer' ? 'selected' : '' }}>Customer</option>
         </select>
       </div>
 

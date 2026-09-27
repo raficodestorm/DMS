@@ -286,7 +286,11 @@
 </div>
 
 <div class="cust-shop-btn-wrap animate__animated animate__fadeIn">
+  @if(auth()->user()->customer?->customer_type === 'wholesale')
+  <a href="{{ route('customer.orders.shop') }}" class="btn-shop-pulse">
+  @else
   <a href="{{ route('shop') }}" class="btn-shop-pulse">
+  @endif
     <span class="live-dot"></span>
     <i class="fas fa-shopping-bag"></i>
     <span>Shop Now</span>

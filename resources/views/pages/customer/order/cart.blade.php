@@ -115,24 +115,6 @@
     margin-top: 15px;
   }
 
-  .btn-submit-order {
-    background: linear-gradient(135deg, var(--primary), #00b4d8);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 15px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 4px 14px var(--primary-soft);
-    transition: all 0.2s ease;
-  }
-
-  .btn-submit-order:hover {
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px var(--primary-soft);
-  }
-
   /* ── Confirm Modal ────────────────────────────────────────────── */
   .confirm-modal-backdrop {
     position: fixed;
@@ -159,7 +141,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 768px) {
     .cart-item-row {
       flex-direction: column;
       align-items: flex-start;
@@ -171,6 +153,16 @@
       justify-content: space-between;
       align-items: center;
     }
+    .btn-sms{
+      padding: 5px 12px;
+      font-size: 10px;
+      border-radius: 5px;
+    }
+    .heading{
+      flex-direction: column;
+      gap: 10px;
+      align-items: start !important;
+    }
   }
 </style>
 
@@ -179,11 +171,11 @@
     <div class="cart-card">
       
       {{-- Header --}}
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom heading">
         <h5 class="m-0 fw-bold" style="color: var(--primary);">
           <i class="fas fa-shopping-cart me-1"></i> Wholesale Cart & Checkout
         </h5>
-        <a href="{{ route('customer.orders.shop') }}" class="btn btn-sm btn-outline-primary" style="font-weight: 600; border-radius: 8px;">
+        <a href="{{ route('customer.orders.shop') }}" class="btn btn-sms btn-outline-primary" style="font-weight: 600; border-radius: 8px;">
           <i class="fas fa-arrow-left me-1"></i> Add More Products
         </a>
       </div>
@@ -279,8 +271,8 @@
           <input type="hidden" name="net_total" id="formNetTotal" value="0">
           <input type="hidden" name="total_discount" id="formTotalDiscount" value="0">
 
-          <button type="submit" class="btn-submit-order w-100 py-3" id="custSubmitOrderBtn">
-            <i class="fas fa-check-circle me-1"></i> Place Wholesale Order
+          <button type="submit" class="btn-submit py-3" id="custSubmitOrderBtn">
+            <i class="fas fa-check-circle me-1"></i> Place Order
           </button>
         </div>
 

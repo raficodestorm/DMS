@@ -175,7 +175,7 @@ class OrderController extends Controller
                     throw new \RuntimeException('One or more selected products no longer exist.');
                 }
 
-                // 3. Determine Dominant Supplier (supplier with highest item count; otherwise null)
+                // 3. Determine Dominant Supplier (supplier with highest item count; otherwise null) & Applied Deduction Percent
                 $supplierCounts = [];
                 foreach ($request->products as $item) {
                     $prod = $products->get($item['product_id']);
@@ -187,14 +187,34 @@ class OrderController extends Controller
 
                 $dominantSupplierId = null;
                 $dominantDeduction = 0;
+
                 if (!empty($supplierCounts)) {
                     arsort($supplierCounts);
                     $counts = array_values($supplierCounts);
+                    $topSupplierId = array_key_first($supplierCounts);
+
                     // Check if top supplier is unique (strictly greater than the second, or only 1 supplier)
                     if (count($counts) === 1 || $counts[0] > $counts[1]) {
-                        $dominantSupplierId = array_key_first($supplierCounts);
-                        $topSupplier = Supplier::with('deductions')->find($dominantSupplierId);
-                        $dominantDeduction = (float) ($topSupplier?->deductions?->first()?->customer_deduction ?? 0);
+                        $dominantSupplierId = $topSupplierId;
+                    }
+
+                    // Get customer_deduction of the dominant supplier (or fallback to the first supplier in cart)
+                    $targetSupplierId = $dominantSupplierId ?: $topSupplierId;
+                    $targetProduct = $products->firstWhere('supplier_id', $targetSupplierId);
+                    $targetSupplier = $targetProduct?->supplier ?? Supplier::with('deductions')->find($targetSupplierId);
+                    $dominantDeduction = (float) ($targetSupplier?->deduction?->customer_deduction 
+                        ?? ($targetSupplier?->deductions?->first()?->customer_deduction ?? 0));
+                }
+
+                // If still 0, fallback to the first product in the cart that has a supplier deduction
+                if ($dominantDeduction <= 0) {
+                    foreach ($products as $prod) {
+                        $ded = (float) ($prod->supplier?->deduction?->customer_deduction 
+                            ?? ($prod->supplier?->deductions?->first()?->customer_deduction ?? 0));
+                        if ($ded > 0) {
+                            $dominantDeduction = $ded;
+                            break;
+                        }
                     }
                 }
 

@@ -29,7 +29,7 @@
 
   <link rel="canonical" href="https://relectricbd.com/">
 
-  <link rel="icon" type="image/png" sizes="35x35" href="{{ asset('image/relectric-r-logo.webp') }}">
+  <link rel="icon" type="image/png" sizes="50x45" href="{{ asset('image/relectric-r-logo.webp') }}">
 
   <link rel="stylesheet" href="{{ asset('css/color-root.css') }}">
   {{-- swiper js --}}

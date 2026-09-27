@@ -38,6 +38,7 @@ if (!function_exists('getLayout')) {
     return match ($user->role) {
       'admin' => 'layouts.adminlayout',
       'sr' => 'layouts.srlayout',
+      'dso' => 'layouts.dsolayout',
       'manager' => 'layouts.managerlayout',
       'customer' => 'layouts.customerlayout',
       default => 'layouts.userlayout',
