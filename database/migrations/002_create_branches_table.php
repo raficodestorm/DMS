@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('manager');
             $table->longText('address');
+            $table->decimal('cash', 10, 2)->default(0);
             $table->timestamps();
         });
     }

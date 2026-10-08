@@ -241,7 +241,7 @@
       </div>
       <div class="info-details">
         <label>Order Date</label>
-        <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+        <p>{{ $order->created_at->format('d M Y, h:i A') }}</p>
       </div>
     </div>
     @if($order->order_type == 'field_order')
@@ -262,8 +262,18 @@
         <i class="fas fa-truck-ramp-box"></i>
       </div>
       <div class="info-details">
+        <label>Delivered By</label>
+        <p>{{ $order->dso->fullname ?? 'N/A' }}</p>
+      </div>
+    </div>
+    
+    <div class="info-card">
+      <div class="info-icon-box" >
+        <i class="fas fa-truck-ramp-box"></i>
+      </div>
+      <div class="info-details">
         <label>Delivered Date</label>
-        <p>{{ $order->delivered_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A') }}</p>
+        <p>{{ $order->delivered_at->format('d M Y, h:i A') }}</p>
       </div>
     </div>
     @endif

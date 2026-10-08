@@ -29,7 +29,7 @@
       </p>
     </div>
     <div><span>Date</span>
-      <p>{{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y') }}</p>
+      <p>{{ $payment->created_at->format('d M Y') }}</p>
     </div>
   </div>
   <div class="card-actions">

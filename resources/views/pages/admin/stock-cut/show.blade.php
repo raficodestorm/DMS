@@ -109,7 +109,7 @@
     </div>
     <div class="info-item">
       <label>Date</label>
-      <p>{{ $stockCut->created_at ? $stockCut->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') : 'N/A' }}</p>
+      <p>{{ $stockCut->created_at ? $stockCut->created_at->format('d M Y, h:i A') : 'N/A' }}</p>
     </div>
   </div>
 

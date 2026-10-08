@@ -11,11 +11,17 @@ use App\Http\Controllers\StockRequestController;
 use App\Http\Controllers\StockCutController;
 use App\Http\Controllers\SupplierTransactionController;
 use App\Models\StockInRequest;
+use App\Http\Controllers\Manager\CashController;
 use App\Http\Controllers\Manager\BranchCostController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])->group(function () {
+  // Branch Cash Overview & Daily Closing
+  Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
+  Route::get('/cash/closing', [CashController::class, 'createClosing'])->name('cash.closing.create');
+  Route::post('/cash/closing', [CashController::class, 'storeClosing'])->name('cash.closing.store');
+
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('users/show/{user}', [UserManagementController::class, 'show'])->name('users.show');

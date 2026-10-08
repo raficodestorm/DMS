@@ -65,7 +65,7 @@
 
     <div>
       <span>Date</span>
-      <p>{{ $tx->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      <p>{{ $tx->created_at->format('d M Y, h:i A') }}</p>
     </div>
 
   </div>

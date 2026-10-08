@@ -231,7 +231,7 @@
       </div>
       <div class="info-details">
         <label>Order Date</label>
-        <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+        <p>{{ $order->created_at->format('d M Y, h:i A') }}</p>
       </div>
     </div>
 

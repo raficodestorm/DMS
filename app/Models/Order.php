@@ -82,4 +82,29 @@ class Order extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function invoiceRouteName(string $prefix = 'manager'): ?string
+    {
+        $suffix = match (true) {
+            $this->order_type === 'field_order',
+            $this->order_type === 'online' && $this->customer?->customer_type === 'wholesale'
+                => 'order.view_invoice',
+
+            $this->order_type === 'retail'
+                => 'order.view_retail_invoice',
+
+            $this->order_type === 'online' &&
+            (
+                is_null($this->customer_id) ||
+                $this->customer?->customer_type === 'retail'
+            )
+                => 'order.view_online_invoice',
+
+            default => null,
+        };
+
+        return $suffix ? "{$prefix}.{$suffix}" : null;
+    }
+
+    
 }

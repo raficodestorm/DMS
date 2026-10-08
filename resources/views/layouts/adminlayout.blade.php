@@ -43,6 +43,13 @@
         </a>
       </li>
 
+      <!-- Cash Treasury -->
+      <li class="nav-item">
+        <a href="{{ route('admin.cash.index') }}" class="nav-link {{ isActive('admin.cash.*') }}">
+          <i class="fas fa-sack-dollar"></i> Cash
+        </a>
+      </li>
+
       <!-- Reports -->
       <li class="nav-item">
         <a href="{{ route('admin.report.index') }}" class="nav-link {{ isActive('admin.report.*') }}">

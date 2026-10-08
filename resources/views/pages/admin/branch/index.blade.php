@@ -16,7 +16,7 @@
                     <th>S.No</th>
                     <th>Branch Name</th>
                     <th>Manager Name</th>
-                    <th>Address</th>
+                    <th>Cash</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -28,7 +28,7 @@
                         }}</td>
                     <td class="name">{{ $branch->name }}</td>
                     <td>{{ $branch->manager }}</td>
-                    <td>{{ $branch->address }}</td>
+                    <td>{{ $branch->cash }}</td>
 
                     <td class="action-icons">
                         <a href="{{ route('admin.branches.show', $branch) }}" class="icon-btn view-icon">
@@ -58,8 +58,8 @@
                 <div><span>Manager name</span>
                     <p>{{ $branch->manager }}</p>
                 </div>
-                <div><span>Address</span>
-                    <p>{{ $branch->address }}</p>
+                <div><span>Cash</span>
+                    <p>{{ $branch->cash }}</p>
                 </div>
             </div>
 

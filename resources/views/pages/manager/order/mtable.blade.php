@@ -72,7 +72,7 @@
       </p>
     </div>
     <div><span>Date & Time</span>
-      <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      <p>{{ $order->created_at->format('d M Y, h:i A') }}</p>
     </div>
   </div>
 
@@ -80,22 +80,27 @@
     <a href="{{ route('manager.order.show', $order->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>
     </a>
-    @if($order->status == 'complete' || $order->status == 'delivered')
-    @if($order->order_type == "field_order" || ($order->order_type == "online" && $order->customer?->customer_type == 'wholesale'))
-            <a href="{{ route('manager.order.view_invoice', $order->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
-              <i class="fa-solid fa-file-invoice"></i>
-            </a>
+    @php
+    $invoicePrefix = match (auth()->user()->role) {
+        'admin'    => 'admin',
+        'manager'  => 'manager',
+        'sr'       => 'sr',
+        'dso'       => 'dso',
+        'customer' => 'customer',
+        default    => null,
+    };
+    @endphp
 
-        @elseif($order->order_type == "retail")
-            <a href="{{ route('manager.order.view_retail_invoice', $order->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
-              <i class="fa-solid fa-file-invoice"></i>
-            </a>
-        @elseif( $order->order_type == "online" && (empty($order->customer_id) || $order->customer?->customer_type == 'retail'))
-            <a href="{{ route('manager.order.view_online_invoice', $order->id) }}" class="icon-btn slip-icon" title="View Purchase Invoice">
-              <i class="fa-solid fa-file-invoice"></i>
-            </a>
-        @endif
-    
+    @if(
+        $invoicePrefix &&
+        in_array($order->status, ['complete', 'delivered'], true) &&
+        ($invoiceRoute = $order->invoiceRouteName($invoicePrefix))
+    )
+        <a href="{{ route($invoiceRoute, $order->id) }}"
+          class="icon-btn slip-icon"
+          title="View Purchase Invoice">
+            <i class="fa-solid fa-file-invoice"></i>
+        </a>
     @endif
   </div>
 </div>

@@ -48,7 +48,7 @@
       </p>
     </div>
     <div><span>Date & Time</span>
-      <p>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      <p>{{ $order->created_at->format('d M Y, h:i A') }}</p>
     </div>
   </div>
   <div class="card-actions">

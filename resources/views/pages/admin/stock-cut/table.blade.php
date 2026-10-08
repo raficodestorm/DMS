@@ -13,7 +13,7 @@
       <span class="badge" style="background: #fef9c3; color: #a16207; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 0.78rem;">Pending</span>
     @endif
   </td>
-  <td>{{ $cut->created_at ? $cut->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') : 'N/A' }}</td>
+  <td>{{ $cut->created_at ? $cut->created_at->format('d M Y, h:i A') : 'N/A' }}</td>
   <td class="action-icons">
     <div style="display: flex; gap: 5px;">
       <a href="{{ route('admin.stock.cut.cut.show', $cut->id) }}" class="icon-btn view-icon" title="View Detail">

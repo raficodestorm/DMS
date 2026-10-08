@@ -255,7 +255,7 @@
           <div class="info-card text-end" style="text-align: right;">
             <b><i class="fas fa-receipt me-1"></i> Invoice Details:</b><br>
             <strong>Invoice No:</strong> BRSK{{ $stockInRequest->id }}<br>
-            <strong>Date:</strong> {{ $stockInRequest->created_at->timezone(auth()->user()->timezone ?? 'UTC')->format('d M Y, h:i A') }}<br>
+            <strong>Date:</strong> {{ $stockInRequest->created_at->format('d M Y, h:i A') }}<br>
             <strong>Receiving Branch:</strong> {{ $stockInRequest->branch->name ?? 'Main' }} Branch<br>
             <strong>Received By:</strong> {{ $stockInRequest->requestedBy->fullname ?? $stockInRequest->requestedBy->name ?? 'N/A' }}<br>
             

@@ -208,7 +208,16 @@ class DashboardController extends Controller
       $dsoId    = $user->id;
       $branchId = $user->branch_id;
 
-      // 1. Current-month delivered orders total amount & count
+      // 1. Lifetime delivered orders total amount & count
+      $data['dsoLifetimeDeliveredAmount'] = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->sum('net_total');
+
+      $data['dsoLifetimeDeliveredCount'] = Order::where('delivered_by', $dsoId)
+        ->where('status', 'delivered')
+        ->count();
+
+      // Current-month delivered orders total amount & count
       $data['dsoMonthlyDeliveredAmount'] = Order::where('delivered_by', $dsoId)
         ->where('status', 'delivered')
         ->whereMonth('delivered_at', $currentMonth)
@@ -229,30 +238,30 @@ class DashboardController extends Controller
 
       // 3. Ready to deliver orders in branch
       $data['branchPendingDeliveryCount'] = Order::where('branch_id', $branchId)
-        ->whereIn('status', ['approved', 'complete'])
+        ->where('status', 'complete')
         ->count();
 
-      // 4. Daily delivered orders chart for current month
-      $dailySalesRaw = Order::where('delivered_by', $dsoId)
+      // 4. Daily delivered orders count chart for current month
+      $dailyOrdersRaw = Order::where('delivered_by', $dsoId)
         ->where('status', 'delivered')
         ->whereMonth('delivered_at', $currentMonth)
         ->whereYear('delivered_at', $currentYear)
         ->select(
           DB::raw('DAY(delivered_at) as day'),
-          DB::raw('SUM(net_total) as total_sales')
+          DB::raw('COUNT(*) as total_orders')
         )
         ->groupBy('day')
         ->orderBy('day')
         ->get()
-        ->pluck('total_sales', 'day')
+        ->pluck('total_orders', 'day')
         ->toArray();
 
       $daysInMonth = now()->daysInMonth;
       $dailyChartData = [];
       for ($d = 1; $d <= $daysInMonth; $d++) {
         $dailyChartData[] = [
-          'day'   => $d,
-          'sales' => $dailySalesRaw[$d] ?? 0,
+          'day'    => $d,
+          'orders' => (int) ($dailyOrdersRaw[$d] ?? 0),
         ];
       }
       $data['dsoDailyChart'] = $dailyChartData;

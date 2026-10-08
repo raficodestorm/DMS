@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Transaction;
+use App\Models\Branch;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use Illuminate\Http\Request;
@@ -451,6 +452,12 @@ public function managerStore(Request $request)
         DB::transaction(function () use ($validated) {
 
             $user = auth()->user();
+            $branchId = auth()->user()->branch_id;
+
+            $branch = Branch::query()
+                ->whereKey($branchId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             /*
              * ---------------------------------------------------------
@@ -533,6 +540,8 @@ public function managerStore(Request $request)
             $customer->update([
                 'due' => $dueAfterTransaction,
             ]);
+
+            $branch->increment('cash', $paymentAmount);
 
             /*
              * ---------------------------------------------------------
@@ -684,6 +693,16 @@ public function managerStore(Request $request)
                 ->lockForUpdate()
                 ->firstOrFail();
 
+
+            $branchId = $payment->branch_id
+                ?? $customer->branch_id
+                ?? auth()->user()->branch_id;
+
+            $branch = Branch::query()
+                ->whereKey($branchId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             /*
              * ---------------------------------------------------------
              * 3. Calculate actual due
@@ -741,6 +760,15 @@ public function managerStore(Request $request)
 
             /*
              * ---------------------------------------------------------
+             * 5-A. Update Branch Cash
+             *      Approved customer payment increases branch cash.
+             * ---------------------------------------------------------
+             */
+
+                $branch->increment('cash', $paymentAmount);
+
+            /*
+             * ---------------------------------------------------------
              * 5-A. AUTO-SETTLEMENT: Distribute the approved payment
              *      across this customer's oldest unpaid/partial orders
              *      (FIFO). Updates each order's payment_amount and
@@ -749,6 +777,9 @@ public function managerStore(Request $request)
              */
             $this->settleOrdersWithPayment($customer->id, $paymentAmount, $payment->payment_method );
 
+
+
+
             /*
              * ---------------------------------------------------------
              * 6. Complete Payment Transaction
@@ -756,13 +787,11 @@ public function managerStore(Request $request)
              */
             $payment->update([
                 'status'                 => 'complete',
-                'branch_id'              => $payment->branch_id
-                    ?? $customer->branch_id
-                    ?? auth()->user()->branch_id,
-
+                'branch_id'              => $branch->id,
                 'due_before_transaction' => $dueBeforeTransaction,
                 'due_after_transaction'  => $dueAfterTransaction,
             ]);
+            
 
             /*
              * ---------------------------------------------------------
@@ -843,7 +872,7 @@ public function managerStore(Request $request)
                 );
             }
         });
-
+ 
         return back()->with(
             'success',
             'Payment approved successfully.'

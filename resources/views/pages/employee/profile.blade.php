@@ -355,7 +355,7 @@
         </div>
         <div class="info-group">
           <span class="i-label">Joining Date</span>
-          <span class="i-value">{{ $employee->created_at->timezone(auth()->user()->timezone)->format('d M Y') }}</span>
+          <span class="i-value">{{ $employee->created_at->format('d M Y') }}</span>
         </div>
 
       </div>

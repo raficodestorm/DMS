@@ -16,6 +16,7 @@ class Branch extends Model
         'name',
         'manager',
         'address',
+        'cash',
     ];
     public function stocks(): HasMany
     {

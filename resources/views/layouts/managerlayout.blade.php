@@ -43,6 +43,13 @@
         </a>
       </li>
 
+      <!-- Cash -->
+      <li class="nav-item">
+        <a href="{{ route('manager.cash.index') }}" class="nav-link {{ isActive('manager.cash.*') }}">
+          <i class="fas fa-sack-dollar"></i> Cash
+        </a>
+      </li>
+
       <!-- Users -->
       <li
         class="nav-item {{ request()->routeIs('manager.users.*', 'manager.index.srs', 'manager.index.customers') ? 'open' : '' }}">

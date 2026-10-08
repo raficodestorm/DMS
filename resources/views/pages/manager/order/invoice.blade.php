@@ -219,7 +219,7 @@
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
             Invoice No: {{ $order->order_id ?? ('BRS' . $order->id) }}<br>
-            Date: {{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}<br>
+            Date: {{ $order->created_at->format('d M Y, h:i A') }}<br>
             Reference (SR): {{ $order->sr->fullname ?? 'N/A' }}
           </div>
         </div>

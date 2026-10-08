@@ -168,7 +168,7 @@ class OrderSrController extends Controller
         'payment_method'   => $order->payment_method ?? 'Cash on Delivery',
         'status'           => $order->status,
         'payment_status'   => $order->payment_status ?? 'unpaid',
-        'date'             => $order->created_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A'),
+        'date'             => $order->created_at->format('d M Y, h:i A'),
         'show_url'         => route('sr.order.show', $order->id),
         'delivered_url'    => route('sr.order.delivered', $order->id),
         'is_delivered'     => $order->status === 'delivered',

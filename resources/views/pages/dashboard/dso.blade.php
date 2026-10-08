@@ -4,12 +4,9 @@
 <style>
   /* ── Quick-Action Grid ───────────────────────────────────────── */
   .quick-access-card {
-    background: var(--section-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 20px 15px;
-    box-shadow: 0 4px 18px rgba(0,0,0,.05);
-    margin-bottom: 22px;
+    background: none;
+    border: none;
+    margin-bottom: 20px;
   }
 
   .icon-grid {
@@ -27,7 +24,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .icon-item:hover { transform: translateY(-5px); }
+  .icon-item:hover { transform: translateY(-4px); }
 
   .icon-circle {
     width: 65px;
@@ -36,7 +33,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
+    font-size: 24px;
     margin-bottom: 10px;
     transition: all 0.3s ease;
     box-shadow: 0 6px 14px rgba(0,0,0,.12);
@@ -48,7 +45,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,.15);
+    background: rgba(255,255,255,.18);
     opacity: 0;
     transition: opacity .3s ease;
   }
@@ -62,10 +59,13 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: .5px;
+    max-width: 120px;
+    line-height: 1.3;
   }
 
-  .bg-delivery { background: linear-gradient(135deg, #0202e2, #00b4d8); color: #fff; }
-  .bg-search   { background: linear-gradient(135deg, #0ba360, #3cba92); color: #fff; }
+  .bg-delivery  { background: linear-gradient(135deg, #0202e2, #00b4d8); color: #fff; }
+  .bg-delivered { background: linear-gradient(135deg, #0ba360, #3cba92); color: #fff; }
+  .bg-search    { background: linear-gradient(135deg, #0ba360, #3cba92); color: #fff; }
 
   /* ── Stat Cards ──────────────────────────────────────────────── */
   .dso-stat-grid {
@@ -78,12 +78,15 @@
   .dso-stat-card {
     background: var(--section-bg);
     border-radius: 14px;
-    padding: 20px 18px;
+    padding: 18px 16px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 18px rgba(0,0,0,.05);
     transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .dso-stat-card::before {
@@ -100,19 +103,19 @@
   .card-pending::before       { background: linear-gradient(90deg, #f6d365, #fda085); }
 
   .dso-stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0,0,0,.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.09);
   }
 
   .dso-stat-icon {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    margin-bottom: 14px;
+    font-size: 19px;
+    margin-bottom: 12px;
     flex-shrink: 0;
   }
 
@@ -125,9 +128,10 @@
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .8px;
+    letter-spacing: .7px;
     color: var(--text-muted);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
+    line-height: 1.3;
   }
 
   .dso-stat-value {
@@ -136,19 +140,22 @@
     color: var(--text-main);
     line-height: 1.1;
     letter-spacing: -.5px;
+    margin-bottom: 0;
   }
 
   .dso-stat-sub {
     font-size: 11px;
     color: var(--text-muted);
     margin-top: 6px;
+    margin-bottom: 0;
+    line-height: 1.25;
   }
 
   /* ── Chart Card ───────────────────────────────────────────────── */
   .dso-chart-card {
     background: var(--section-bg);
     border-radius: 14px;
-    padding: 22px 20px 14px;
+    padding: 20px 18px 12px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 18px rgba(0,0,0,.05);
   }
@@ -157,7 +164,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
     gap: 8px;
   }
@@ -175,6 +182,7 @@
     font-size: 11.5px;
     color: var(--text-muted);
     margin-top: 3px;
+    margin-bottom: 0;
   }
 
   .chart-badge {
@@ -183,27 +191,156 @@
     gap: 5px;
     font-size: 11px;
     font-weight: 600;
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 50px;
     background: rgba(102,126,234,.1);
     color: #667eea;
     white-space: nowrap;
   }
+
+  /* ── Mobile Optimization (2 Cards per row) ─────────────────────── */
+  @media (max-width: 768px) {
+    .dso-header-title {
+      font-size: 18px !important;
+    }
+
+    .dso-header-sub {
+      font-size: 11.5px !important;
+    }
+
+    .dso-date-badge {
+      font-size: 10.5px !important;
+      padding: 4px 10px !important;
+    }
+
+    /* Quick Access */
+    .icon-grid {
+      gap: 20px !important;
+    }
+
+    .icon-circle {
+      width: 52px !important;
+      height: 52px !important;
+      font-size: 20px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .icon-item span {
+      font-size: 10px !important;
+      letter-spacing: .3px !important;
+      max-width: 95px !important;
+    }
+
+    /* Stat Cards (2 per line) */
+    .dso-stat-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 16px !important;
+    }
+
+    .dso-stat-card {
+      padding: 12px 10px !important;
+      border-radius: 12px !important;
+    }
+
+    .dso-stat-card::before {
+      height: 2.5px !important;
+      border-radius: 12px 12px 0 0 !important;
+    }
+
+    .dso-stat-icon {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 14px !important;
+      border-radius: 8px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .dso-stat-label {
+      font-size: 9px !important;
+      letter-spacing: .3px !important;
+      margin-bottom: 3px !important;
+      line-height: 1.2 !important;
+    }
+
+    .dso-stat-value {
+      font-size: 17px !important;
+      letter-spacing: -.4px !important;
+      line-height: 1.1 !important;
+    }
+
+    .dso-stat-sub {
+      font-size: 8.5px !important;
+      margin-top: 3px !important;
+      line-height: 1.2 !important;
+    }
+
+    .dso-stat-sub i {
+      font-size: 8px !important;
+    }
+
+    /* Chart */
+    .dso-chart-card {
+      padding: 14px 10px 8px !important;
+      border-radius: 12px !important;
+    }
+
+    .chart-title {
+      font-size: 12px !important;
+    }
+
+    .chart-subtitle {
+      font-size: 9.5px !important;
+    }
+
+    .chart-badge {
+      font-size: 9.5px !important;
+      padding: 3px 8px !important;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .dso-stat-grid {
+      gap: 8px !important;
+    }
+
+    .dso-stat-card {
+      padding: 10px 8px !important;
+    }
+
+    .dso-stat-icon {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 12px !important;
+    }
+
+    .dso-stat-label {
+      font-size: 8.5px !important;
+    }
+
+    .dso-stat-value {
+      font-size: 15px !important;
+    }
+
+    .dso-stat-sub {
+      font-size: 8px !important;
+    }
+  }
 </style>
 
 {{-- ── Header ───────────────────────────────────────────────────── --}}
-<div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+<div class="d-flex justify-content-between align-items-center mb-3 mb-md-4 flex-wrap gap-2 animate__animated animate__fadeIn">
   <div>
-    <h2 style="font-size: 22px; font-family: 'Cinzel', serif; font-weight: 700; color: var(--primary); margin: 0;">DSO Delivery Dashboard</h2>
-    <p class="text-muted small m-0">Welcome back, <strong>{{ auth()->user()->fullname ?? auth()->user()->username }}</strong> ({{ auth()->user()->branch?->name ?? 'Main Branch' }})</p>
+    <h2 class="dso-header-title" style="font-size: 22px; font-family: 'Cinzel', serif; font-weight: 700; color: var(--primary); margin: 0;">DSO Delivery Dashboard</h2>
+    <p class="text-muted small m-0 dso-header-sub">Welcome back, <strong>{{ auth()->user()->fullname ?? auth()->user()->username }}</strong> </p>
   </div>
-  <span class="badge p-2 px-3"
+  <span class="badge p-2 px-3 dso-date-badge"
         style="letter-spacing:1px;color:var(--text-muted);background:var(--section-bg);border-radius:50px;border:1px solid var(--border-color);">
     <i class="far fa-calendar-alt me-1"></i> {{ date('d M, Y') }}
   </span>
 </div>
 
-{{-- ── Quick-Action Delivery Button ─────────────────────────────── --}}
+{{-- ── Quick-Action Buttons ────────────────────────────────────── --}}
 <div class="quick-access-card animate__animated animate__fadeInUp">
   <div class="icon-grid">
     <a href="{{ route('dso.order.delivery.index') }}" class="icon-item">
@@ -212,20 +349,26 @@
       </div>
       <span>Find & Deliver Orders</span>
     </a>
+    <a href="{{ route('dso.order.delivered_list') }}" class="icon-item">
+      <div class="icon-circle bg-delivered">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <span>Already Delivered</span>
+    </a>
   </div>
 </div>
 
 {{-- ── Stat Cards ──────────────────────────────────────────────── --}}
 <div class="dso-stat-grid animate__animated animate__fadeInUp" style="animation-delay:.1s;">
 
-  {{-- Card 1: Monthly Delivered Amount --}}
+  {{-- Card 1: Lifetime Delivered Orders Count --}}
   <div class="dso-stat-card card-delivered-amt">
     <div class="dso-stat-icon icon-amt">
-      <i class="fas fa-sack-dollar"></i>
+      <i class="fas fa-boxes-stacked"></i>
     </div>
-    <p class="dso-stat-label">{{ $monthName ?? date('F') }} Delivery Volume</p>
-    <p class="dso-stat-value">৳ {{ number_format($dsoMonthlyDeliveredAmount ?? 0, 0) }}</p>
-    <p class="dso-stat-sub"><i class="fas fa-circle-info me-1" style="color:#667eea;"></i>Total value delivered this month</p>
+    <p class="dso-stat-label">Total Delivered in Life</p>
+    <p class="dso-stat-value">{{ number_format($dsoLifetimeDeliveredCount ?? 0) }}</p>
+    <p class="dso-stat-sub"><i class="fas fa-circle-info me-1" style="color:#667eea;"></i>Lifetime delivered orders</p>
   </div>
 
   {{-- Card 2: Monthly Delivered Orders Count --}}
@@ -265,7 +408,7 @@
   <div class="chart-header">
     <div>
       <p class="chart-title">Daily Deliveries — {{ $monthName ?? date('F') }}</p>
-      <p class="chart-subtitle">Delivered order amount per day for {{ date('F Y') }}</p>
+      <p class="chart-subtitle">Delivered orders per day for {{ date('F Y') }}</p>
     </div>
     <span class="chart-badge">
       <i class="fas fa-chart-area"></i> Real-time Deliveries
@@ -280,19 +423,20 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const raw   = @json($dsoDailyChart ?? []);
-    const days  = raw.map(r => r.day);
-    const sales = raw.map(r => parseFloat(r.sales));
+    const raw    = @json($dsoDailyChart ?? []);
+    const days   = raw.map(r => r.day);
+    const orders = raw.map(r => parseInt(r.orders ?? r.sales ?? 0));
 
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const labelColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor  = isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)';
 
+    const isMobile = window.innerWidth <= 768;
     const options = {
-      series: [{ name: 'Delivered Sales (৳)', data: sales }],
+      series: [{ name: 'Delivered Orders', data: orders }],
       chart: {
         type: 'area',
-        height: 230,
+        height: isMobile ? 180 : 230,
         toolbar: { show: false },
         zoom: { enabled: false },
         fontFamily: "'Inter', sans-serif",
@@ -317,29 +461,31 @@
       },
       markers: {
         size: 0,
-        hover: { size: 5, colors: ['#0202e2'], strokeColors: '#fff', strokeWidth: 2 },
+        hover: { size: 4, colors: ['#0202e2'], strokeColors: '#fff', strokeWidth: 2 },
       },
       xaxis: {
         categories: days,
-        title: { text: 'Day of Month', style: { color: labelColor, fontSize: '11px' } },
+        title: { text: 'Day of Month', style: { color: labelColor, fontSize: isMobile ? '9.5px' : '11px' } },
         axisBorder: { show: false },
         axisTicks: { show: false },
-        labels: { style: { colors: labelColor, fontSize: '11px' } },
+        labels: { style: { colors: labelColor, fontSize: isMobile ? '9.5px' : '11px' } },
       },
       yaxis: {
+        min: 0,
+        forceNiceScale: true,
         labels: {
-          formatter: v => '৳' + v.toLocaleString(),
-          style: { colors: labelColor, fontSize: '11px' },
+          formatter: v => Math.floor(v),
+          style: { colors: labelColor, fontSize: isMobile ? '9.5px' : '11px' },
         },
       },
       tooltip: {
         theme: isDark ? 'dark' : 'light',
-        y: { formatter: v => '৳ ' + v.toLocaleString() },
+        y: { formatter: v => v + ' Orders' },
       },
       grid: {
         borderColor: gridColor,
         strokeDashArray: 4,
-        padding: { left: 8, right: 8, top: 0, bottom: 0 },
+        padding: { left: 4, right: 4, top: 0, bottom: 0 },
       },
     };
 

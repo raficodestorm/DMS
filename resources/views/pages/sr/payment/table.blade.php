@@ -56,7 +56,7 @@
   </td>
 
   <td>
-    {{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}
+    {{ $payment->created_at->format('d M Y, h:i A') }}
   </td>
 
   <td class="action-icons">

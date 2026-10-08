@@ -119,7 +119,7 @@
 
         <div class="col-md-6">
           <div class="info-label">Joined Date</div>
-          <div class="info-value">{{ Auth::user()->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i
+          <div class="info-value">{{ Auth::user()->created_at->format('d M Y, h:i
             A') }}</div>
 
           <div class="info-label">Account Status</div>

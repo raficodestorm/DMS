@@ -43,7 +43,7 @@
       </p>
     </div>
     <div><span>Delivered Date</span>
-      <p>{{ ($order->delivered_at ?? $order->created_at)->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A') }}</p>
+      <p>{{ ($order->delivered_at ?? $order->created_at)->format('d M Y, h:i A') }}</p>
     </div>
   </div>
 
@@ -52,19 +52,26 @@
       <i class="fa-solid fa-eye"></i>
     </a>
     @php
-      $invoiceUrl = null;
-      if ($order->order_type == "retail") {
-        $invoiceUrl = route('dso.order.view_retail_invoice', $order->id);
-      } elseif ($order->order_type == "online" && (empty($order->customer_id) || $order->customer?->customer_type == 'retail')) {
-        $invoiceUrl = route('dso.order.view_online_invoice', $order->id);
-      } else {
-        $invoiceUrl = route('dso.order.view_invoice', $order->id);
-      }
+    $invoicePrefix = match (auth()->user()->role) {
+        'admin'    => 'admin',
+        'manager'  => 'manager',
+        'sr'       => 'sr',
+        'dso'       => 'dso',
+        'customer' => 'customer',
+        default    => null,
+    };
     @endphp
-    @if($invoiceUrl)
-      <a href="{{ $invoiceUrl }}" class="icon-btn slip-icon" title="View Invoice" target="_blank">
-        <i class="fa-solid fa-file-invoice"></i>
-      </a>
+
+    @if(
+        $invoicePrefix &&
+        in_array($order->status, ['complete', 'delivered'], true) &&
+        ($invoiceRoute = $order->invoiceRouteName($invoicePrefix))
+    )
+        <a href="{{ route($invoiceRoute, $order->id) }}"
+          class="icon-btn slip-icon"
+          title="View Purchase Invoice">
+            <i class="fa-solid fa-file-invoice"></i>
+        </a>
     @endif
   </div>
 </div>

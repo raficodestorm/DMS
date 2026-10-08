@@ -482,9 +482,14 @@
         <span>Pricing & Status</span>
       </div>
       <div class="pc-card-body">
-        <div class="g2" style="margin-bottom:14px;">
+        <div class="g3" style="margin-bottom:14px;">
           <div>
-            <label class="f-label">Selling Price (৳) <span class="f-required">*</span></label>
+            <label class="f-label">Purchase Price (৳)</label>
+            <input class="f-ctrl" type="number" step="0.01" min="0" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}" placeholder="0.00">
+            @error('purchase_price')<div class="f-err">{{ $message }}</div>@enderror
+          </div>
+          <div>
+            <label class="f-label">Base Price (৳) <span class="f-required">*</span></label>
             <input class="f-ctrl" type="number" step="0.01" min="0" name="price" value="{{ old('price', $product->price) }}" placeholder="0.00" required>
             @error('price')<div class="f-err">{{ $message }}</div>@enderror
           </div>

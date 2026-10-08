@@ -89,7 +89,7 @@
     </div>
     <div class="info-item">
       <label>Date & Time</label>
-      <p>{{ $request->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</p>
+      <p>{{ $request->created_at->format('d M Y, h:i A') }}</p>
     </div>
   </div>
 

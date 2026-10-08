@@ -12,7 +12,7 @@
       <span class="status-approved-badge">Approved</span>
     @endif
   </td>
-  <td>{{ $req->created_at->timezone(auth()->user()->timezone ?? 'UTC')->format('d M Y, h:i A') }}</td>
+  <td>{{ $req->created_at->format('d M Y, h:i A') }}</td>
 
   <td class="action-icons">
     <a href="{{ route('manager.stock.in.request.show', $req->id) }}" class="icon-btn view-icon" title="View Details">

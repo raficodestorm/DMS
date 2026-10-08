@@ -76,6 +76,22 @@ class UserSeeder extends Seeder
                 ['email' => $user['email']],
                 $user
             );
+            // Create admin cash account
+            if ($user['role'] === 'admin') {
+
+                $admin = DB::table('users')
+                    ->where('email', $user['email'])
+                    ->first();
+
+                DB::table('admin_cashes')->updateOrInsert(
+                    ['admin_id' => $admin->id],
+                    [
+                        'cash' => 0,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+            }
         }
     }
 }

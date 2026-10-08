@@ -311,6 +311,7 @@ class ProductController extends Controller
             'category_id'       => 'nullable|exists:categories,id',
             'supplier_id'       => 'required|exists:suppliers,id',
             'price'             => 'required|numeric|min:0',
+            'purchase_price'    => 'nullable|numeric|min:0',
             'stock_alert'       => 'required|integer|min:0',
             'weight'            => 'nullable|numeric|min:0',
             'length'            => 'nullable|numeric|min:0',
@@ -324,9 +325,9 @@ class ProductController extends Controller
         ]);
 
         $barcode = $barcodeService->sanitize($request->barcode);
-        $validated['barcode']     = $barcode ?: $barcodeService->generateUniqueBarcode();
-        $validated['is_featured'] = $request->boolean('is_featured');
-        $validated['purchase_price'] = 0; // Set to 0 by default; updated later via edit
+        $validated['barcode']        = $barcode ?: $barcodeService->generateUniqueBarcode();
+        $validated['is_featured']    = $request->boolean('is_featured');
+        $validated['purchase_price'] = $request->input('purchase_price') !== null && $request->input('purchase_price') !== '' ? (float) $request->input('purchase_price') : 0;
 
         // Main thumbnail
         if ($request->hasFile('image')) {
@@ -405,7 +406,7 @@ class ProductController extends Controller
         }
 
         $validated['is_featured']    = $request->boolean('is_featured');
-        $validated['purchase_price'] = 0;
+        $validated['purchase_price'] = $request->input('purchase_price') !== null && $request->input('purchase_price') !== '' ? (float) $request->input('purchase_price') : 0;
 
         // Replace main thumbnail
         if ($request->hasFile('image')) {

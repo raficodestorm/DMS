@@ -35,6 +35,7 @@ class BranchController extends Controller
             'name' => 'required|string|max:100',
             'manager' => 'required|string|max:100',
             'address' => 'nullable|string',
+            'cash' => 'required|numeric',
         ]);
 
         Branch::create($validated);
@@ -70,6 +71,7 @@ class BranchController extends Controller
             'name' => 'required|string|max:100',
             'manager' => 'required|string|max:100',
             'address' => 'required|string',
+            'cash' => 'required|numeric',
         ]);
 
         $branch->update($validated);

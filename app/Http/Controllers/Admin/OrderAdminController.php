@@ -37,7 +37,7 @@ class OrderAdminController extends Controller
    */
   public function fetchOrdersData(Request $request)
   {
-    $query = Order::with(['customer:id,shop_name', 'sr:id,fullname,branch_id', 'sr.branch:id,name', 'manager:id,fullname,branch_id', 'manager.branch:id,name'])
+    $query = Order::with(['customer:id,shop_name,customer_type', 'branch:id,name', 'sr:id,fullname,branch_id', 'sr.branch:id,name', 'manager:id,fullname,branch_id', 'manager.branch:id,name'])
       ->latest();
 
     if ($request->filled('search')) {

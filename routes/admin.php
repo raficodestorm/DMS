@@ -17,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\CompanyCostController;
+use App\Http\Controllers\Admin\CashController;
 use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
@@ -27,6 +28,9 @@ use App\Http\Controllers\Manager\RetailOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+  // Cash Dashboard
+  Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
+
   Route::get('/users/index', [UserManagementController::class, 'users'])->name('index.users');
   Route::get('/users/index/data', [UserManagementController::class, 'fetchUsersIndexData'])->name('users.index.data');
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');

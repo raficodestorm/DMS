@@ -45,7 +45,7 @@
       <div class="info-group">
         <span class="i-label">Created at</span>
         <span class="i-value">
-          {{ $category->created_at ? $category->created_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A') : 'N/A' }}
+          {{ $category->created_at ? $category->created_at->format('d M Y, h:i A') : 'N/A' }}
         </span>
       </div>
     </div>

@@ -17,7 +17,7 @@
         @endif
       </p>
     </div>
-    <div><span>Date</span><p>{{ $cut->created_at ? $cut->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') : 'N/A' }}</p></div>
+    <div><span>Date</span><p>{{ $cut->created_at ? $cut->created_at->format('d M Y, h:i A') : 'N/A' }}</p></div>
   </div>
   <div class="card-actions">
     <a href="{{ route('admin.stock.cut.cut.show', $cut->id) }}" class="icon-btn view-icon" title="View Detail">

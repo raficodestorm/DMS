@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\Branch;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Services\OrderIdGeneratorService;
@@ -202,6 +203,10 @@ class RetailOrderController extends Controller
         $user      = auth()->user();
         $managerId = $user->id;
         $branchId  = $user->branch_id;
+        $branch = Branch::query()
+                ->whereKey($branchId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
         $orderId = app(OrderIdGeneratorService::class)->generate();
 
@@ -304,6 +309,8 @@ class RetailOrderController extends Controller
             'net_total'        => $finalNetTotal,
             'payment_amount'   => $finalNetTotal,
         ]);
+
+        $branch->increment('cash', $finalNetTotal);
 
         // Notify admins
         $notificationData = [

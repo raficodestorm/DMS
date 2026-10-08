@@ -17,7 +17,7 @@
     <span class="status-inactive-badge" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a;">● Pending</span>
     @endif
   </td>
-  <td>{{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
+  <td>{{ $payment->created_at->format('d M Y, h:i A') }}</td>
   <td class="action-icons">
     <a href="{{ route('customer.payments.show', $payment->id) }}" class="icon-btn view-icon">
       <i class="fa-solid fa-eye"></i>

@@ -25,7 +25,13 @@
             <div class="input-box">
                 <label>Address</label>
                 <input class="input-form" name="address" type="text" value="{{ $branch->address }}" required>
-                @error('email')<div class="error-text">{{ $message }}</div>@enderror
+                @error('address')<div class="error-text">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="input-box">
+                <label>Initial Cash</label>
+                <input class="input-form" name="cash" type="number" min="0" value="{{ $branch->cash }}" required>
+                @error('cash')<div class="error-text">{{ $message }}</div>@enderror
             </div>
 
             <div>

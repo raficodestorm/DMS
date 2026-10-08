@@ -53,7 +53,7 @@
     <div>
       <span>Date</span>
       <p>
-        {{ $payment->created_at->timezone(auth()->user()->timezone)->format('d M Y') }}
+        {{ $payment->created_at->format('d M Y') }}
       </p>
     </div>
 

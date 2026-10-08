@@ -208,7 +208,7 @@
           <div class="info-card text-end" style="text-align: right;">
             <b>Invoice Info:</b><br>
             <strong>Invoice No:</strong> {{ $order->order_id ?? ('BRS' . $order->id) }}<br>
-            <strong>Date:</strong> {{ $order->created_at->timezone(auth()->user()->timezone ?? 'Asia/Dhaka')->format('d M Y, h:i A') }}<br>
+            <strong>Date:</strong> {{ $order->created_at->format('d M Y, h:i A') }}<br>
             <strong>Order Type:</strong> <span class="badge bg-primary text-white" style="font-size: 11px; padding: 2px 6px;">Online Order</span><br>
             <strong>Branch:</strong> {{ $order->branch->name ?? 'Online' }} Branch
           </div>

@@ -33,7 +33,7 @@
     <span class="status-undefined-badge">Undefined</span>
     @endif
   </td>
-  <td>{{ $order->created_at->timezone(auth()->user()->timezone)->format('d M Y, h:i A') }}</td>
+  <td>{{ $order->created_at->format('d M Y, h:i A') }}</td>
 
   <td class="action-icons">
     <a href="{{ route('admin.order.show', $order->id) }}" class="icon-btn view-icon">
