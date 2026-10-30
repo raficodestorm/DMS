@@ -70,6 +70,9 @@ return new class extends Migration
             $table->decimal('cash_variance', 15, 2)
                 ->default(0);
 
+
+            
+
             /*
              * ---------------------------------------------------------
              * Closing Information

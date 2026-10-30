@@ -12,6 +12,18 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+
+
+Route::get('/__runtime-check', function () {
+    abort_unless(app()->environment('local'), 404);
+
+    return response()->json([
+        'php_version' => PHP_VERSION,
+        'sapi' => PHP_SAPI,
+        'loaded_ini' => php_ini_loaded_file(),
+    ]);
+});
+
 Route::get('/', function () {
     $slides = \App\Models\Slide::active()
         ->ordered()
