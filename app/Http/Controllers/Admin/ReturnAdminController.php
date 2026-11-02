@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\OrderItem;
 use App\Models\ProductReturn;
@@ -131,6 +132,8 @@ class ReturnAdminController extends Controller
 
                 $returnCode = 'BRET' . $return->id;
 
+                $cashRefundAmount = 0.00;
+
                 if ($return->customer_id) {
                     $customer = Customer::query()
                         ->whereKey($return->customer_id)
@@ -147,20 +150,23 @@ class ReturnAdminController extends Controller
                             // Scenario 1: Customer due is 0 -> full amount is cash refund, due stays 0
                             $newDue = 0.00;
                             $customer->update(['due' => $newDue]);
+                            $cashRefundAmount = $returnAmount;
 
                             $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের কোনো বকেয়া না থাকায় মোট রিটার্ন ৳" . number_format($returnAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
                         } elseif ($currentDue < $returnAmount) {
                             // Scenario 2: Customer due is less than return amount -> cut due to 0, remaining is cash refund
-                            $refundAmount = $returnAmount - $currentDue;
+                            $refundAmount = round($returnAmount - $currentDue, 2);
                             $adjustedDue = $currentDue;
                             $newDue = 0.00;
                             $customer->update(['due' => $newDue]);
+                            $cashRefundAmount = $refundAmount;
 
                             $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। মোট ৳" . number_format($returnAmount, 2) . " এর মধ্যে আগের বকেয়া ৳" . number_format($adjustedDue, 2) . " সমন্বয় করা হলো এবং অবশিষ্ট ৳" . number_format($refundAmount, 2) . " ক্যাশ রিফান্ড হিসেবে প্রসেস করা হলো।";
                         } else {
                             // Scenario 3: Customer due is greater than or equal to return amount -> decrement due
                             $newDue = round($currentDue - $returnAmount, 2);
                             $customer->update(['due' => $newDue]);
+                            $cashRefundAmount = 0.00;
 
                             $note = "অর্ডার #{$orderCode} এর রিটার্ন ({$returnCode}) অনুমোদিত হয়েছে। কাস্টমারের বকেয়া থেকে মোট ৳" . number_format($returnAmount, 2) . " কেটে সমন্বয় করা হলো (বর্তমান বকেয়া: ৳" . number_format($newDue, 2) . ")।";
                         }
@@ -178,6 +184,20 @@ class ReturnAdminController extends Controller
                             'status' => 'complete',
                             'note' => $note
                         ]);
+                    }
+                } else {
+                    $cashRefundAmount = round((float) $return->total_amount, 2);
+                }
+
+                // 5. Deduct cash refund from branch cash if refund amount > 0
+                if ($cashRefundAmount > 0 && $return->branch_id) {
+                    $branch = Branch::query()
+                        ->whereKey($return->branch_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($branch) {
+                        $branch->decrement('cash', $cashRefundAmount);
                     }
                 }
 
@@ -221,10 +241,13 @@ class ReturnAdminController extends Controller
             return DB::transaction(function () use ($return) {
                 // If it was already approved, we must ROLLBACK changes
                 if ($return->status == 'approved') {
+                    $isRetailOrder = ($return->order && $return->order->order_type === 'retail');
+
                     foreach ($return->items as $item) {
                         // Rollback Stock
                         $stock = Stock::where('product_id', $item->product_id)
                             ->where('branch_id', $return->branch_id)
+                            ->lockForUpdate()
                             ->first();
                         if ($stock) {
                             $stock->decrement('quantity', $item->quantity);
@@ -234,6 +257,7 @@ class ReturnAdminController extends Controller
                         if ($return->order_id) {
                             $orderItem = OrderItem::where('order_id', $return->order_id)
                                 ->where('product_id', $item->product_id)
+                                ->lockForUpdate()
                                 ->first();
                             if ($orderItem) {
                                 $orderItem->increment('quantity', $item->quantity);
@@ -243,20 +267,36 @@ class ReturnAdminController extends Controller
                     }
 
                     // Rollback Order Total
-                    if ($return->order_id) {
+                    if ($return->order_id && $return->order) {
                         $return->order->increment('net_total', $return->total_amount);
                     }
 
-                    // Rollback Customer Due (if customer exists)
-                    if ($return->customer) {
-                        $return->customer->increment('due', $return->total_amount);
+                    if ($isRetailOrder) {
+                        // For retail orders: Refund was deducted from branch cash on approval, so add it back to branch cash
+                        if ($return->branch_id) {
+                            $branch = Branch::query()
+                                ->whereKey($return->branch_id)
+                                ->lockForUpdate()
+                                ->first();
+                            if ($branch) {
+                                $branch->increment('cash', $return->total_amount);
+                            }
+                        }
+                    } else {
+                        // Rollback Customer Due (if customer exists) for regular orders
+                        if ($return->customer) {
+                            $return->customer->increment('due', $return->total_amount);
+                        }
                     }
 
                     // Remove Transaction
+                    $returnCode = 'BRET' . $return->id;
                     Transaction::where('order_id', $return->order_id)
                         ->where('type', 'return')
-                        ->where('amount', $return->total_amount)
-                        ->where('note', 'like', "%Return ID: #{$return->id}%")
+                        ->where(function ($q) use ($return, $returnCode) {
+                            $q->where('note', 'like', "%{$returnCode}%")
+                              ->orWhere('note', 'like', "%Return ID: #{$return->id}%");
+                        })
                         ->delete();
                 }
 
@@ -286,7 +326,7 @@ class ReturnAdminController extends Controller
                 $return->items()->delete();
                 $return->delete();
 
-                return redirect()->route('admin.return.index')->with('success', 'Return request deleted and changes rolled back.');
+                return redirect()->route('admin.return.index')->with('success', 'Return request deleted and changes rolled back. ');
             });
         } catch (\Exception $e) {
             return back()->with('error', 'Deletion failed: ' . $e->getMessage());

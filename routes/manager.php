@@ -13,14 +13,23 @@ use App\Http\Controllers\SupplierTransactionController;
 use App\Models\StockInRequest;
 use App\Http\Controllers\Manager\CashController;
 use App\Http\Controllers\Manager\BranchCostController;
+use App\Http\Controllers\Manager\CashTransferController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])->group(function () {
   // Branch Cash Overview & Daily Closing
   Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
+  Route::get('/cash/data', [CashController::class, 'fetchData'])->name('cash.data');
   Route::get('/cash/closing', [CashController::class, 'createClosing'])->name('cash.closing.create');
   Route::post('/cash/closing', [CashController::class, 'storeClosing'])->name('cash.closing.store');
+  Route::get('/cash/closing-history', [CashController::class, 'closingHistory'])->name('cash.closing.history');
+
+  // Branch Cash Transfer to Admin
+  Route::get('/cash-transfers', [CashTransferController::class, 'index'])->name('cash-transfers.index');
+  Route::get('/cash-transfers/data', [CashTransferController::class, 'fetchData'])->name('cash-transfers.data');
+  Route::post('/cash-transfers', [CashTransferController::class, 'store'])->name('cash-transfers.store');
+  Route::delete('/cash-transfers/{id}', [CashTransferController::class, 'destroy'])->name('cash-transfers.destroy');
 
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');

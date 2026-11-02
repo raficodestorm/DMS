@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminCash;
 use App\Models\Branch;
-use App\Models\CashTransfer;
+use App\Models\DailyCashClosing;
 use Illuminate\Http\Request;
 
 class CashController extends Controller
@@ -40,11 +40,6 @@ class CashController extends Controller
         $topBranch = $branches->sortByDesc('cash')->first();
         $averageBranchCash = $branchCount > 0 ? ($totalBranchCash / $branchCount) : 0;
 
-        // 5. Recent Cash Transfer records
-        $recentTransfers = CashTransfer::with(['branch', 'user'])
-            ->latest()
-            ->take(5)
-            ->get();
 
         return view('pages.admin.cash.index', compact(
             'totalCompanyCash',
@@ -56,8 +51,57 @@ class CashController extends Controller
             'adminSharePercent',
             'branchSharePercent',
             'topBranch',
-            'averageBranchCash',
-            'recentTransfers'
+            'averageBranchCash'
         ));
+    }
+
+    /**
+     * Display the Admin Daily Cash Closing History index page (all branches).
+     */
+    public function closingHistory()
+    {
+        $branches      = Branch::select('id', 'name')->orderBy('name')->get();
+        $totalClosings = DailyCashClosing::count();
+
+        return view('pages.admin.cash.closing-history', compact('branches', 'totalClosings'));
+    }
+
+    /**
+     * Fetch Daily Cash Closing history data via AJAX (all branches, with filters).
+     */
+    public function fetchClosingHistoryData(Request $request)
+    {
+        $query = DailyCashClosing::with(['branch', 'closedBy']);
+
+        // Branch filter
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
+        // Date range filter
+        if ($request->filled('from_date')) {
+            $query->whereDate('closing_date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('closing_date', '<=', $request->to_date);
+        }
+
+        // Search in notes
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where('notes', 'like', "%{$search}%");
+        }
+
+        $closings = $query->orderByDesc('closing_date')
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.admin.cash.closing-history-table', compact('closings'))->render(),
+            'mobile'     => view('pages.admin.cash.closing-history-mtable', compact('closings'))->render(),
+            'total'      => $closings->total(),
+            'pagination' => (string) $closings->links(),
+        ]);
     }
 }

@@ -34,4 +34,9 @@ class Branch extends Model
     {
         return $this->hasMany(BranchCost::class);
     }
+
+    public function cashTransfers(): HasMany
+    {
+        return $this->hasMany(CashTransfer::class);
+    }
 }

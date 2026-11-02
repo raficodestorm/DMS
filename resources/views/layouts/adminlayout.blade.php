@@ -50,6 +50,13 @@
         </a>
       </li>
 
+      <!-- Cash Transfer -->
+      <li class="nav-item">
+        <a href="{{ route('admin.cash-transfers.index') }}" class="nav-link {{ isActive('admin.cash-transfers.*') }}">
+          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
+        </a>
+      </li>
+
       <!-- Reports -->
       <li class="nav-item">
         <a href="{{ route('admin.report.index') }}" class="nav-link {{ isActive('admin.report.*') }}">

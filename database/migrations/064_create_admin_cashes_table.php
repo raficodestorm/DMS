@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admin_cashes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('admin_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->decimal('cash', 10, 2)->default(0);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('admin_cashes')) {
+            Schema::create('admin_cashes', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('admin_id')->nullable()->constrained('users')->nullOnDelete();
+                $table->decimal('cash', 10, 2)->default(0);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -40,9 +40,9 @@
         <div class="row mb-5">
             <div class="col-md-6">
                 <h5 class="fw-bold mb-3">Customer Details</h5>
-                <p class="mb-1"><strong>{{ $return->customer->shop_name }}</strong></p>
-                <p class="mb-1">{{ $return->customer->address }}</p>
-                <p class="mb-1">Phone: {{ $return->customer->phone }}</p>
+                <p class="mb-1"><strong>{{ $return->customer->shop_name ?? 'Retail Customer' }}</strong></p>
+                <p class="mb-1">{{ $return->customer->address ?? 'N/A' }}</p>
+                <p class="mb-1">Phone: {{ $return->customer->phone ?? 'N/A' }}</p>
             </div>
             <div class="col-md-6 text-md-end">
                 <h5 class="fw-bold mb-3">Return Reason</h5>

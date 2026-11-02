@@ -173,9 +173,14 @@
 
                     {{-- Action Buttons --}}
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
-                        <a href="{{ route('manager.cash.index') }}" class="btn btn-light rounded-pill px-4">
-                            Cancel
-                        </a>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('manager.cash.index') }}" class="btn btn-light rounded-pill px-4">
+                                Cancel
+                            </a>
+                            <a href="{{ route('manager.cash.closing.history') }}" class="btn btn-outline-secondary rounded-pill px-3 py-2 small fw-semibold" title="View Branch Closing History">
+                                <i class="fa-solid fa-clock-rotate-left me-1"></i> Closing History
+                            </a>
+                        </div>
                         <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold" id="btnSubmitClosing">
                             <i class="fa-solid fa-lock me-2"></i> Submit & Seal Today's Closing
                         </button>
@@ -185,6 +190,13 @@
 
             </div>
         </div>
+    </div>
+
+    {{-- Bottom Small Link Button --}}
+    <div class="text-center mt-3">
+        <a href="{{ route('manager.cash.closing.history') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.82rem; font-weight: 600;">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Closing History
+        </a>
     </div>
 
 </div>

@@ -31,7 +31,77 @@ class CashController extends Controller
                 ->first()
             : null;
 
-        return view('pages.manager.cash.index', compact('branch', 'todayClosing'));
+        $totalClosingsCount = $branch
+            ? DailyCashClosing::where('branch_id', $branch->id)->count()
+            : 0;
+
+        return view('pages.manager.cash.index', compact('branch', 'todayClosing', 'totalClosingsCount'));
+    }
+
+    /**
+     * Display the Closing History index page for the branch manager.
+     */
+    public function closingHistory()
+    {
+        $user   = Auth::user();
+        $branch = $user->branch ?? ($user->branch_id ? Branch::find($user->branch_id) : null);
+
+        $totalClosingsCount = $branch
+            ? DailyCashClosing::where('branch_id', $branch->id)->count()
+            : 0;
+
+        return view('pages.manager.cash.closing-history', compact('branch', 'totalClosingsCount'));
+    }
+
+    /**
+     * Fetch Daily Cash Closing history data via AJAX for dynamic filtering & pagination.
+     */
+    public function fetchData(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->branch_id) {
+            return response()->json([
+                'table'      => '<tr><td colspan="11" class="text-center text-muted">No branch assigned to your account.</td></tr>',
+                'mobile'     => '<p class="text-center text-muted">No branch assigned to your account.</p>',
+                'total'      => 0,
+                'pagination' => '',
+            ]);
+        }
+
+        $query = DailyCashClosing::with('closedBy')
+            ->where('branch_id', $user->branch_id);
+
+        // Filter by Date Range
+        if ($request->filled('from_date')) {
+            $query->whereDate('closing_date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('closing_date', '<=', $request->to_date);
+        }
+
+        // Filter by Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search in notes
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where('notes', 'like', "%{$search}%");
+        }
+
+        $closings = $query->orderBy('closing_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return response()->json([
+            'table'      => view('pages.manager.cash.table', compact('closings'))->render(),
+            'mobile'     => view('pages.manager.cash.mtable', compact('closings'))->render(),
+            'total'      => $closings->total(),
+            'pagination' => (string) $closings->links(),
+        ]);
     }
 
     /**
@@ -217,10 +287,13 @@ class CashController extends Controller
 
         $totalCashOut = $todayBranchCosts + $todayCashTransfers;
 
-        // 5. Store daily cash closing
+        // 5. Store daily cash closing & update branch cash atomically
         DB::transaction(function () use ($branch, $today, $openingCash, $totalCashIn, $totalCashOut, $expectedCash, $actualCash, $variance, $user, $request) {
+            // Lock the branch row to prevent race conditions
+            $freshBranch = Branch::lockForUpdate()->findOrFail($branch->id);
+
             DailyCashClosing::create([
-                'branch_id'     => $branch->id,
+                'branch_id'     => $freshBranch->id,
                 'closing_date'  => $today,
                 'opening_cash'  => $openingCash,
                 'cash_in'       => $totalCashIn,
@@ -233,6 +306,9 @@ class CashController extends Controller
                 'status'        => 'closed',
                 'notes'         => $request->input('notes'),
             ]);
+
+            // Update branch cash to the sealed actual cash amount
+            $freshBranch->update(['cash' => $actualCash]);
         });
 
         return redirect()->route('manager.cash.index')

@@ -18,6 +18,10 @@
         </div>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
+            
+            <a href="{{ route('admin.cash.closing-history') }}" class="btn btn-sm btn-outline-primary" style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; height: 34px; display: inline-flex; align-items: center; gap: 6px; padding: 0 14px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Daily Cash Closing History
+            </a>
             <span class="live-sync-badge">
                 <span class="pulse-dot"></span> Live Balance
             </span>
@@ -272,62 +276,6 @@
             </div>
         @endif
     </div>
-
-    {{-- 4. RECENT CASH TRANSFERS (Optional Audit Trail Section) --}}
-    @if($recentTransfers->isNotEmpty())
-        <div class="transfers-section-wrapper mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h5 class="mb-0 fw-bold section-title">
-                        <i class="fa-solid fa-clock-rotate-left text-primary-custom me-2"></i>Recent Cash Transfer Activity
-                    </h5>
-                    <p class="text-muted mb-0 x-small">Latest branch-to-admin cash movements</p>
-                </div>
-            </div>
-
-            <div class="table-responsive bg-card-container border rounded">
-                <table class="table custom-cash-table mb-0 align-middle">
-                    <thead>
-                        <tr>
-                            <th>Branch</th>
-                            <th>Amount</th>
-                            <th>Before Transfer</th>
-                            <th>After Transfer</th>
-                            <th>Status</th>
-                            <th>Requested By</th>
-                            <th>Date & Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentTransfers as $transfer)
-                            <tr>
-                                <td class="fw-semibold text-main-theme">
-                                    <i class="fa-solid fa-store text-muted me-1 small"></i>
-                                    {{ $transfer->branch->name ?? 'N/A' }}
-                                </td>
-                                <td class="fw-bold text-primary-custom">
-                                    ৳ {{ number_format($transfer->amount, 2) }}
-                                </td>
-                                <td class="text-muted small">৳ {{ number_format($transfer->cash_before_transfer, 2) }}</td>
-                                <td class="text-muted small">৳ {{ number_format($transfer->cash_after_transfer, 2) }}</td>
-                                <td>
-                                    @if($transfer->status === 'approved')
-                                        <span class="badge bg-success-subtle text-success fw-bold px-2 py-1">Approved</span>
-                                    @elseif($transfer->status === 'pending')
-                                        <span class="badge bg-warning-subtle text-warning fw-bold px-2 py-1">Pending</span>
-                                    @else
-                                        <span class="badge bg-danger-subtle text-danger fw-bold px-2 py-1">Rejected</span>
-                                    @endif
-                                </td>
-                                <td class="small text-muted">{{ $transfer->user->name ?? 'System' }}</td>
-                                <td class="x-small text-muted">{{ $transfer->created_at ? $transfer->created_at->format('d M Y, h:i A') : '-' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
 
 </div>
 

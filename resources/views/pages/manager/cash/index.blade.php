@@ -24,6 +24,9 @@
                 <span class="badge-date">
                     <i class="fa-regular fa-calendar me-1 text-muted"></i> {{ now()->format('d M, Y') }}
                 </span>
+                <a href="{{ route('manager.cash.closing.history') }}" class="btn btn-sm btn-outline-primary" style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; height: 34px; display: inline-flex; align-items: center; gap: 5px; padding: 0 12px;" title="View Closing History">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Closing History
+                </a>
                 <button type="button" onclick="window.location.reload();" class="btn-icon-reload" title="Refresh">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>

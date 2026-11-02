@@ -18,6 +18,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\CompanyCostController;
 use App\Http\Controllers\Admin\CashController;
+use App\Http\Controllers\Admin\CashTransferController;
 use App\Http\Controllers\Admin\CostDashboardController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockRequestController;
@@ -30,6 +31,15 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
   // Cash Dashboard
   Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
+  Route::get('/cash/closing-history', [CashController::class, 'closingHistory'])->name('cash.closing-history');
+  Route::get('/cash/closing-history/data', [CashController::class, 'fetchClosingHistoryData'])->name('cash.closing-history.data');
+
+  // Cash Transfers Management (Branch -> Admin)
+  Route::get('/cash-transfers', [CashTransferController::class, 'index'])->name('cash-transfers.index');
+  Route::get('/cash-transfers/data', [CashTransferController::class, 'fetchData'])->name('cash-transfers.data');
+  Route::get('/cash-transfers/{id}', [CashTransferController::class, 'show'])->name('cash-transfers.show');
+  Route::post('/cash-transfers/{id}/approve', [CashTransferController::class, 'approve'])->name('cash-transfers.approve');
+  Route::post('/cash-transfers/{id}/reject', [CashTransferController::class, 'reject'])->name('cash-transfers.reject');
 
   Route::get('/users/index', [UserManagementController::class, 'users'])->name('index.users');
   Route::get('/users/index/data', [UserManagementController::class, 'fetchUsersIndexData'])->name('users.index.data');

@@ -50,6 +50,13 @@
         </a>
       </li>
 
+      <!-- Cash Transfer -->
+      <li class="nav-item">
+        <a href="{{ route('manager.cash-transfers.index') }}" class="nav-link {{ isActive('manager.cash-transfers.*') }}">
+          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
+        </a>
+      </li>
+
       <!-- Users -->
       <li
         class="nav-item {{ request()->routeIs('manager.users.*', 'manager.index.srs', 'manager.index.customers') ? 'open' : '' }}">
