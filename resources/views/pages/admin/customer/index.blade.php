@@ -22,7 +22,7 @@
 
     {{-- Smart Filter Bar --}}
     <div class="smart-filter-wrapper">
-        <div class="smart-filter-grid-3">
+        <div class="smart-filter-grid-4">
 
             {{-- Search --}}
             <div>
@@ -44,6 +44,16 @@
                 </select>
             </div>
 
+            {{-- Customer Type Filter --}}
+            <div>
+                <label>Customer Type</label>
+                <select id="typeFilter" class="input-form">
+                    <option value="">-- All Types --</option>
+                    <option value="wholesale" {{ request('customer_type') == 'wholesale' ? 'selected' : '' }}>Wholesale</option>
+                    <option value="retail" {{ request('customer_type') == 'retail' ? 'selected' : '' }}>Retail</option>
+                </select>
+            </div>
+
             {{-- Reset Button --}}
             <div>
                 <button type="button" id="resetBtn" class="btn btn-outline-secondary" title="Reset Filters & Show All" style="height: 36px; width: 100%; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">
@@ -61,7 +71,7 @@
                     <th>S.No</th>
                     <th>Customer ID</th>
                     <th>Shop Name</th>
-                    <th>Manager</th>
+                    <th>Customer Type</th>
                     <th>Address</th>
                     <th>Area Branch</th>
                     <th>Action</th>
@@ -94,6 +104,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput       = document.getElementById('search');
     const branchFilter      = document.getElementById('branchFilter');
+    const typeFilter        = document.getElementById('typeFilter');
     const resetBtn          = document.getElementById('resetBtn');
 
     const customerTable     = document.getElementById('customerTable');
@@ -138,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearAllFilterInputs() {
         if (searchInput)  searchInput.value  = '';
         if (branchFilter) branchFilter.value = '';
+        if (typeFilter)   typeFilter.value   = '';
     }
 
     function fetchFilteredCustomers(fetchUrl = null) {
@@ -147,8 +159,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!url) {
             const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
             const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
+            const type   = encodeURIComponent(typeFilter ? typeFilter.value : '');
 
-            url = `{{ route('admin.customers.index.data') }}?search=${search}&branch_id=${branch}`;
+            url = `{{ route('admin.customers.index.data') }}?search=${search}&branch_id=${branch}&customer_type=${type}`;
         }
 
         fetch(url, {
@@ -189,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (branchFilter) branchFilter.addEventListener('change', () => fetchFilteredCustomers());
+    if (typeFilter)   typeFilter.addEventListener('change', () => fetchFilteredCustomers());
 
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {

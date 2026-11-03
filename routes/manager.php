@@ -14,6 +14,7 @@ use App\Models\StockInRequest;
 use App\Http\Controllers\Manager\CashController;
 use App\Http\Controllers\Manager\BranchCostController;
 use App\Http\Controllers\Manager\CashTransferController;
+use App\Http\Controllers\Manager\CustomerRankingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -41,6 +42,11 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/manage-srs', [UserManagementController::class, 'sr'])->name('index.srs');
   Route::get('/manage-customers', [UserManagementController::class, 'customer'])->name('index.customers');
   Route::get('/manage-customers/data', [UserManagementController::class, 'fetchCustomersData'])->name('index.customers.data');
+
+  // Wholesale Customer Ranking
+  Route::get('/customers/ranking', [CustomerRankingController::class, 'ranking'])->name('customers.ranking');
+  Route::get('/customers/ranking/data', [CustomerRankingController::class, 'fetchRankingData'])->name('customers.ranking.data');
+  Route::get('/customers/{customer}/ranking-position', [CustomerRankingController::class, 'getRankingPositionDetails'])->name('customers.ranking.position');
 
   Route::get('/employees/index/data', [EmployeeController::class, 'fetchEmployeesIndexData'])->name('employees.index.data');
   Route::resource('employees', EmployeeController::class);

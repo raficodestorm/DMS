@@ -87,6 +87,8 @@
         </ul>
       </li>
 
+      
+
 
       <!-- Orders -->
       <li class="nav-item {{ request()->routeIs('sr.order.*') ? 'open' : '' }}">
@@ -176,6 +178,15 @@
             </a>
           </li>
         </ul>
+      </li>
+
+
+      <!-- Customer Ranking -->
+      <li class="nav-item">
+        <a href="{{ route('sr.customers.ranking') }}" class="nav-link {{ isActive('sr.customers.ranking*') }}">
+          <i class="fas fa-trophy text-warning"></i>
+          <span>Customer Ranking</span>
+        </a>
       </li>
 
     </ul>

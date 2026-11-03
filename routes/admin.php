@@ -57,7 +57,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   
   Route::get('/employees/index/data', [EmployeeController::class, 'fetchEmployeesIndexData'])->name('employees.index.data');
   
+  Route::get('/customers/ranking', [CustomerController::class, 'ranking'])->name('customers.ranking');
+  Route::get('/customers/ranking/data', [CustomerController::class, 'fetchRankingData'])->name('customers.ranking.data');
+  Route::get('/customers/{customer}/ranking-position', [CustomerController::class, 'getRankingPositionDetails'])->name('customers.ranking.position');
   Route::get('/customers/index/data', [CustomerController::class, 'fetchCustomersIndexData'])->name('customers.index.data');
+  Route::post('/customers/{customer}/change-type', [CustomerController::class, 'changeType'])->name('customers.change-type');
   
   Route::get('/categories/index/data', [CategoryController::class, 'fetchCategoriesIndexData'])->name('categories.index.data');
   Route::post('/categories/{category}/toggle-featured', [CategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');

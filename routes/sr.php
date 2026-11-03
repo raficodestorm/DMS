@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Sr\CustomerRankingController;
 use App\Http\Controllers\Sr\OrderSrController;
 use App\Http\Controllers\Sr\UserManagementController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('sr')->name('sr.')->middleware(['auth', 'role:sr'])->group(function () {
   Route::get('/customers', [UserManagementController::class, 'customer'])->name('index.customers');
   Route::get('/customers/data', [UserManagementController::class, 'fetchCustomersData'])->name('index.customers.data');
+
+  // Customer Ranking
+  Route::get('/customers/ranking', [CustomerRankingController::class, 'ranking'])->name('customers.ranking');
+  Route::get('/customers/ranking/data', [CustomerRankingController::class, 'fetchRankingData'])->name('customers.ranking.data');
+  Route::get('/customers/{customer}/ranking-position', [CustomerRankingController::class, 'getRankingPositionDetails'])->name('customers.ranking.position');
   Route::get('users/create', [UserManagementController::class, 'create'])->name('users.create');
   Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
   Route::get('users/show/{user}', [UserManagementController::class, 'show'])->name('users.show');

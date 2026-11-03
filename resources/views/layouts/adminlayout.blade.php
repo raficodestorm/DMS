@@ -138,10 +138,28 @@
         </ul>
       </li>
 
-      <li class="nav-item">
-        <a href="{{ route('admin.customers.index') }}" class="nav-link {{ isActive('admin.customers.*') }}">
-          <i class="fas fa-handshake"></i> Manage Customers
-        </a>
+      
+
+      <!-- Employees -->
+      <li class="nav-item {{ request()->routeIs('admin.customers.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.customers.*') }}">
+          <i class="fas fa-handshake"></i>
+          <span>Customer</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.customers.*') }}">
+          <li>
+            <a href="{{ route('admin.customers.index') }}" class="sub-link {{ isActive('admin.customers.index') }}">
+              <i class="fas fa-users-cog me-1"></i> Customer list
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.customers.ranking') }}" class="sub-link {{ isActive('admin.customers.ranking') }}">
+              <i class="fas fa-trophy me-1"></i> Customer Ranking
+            </a>
+          </li>
+        </ul>
       </li>
 
 

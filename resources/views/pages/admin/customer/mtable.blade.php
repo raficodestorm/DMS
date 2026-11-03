@@ -11,8 +11,14 @@
     <div><span>Shop Name</span>
       <p>{{ $customer->shop_name }}</p>
     </div>
-    <div><span>Manager</span>
-      <p>{{ $customer->manager }}</p>
+    <div><span>Customer Type</span>
+      <p>
+        @if($customer->customer_type === 'retail')
+          <span class="purple-type-badge">Retail</span>
+        @else
+          <span class="emerald-type-badge">Wholesale</span>
+        @endif
+      </p>
     </div>
     <div><span>Address</span>
       <p>{{ $customer->address }}</p>

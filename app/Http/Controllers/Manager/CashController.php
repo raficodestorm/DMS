@@ -307,6 +307,20 @@ class CashController extends Controller
                 'notes'         => $request->input('notes'),
             ]);
 
+            // If there is a cash shortage (actual < expected), auto record as a branch cost (lost / miscellaneous)
+            if ($variance < -0.001) {
+                $shortageAmount = round(abs($variance), 2);
+                BranchCost::create([
+                    'branch_id'   => $freshBranch->id,
+                    'amount'      => $shortageAmount,
+                    'cost_date'   => $today,
+                    'category'    => 'miscellaneous',
+                    'description' => 'ক্যাশ ক্লোজিং ঘাটতি (Cash Shortage / Loss)',
+                    'notes'       => 'Daily cash closing shortage of ৳ ' . number_format($shortageAmount, 2) . '.' . ($request->filled('notes') ? ' Manager Note: ' . $request->input('notes') : ''),
+                    'created_by'  => $user->id,
+                ]);
+            }
+
             // Update branch cash to the sealed actual cash amount
             $freshBranch->update(['cash' => $actualCash]);
         });

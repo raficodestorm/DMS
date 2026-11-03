@@ -91,14 +91,14 @@
 
 
       <!-- Customers -->
-      <li class="nav-item {{ request()->routeIs('customers.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('customers.*') }}">
+      <li class="nav-item {{ request()->routeIs('customers.*', 'manager.customers.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive(['customers.*', 'manager.customers.*']) }}">
           <i class="fas fa-handshake"></i>
           <span>Customer</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('customers.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['customers.*', 'manager.customers.*']) }}">
           <li>
             <a href="{{ route('customers.create') }}" class="sub-link {{ isActive('customers.create') }}">
               <i class="fas fa-user-plus me-1"></i> Add Customer
@@ -108,6 +108,12 @@
           <li>
             <a href="{{ route('customers.index') }}" class="sub-link {{ isActive('customers.index') }}">
               <i class="fas fa-users-cog me-1"></i> All Customers
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.customers.ranking') }}" class="sub-link {{ isActive('manager.customers.ranking') }}">
+              <i class="fas fa-trophy me-1 text-warning"></i> Customer Ranking
             </a>
           </li>
         </ul>

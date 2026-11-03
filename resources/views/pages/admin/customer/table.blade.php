@@ -1,10 +1,15 @@
 @forelse($customers as $customer)
 <tr>
-  {{-- <td>{{ $user->id }}</td> --}}
   <td scope="row">{{ $customers->firstItem() ? $customers->firstItem() + $loop->index : $loop->iteration }}</td>
   <td>BRC200{{ $customer->id }}</td>
   <td class="name">{{ $customer->shop_name }}</td>
-  <td>{{ $customer->manager }}</td>
+  <td>
+    @if($customer->customer_type === 'retail')
+      <span class="purple-type-badge">Retail</span>
+    @else
+      <span class="emerald-type-badge">Wholesale</span>
+    @endif
+  </td>
   <td>{{ $customer->address }}</td>
   <td>{{ $customer->branch->name ?? 'N/A' }}</td>
 
