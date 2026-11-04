@@ -143,6 +143,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
   // Report Module
   Route::get('/report', [ReportController::class, 'index'])->name('report.index');
+  Route::get('/report/sales', [ReportController::class, 'sales'])->name('report.sales');
 
 
 
