@@ -144,6 +144,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   // Report Module
   Route::get('/report', [ReportController::class, 'index'])->name('report.index');
   Route::get('/report/sales', [ReportController::class, 'sales'])->name('report.sales');
+  Route::get('/report/stock-in', [ReportController::class, 'stockIn'])->name('report.stock-in');
+  Route::get('/report/inventory', [ReportController::class, 'inventory'])->name('report.inventory');
+  Route::get('/report/financial', [ReportController::class, 'financial'])->name('report.financial');
+  Route::get('/report/branch-performance', [ReportController::class, 'branchPerformance'])->name('report.branch-performance');
+  Route::get('/report/sr-performance', [ReportController::class, 'srPerformance'])->name('report.sr-performance');
+  Route::get('/report/sr-performance/{srId}', [ReportController::class, 'srPerformanceDetail'])->name('report.sr-performance.detail');
+  Route::get('/report/dso-performance', [ReportController::class, 'dsoPerformance'])->name('report.dso-performance');
+  Route::get('/report/dso-performance/{dsoId}', [ReportController::class, 'dsoPerformanceDetail'])->name('report.dso-performance.detail');
 
 
 

@@ -95,8 +95,8 @@
 
   .kpi-info small {
     display: block;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 500;
     text-transform: uppercase;
     color: var(--text-muted);
     letter-spacing: 0.3px;
@@ -104,8 +104,8 @@
 
   .kpi-info h4 {
     margin: 2px 0 0;
-    font-size: 20px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--text-main);
   }
 
@@ -292,7 +292,7 @@
     color: #0f172a;
     border-bottom: 1.5px solid #0f172a;
     padding-bottom: 3px;
-    margin: 16px 0 7px;
+    margin: 25px 0 7px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -417,19 +417,41 @@
       padding: 0;
     }
 
-    /* Hide screen UI */
+    /* Hide ALL screen UI chrome — sidebar, navbar, overlays, filters */
+    aside,
     .sidebar,
+    .custom-navbar,
     .navbar,
     .top-header,
     .sidebar-overlay,
+    .sidebar-overlay *,
+    header,
+    #overlay,
     .report-page-header,
     .filter-panel,
     .kpi-grid,
     .btn-smart,
     .theme-toggle,
-    footer,
-    #overlay {
+    .notification-wrapper,
+    .profile-wrapper,
+    footer {
       display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Expand main content to full page width with no left offset */
+    body,
+    html {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .main-content {
+      margin-left: 0 !important;
+      padding-left: 0 !important;
+      padding-top: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .report-document-wrapper {
@@ -468,6 +490,10 @@
   }
 
   /* Responsive tweaks */
+  .doc-table-responsive {
+    width: 100%;
+  }
+
   @media (max-width: 768px) {
     .doc-summary-grid {
       flex-wrap: wrap;
@@ -476,7 +502,72 @@
       flex: 1 1 calc(50% - 6px) !important;
     }
     .report-sheet {
-      padding: 20px 15px;
+      padding: 20px 12px;
+    }
+
+    /* Section 1 & Section 2 Compact Mobile Table Styling */
+    .doc-table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 12px;
+    }
+
+    .doc-table-compact {
+      font-size: 9px !important;
+      line-height: 1.25 !important;
+      margin-bottom: 8px !important;
+    }
+
+    .doc-table-compact th {
+      font-size: 8px !important;
+      padding: 5px 4px !important;
+      letter-spacing: 0 !important;
+      width: auto !important;
+      white-space: normal !important;
+    }
+
+    .doc-table-compact td {
+      font-size: 9px !important;
+      padding: 5px 4px !important;
+      line-height: 1.2 !important;
+    }
+
+    .doc-table-compact tfoot td {
+      font-size: 9px !important;
+      padding: 5px 4px !important;
+    }
+
+    .doc-table-compact .text-end {
+      white-space: nowrap !important;
+    }
+
+    .doc-table-compact .branch-sub-address {
+      display: block;
+      font-size: 7.5px !important;
+      line-height: 1.1;
+      margin-left: 0 !important;
+      margin-top: 2px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .report-sheet {
+      padding: 16px 8px;
+    }
+    .doc-table-compact {
+      font-size: 8px !important;
+    }
+    .doc-table-compact th {
+      font-size: 7px !important;
+      padding: 3px 2px !important;
+    }
+    .doc-table-compact td {
+      font-size: 8px !important;
+      padding: 3px 2px !important;
+    }
+    .doc-table-compact tfoot td {
+      font-size: 8px !important;
+      padding: 4px 2px !important;
     }
   }
 </style>
@@ -495,13 +586,13 @@
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <a href="{{ route('admin.report.index') }}" class="btn-smart btn-gray">
-        <i class="fas fa-arrow-left me-1"></i> Reports Overview
+        <i class="fas fa-arrow-left me-1"></i> Back
       </a>
       <button type="button" class="btn-smart btn-blue" onclick="window.print()">
         <i class="fas fa-print me-1"></i> Print Report
       </button>
-      <button type="button" class="btn-smart btn-success" id="btnDownloadPdf" onclick="downloadA4PDF()">
-        <i class="fas fa-file-pdf me-1"></i> Download A4 PDF
+      <button type="button" class="btn-smart btn-green" id="btnDownloadPdf" onclick="downloadA4PDF()">
+        <i class="fas fa-file-pdf me-1"></i> Download PDF
       </button>
     </div>
   </div>
@@ -747,57 +838,59 @@
           <div class="doc-section-title">
             <span>1. Sales Channel Performance &amp; Revenue Breakdown</span>
           </div>
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th>Sales Channel</th>
-                <th class="text-center" style="width: 80px;">Orders</th>
-                <th class="text-end" style="width: 125px;">Net Sales</th>
-                <th class="text-end" style="width: 125px;">Collections (Paid)</th>
-                <th class="text-end" style="width: 125px;">Receivables (Due)</th>
-                <th class="text-end" style="width: 70px;">% Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              @php
-                $channels = [
-                  'field_order' => 'Wholesale / Dealership Orders',
-                  'retail'      => 'Retail POS Direct Sales',
-                  'online'      => 'Online / E-Commerce Platform'
-                ];
-              @endphp
-              @foreach($channels as $cKey => $cLabel)
-                @php
-                  $cRow    = $channelBreakdown[$cKey] ?? null;
-                  $cOrders = $cRow->order_count ?? 0;
-                  $cSales  = (float) ($cRow->total_sales ?? 0);
-                  $cPaid   = (float) ($cRow->total_paid ?? 0);
-                  $cDue    = (float) ($cRow->due ?? 0);
-                  $cShare  = $cRow->share_percent ?? 0;
-                @endphp
+          <div class="doc-table-responsive">
+            <table class="doc-table doc-table-compact">
+              <thead>
                 <tr>
-                  <td><strong>{{ $cLabel }}</strong></td>
-                  <td class="text-center">{{ number_format($cOrders) }}</td>
-                  <td class="text-end fw-bold">৳ {{ number_format($cSales, 2) }}</td>
-                  <td class="text-end" style="color: #15803d;">৳ {{ number_format($cPaid, 2) }}</td>
-                  <td class="text-end" style="{{ $cDue > 0 ? 'color: #b91c1c; font-weight: 700;' : 'color: #64748b;' }}">
-                    ৳ {{ number_format($cDue, 2) }}
-                  </td>
-                  <td class="text-end">{{ $cShare }}%</td>
+                  <th>Sales Channel</th>
+                  <th class="text-center" style="width: 80px;">Orders</th>
+                  <th class="text-end" style="width: 125px;">Net Sales</th>
+                  <th class="text-end" style="width: 125px;">Collections (Paid)</th>
+                  <th class="text-end" style="width: 125px;">Receivables (Due)</th>
+                  <th class="text-end" style="width: 70px;">% Share</th>
                 </tr>
-              @endforeach
-            </tbody>
-            <tfoot>
-              <tr>
-                <td>CONSOLIDATED CHANNELS TOTAL:</td>
-                <td class="text-center">{{ number_format($totalOrdersCount) }}</td>
-                <td class="text-end">৳ {{ number_format($totalNetSales, 2) }}</td>
-                <td class="text-end" style="color: #15803d;">৳ {{ number_format($totalPaidSum, 2) }}</td>
-                <td class="text-end" style="color: #b91c1c;">৳ {{ number_format($totalDueSum, 2) }}</td>
-                <td class="text-end">100.0%</td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                @php
+                  $channels = [
+                    'field_order' => 'Wholesale / Dealership Orders',
+                    'retail'      => 'Retail POS Direct Sales',
+                    'online'      => 'Online / E-Commerce Platform'
+                  ];
+                @endphp
+                @foreach($channels as $cKey => $cLabel)
+                  @php
+                    $cRow    = $channelBreakdown[$cKey] ?? null;
+                    $cOrders = $cRow->order_count ?? 0;
+                    $cSales  = (float) ($cRow->total_sales ?? 0);
+                    $cPaid   = (float) ($cRow->total_paid ?? 0);
+                    $cDue    = (float) ($cRow->due ?? 0);
+                    $cShare  = $cRow->share_percent ?? 0;
+                  @endphp
+                  <tr>
+                    <td><strong>{{ $cLabel }}</strong></td>
+                    <td class="text-center">{{ number_format($cOrders) }}</td>
+                    <td class="text-end fw-bold">৳ {{ number_format($cSales, 2) }}</td>
+                    <td class="text-end" style="color: #15803d;">৳ {{ number_format($cPaid, 2) }}</td>
+                    <td class="text-end" style="{{ $cDue > 0 ? 'color: #b91c1c; font-weight: 700;' : 'color: #64748b;' }}">
+                      ৳ {{ number_format($cDue, 2) }}
+                    </td>
+                    <td class="text-end">{{ $cShare }}%</td>
+                  </tr>
+                @endforeach
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>CONSOLIDATED CHANNELS TOTAL:</td>
+                  <td class="text-center">{{ number_format($totalOrdersCount) }}</td>
+                  <td class="text-end">৳ {{ number_format($totalNetSales, 2) }}</td>
+                  <td class="text-end" style="color: #15803d;">৳ {{ number_format($totalPaidSum, 2) }}</td>
+                  <td class="text-end" style="color: #b91c1c;">৳ {{ number_format($totalDueSum, 2) }}</td>
+                  <td class="text-end">100.0%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
 
         {{-- Section 2: Multi-Branch Performance --}}
@@ -805,53 +898,55 @@
           <div class="doc-section-title">
             <span>2. Branch-Wise Sales &amp; Receivables Contribution</span>
           </div>
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th style="width: 25px;" class="text-center">#</th>
-                <th>Branch Name</th>
-                <th class="text-center" style="width: 70px;">Orders</th>
-                <th class="text-end" style="width: 120px;">Net Sales</th>
-                <th class="text-end" style="width: 120px;">Collected</th>
-                <th class="text-end" style="width: 120px;">Current Due</th>
-                <th class="text-end" style="width: 85px;">Sales Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              @forelse($branchBreakdown as $bIdx => $bRow)
+          <div class="doc-table-responsive">
+            <table class="doc-table doc-table-compact">
+              <thead>
                 <tr>
-                  <td class="text-center">{{ $bIdx + 1 }}</td>
-                  <td>
-                    <strong>{{ $bRow->branch->name ?? 'Head Office / Unassigned' }}</strong>
-                    @if($bRow->branch?->address)
-                      <span style="font-size: 9px; color: #64748b; margin-left: 4px;">({{ $bRow->branch->address }})</span>
-                    @endif
-                  </td>
-                  <td class="text-center">{{ number_format($bRow->order_count) }}</td>
-                  <td class="text-end fw-bold">৳ {{ number_format($bRow->branch_sales, 2) }}</td>
-                  <td class="text-end" style="color: #15803d;">৳ {{ number_format($bRow->branch_paid, 2) }}</td>
-                  <td class="text-end" style="{{ $bRow->branch_due > 0 ? 'color: #b91c1c; font-weight: 700;' : 'color: #64748b;' }}">
-                    ৳ {{ number_format($bRow->branch_due, 2) }}
-                  </td>
-                  <td class="text-end">{{ $bRow->share_percent }}%</td>
+                  <th style="width: 25px;" class="text-center">#</th>
+                  <th>Branch Name</th>
+                  <th class="text-center" style="width: 70px;">Orders</th>
+                  <th class="text-end" style="width: 120px;">Net Sales</th>
+                  <th class="text-end" style="width: 120px;">Collected</th>
+                  <th class="text-end" style="width: 120px;">Current Due</th>
+                  <th class="text-end" style="width: 85px;">Sales Share</th>
                 </tr>
-              @empty
+              </thead>
+              <tbody>
+                @forelse($branchBreakdown as $bIdx => $bRow)
+                  <tr>
+                    <td class="text-center">{{ $bIdx + 1 }}</td>
+                    <td>
+                      <strong>{{ $bRow->branch->name ?? 'Head Office / Unassigned' }}</strong>
+                      @if($bRow->branch?->address)
+                        <span class="branch-sub-address" style="font-size: 9px; color: #64748b; margin-left: 4px;">({{ $bRow->branch->address }})</span>
+                      @endif
+                    </td>
+                    <td class="text-center">{{ number_format($bRow->order_count) }}</td>
+                    <td class="text-end fw-bold">৳ {{ number_format($bRow->branch_sales, 2) }}</td>
+                    <td class="text-end" style="color: #15803d;">৳ {{ number_format($bRow->branch_paid, 2) }}</td>
+                    <td class="text-end" style="{{ $bRow->branch_due > 0 ? 'color: #b91c1c; font-weight: 700;' : 'color: #64748b;' }}">
+                      ৳ {{ number_format($bRow->branch_due, 2) }}
+                    </td>
+                    <td class="text-end">{{ $bRow->share_percent }}%</td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-2">No branch sales recorded in this period.</td>
+                  </tr>
+                @endforelse
+              </tbody>
+              <tfoot>
                 <tr>
-                  <td colspan="7" class="text-center text-muted py-2">No branch sales recorded in this period.</td>
+                  <td colspan="2" class="text-end">ALL BRANCHES TOTAL:</td>
+                  <td class="text-center">{{ number_format($totalOrdersCount) }}</td>
+                  <td class="text-end">৳ {{ number_format($totalNetSales, 2) }}</td>
+                  <td class="text-end" style="color: #15803d;">৳ {{ number_format($totalPaidSum, 2) }}</td>
+                  <td class="text-end" style="color: #b91c1c;">৳ {{ number_format($totalDueSum, 2) }}</td>
+                  <td class="text-end">100.0%</td>
                 </tr>
-              @endforelse
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="2" class="text-end">ALL BRANCHES TOTAL:</td>
-                <td class="text-center">{{ number_format($totalOrdersCount) }}</td>
-                <td class="text-end">৳ {{ number_format($totalNetSales, 2) }}</td>
-                <td class="text-end" style="color: #15803d;">৳ {{ number_format($totalPaidSum, 2) }}</td>
-                <td class="text-end" style="color: #b91c1c;">৳ {{ number_format($totalDueSum, 2) }}</td>
-                <td class="text-end">100.0%</td>
-              </tr>
-            </tfoot>
-          </table>
+              </tfoot>
+            </table>
+          </div>
         </div>
 
         {{-- Section 3: Top Revenue Generating Products (Top 3) --}}

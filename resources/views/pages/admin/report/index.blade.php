@@ -112,20 +112,20 @@
       <i class="fas fa-chevron-right arrow-link"></i>
     </a>
 
-    <a href="#" class="setting-card">
+    <a href="{{ route('admin.report.stock-in') }}" class="setting-card">
       <div class="setting-icon">
         <div class="position-relative">
           <i class="fas fa-shopping-cart"></i>
         </div>
       </div>
       <div class="setting-content">
-        <h5>Purchase Report</h5>
+        <h5>Stock-In Report</h5>
         <p>Review procurement records, supplier invoice transactions, and purchase costs.</p>
       </div>
       <i class="fas fa-chevron-right arrow-link"></i>
     </a>
 
-    <a href="#" class="setting-card">
+    <a href="{{ route('admin.report.inventory') }}" class="setting-card">
       <div class="setting-icon">
         <i class="fas fa-boxes-stacked"></i>
       </div>
@@ -136,7 +136,7 @@
       <i class="fas fa-chevron-right arrow-link"></i>
     </a>
 
-    <a href="#" class="setting-card">
+    <a href="{{ route('admin.report.financial') }}" class="setting-card">
       <div class="setting-icon">
         <i class="fas fa-file-invoice-dollar"></i>
       </div>
@@ -147,24 +147,37 @@
       <i class="fas fa-chevron-right arrow-link"></i>
     </a>
 
-    <a href="#" class="setting-card">
-      <div class="setting-icon">
-        <i class="fas fa-chart-pie"></i>
-      </div>
-      <div class="setting-content">
-        <h5>Analytics Report</h5>
-        <p>Gain deeper business insights regarding slow-moving inventory, top customers, and supplier standings.</p>
-      </div>
-      <i class="fas fa-chevron-right arrow-link"></i>
-    </a>
+    
 
-    <a href="#" class="setting-card">
+    <a href="{{ route('admin.report.branch-performance') }}" class="setting-card">
       <div class="setting-icon">
         <i class="fas fa-chart-line"></i>
       </div>
       <div class="setting-content">
         <h5>Branch Performance</h5>
         <p>Compare branch performance metrics side-by-side: Sales, Profit, Expenses, and Stock values.</p>
+      </div>
+      <i class="fas fa-chevron-right arrow-link"></i>
+    </a>
+
+    <a href="{{ route('admin.report.sr-performance') }}" class="setting-card">
+      <div class="setting-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="setting-content">
+        <h5>SR Performance</h5>
+        <p>Rank field representatives by orders, revenue, collection rate, and customer activity.</p>
+      </div>
+      <i class="fas fa-chevron-right arrow-link"></i>
+    </a>
+
+    <a href="{{ route('admin.report.dso-performance') }}" class="setting-card">
+      <div class="setting-icon">
+        <i class="fas fa-truck-fast"></i>
+      </div>
+      <div class="setting-content">
+        <h5>DSO Performance</h5>
+        <p>Rank Delivery Sales Officers (DSO) by successful deliveries, delivery volume, and cash collection.</p>
       </div>
       <i class="fas fa-chevron-right arrow-link"></i>
     </a>

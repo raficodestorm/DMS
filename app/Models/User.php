@@ -56,6 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'sr';
     }
 
+    public function isDso(): bool
+    {
+        return $this->role === 'dso';
+    }
+
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
@@ -102,6 +107,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function customerOrders()
     {
         return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    // 🔹 DSO → Delivered Orders
+    public function deliveredOrders()
+    {
+        return $this->hasMany(Order::class, 'delivered_by');
     }
 
     public function transactions()

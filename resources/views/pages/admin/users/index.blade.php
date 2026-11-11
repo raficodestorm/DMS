@@ -35,6 +35,7 @@
           <option value="admin">Admin</option>
           <option value="manager">Manager</option>
           <option value="sr">SR</option>
+          <option value="dso">DSO</option>
           <option value="customer">Customer</option>
         </select>
       </div>
