@@ -252,6 +252,13 @@
         </a>
       </li>
 
+      <!-- Admin Cash Ledger -->
+      <li class="nav-item">
+        <a href="{{ route('admin.cash.ledger') }}" class="nav-link {{ isActive('admin.cash.ledger*') }}">
+          <i class="fas fa-book-bookmark"></i> Cash Ledger
+        </a>
+      </li>
+
       <!-- Product Return -->
       <li class="nav-item {{ request()->routeIs('admin.return.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.return.*') }}">

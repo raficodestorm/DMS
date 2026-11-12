@@ -33,6 +33,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
   Route::get('/cash', [CashController::class, 'index'])->name('cash.index');
   Route::get('/cash/closing-history', [CashController::class, 'closingHistory'])->name('cash.closing-history');
   Route::get('/cash/closing-history/data', [CashController::class, 'fetchClosingHistoryData'])->name('cash.closing-history.data');
+  Route::get('/cash/ledger', [CashController::class, 'ledgerIndex'])->name('cash.ledger');
+  Route::get('/cash/ledger/data', [CashController::class, 'fetchLedgerData'])->name('cash.ledger.data');
+  Route::post('/cash/cash-in', [CashController::class, 'cashIn'])->name('cash.cash-in');
+  Route::get('/cash/ledger/{id}', [CashController::class, 'ledgerShow'])->name('cash.ledger.show');
 
   // Cash Transfers Management (Branch -> Admin)
   Route::get('/cash-transfers', [CashTransferController::class, 'index'])->name('cash-transfers.index');

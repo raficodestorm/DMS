@@ -3,6 +3,8 @@
 @section('content')
 <div class="cash-dashboard-container">
 
+    @include('components.alert')
+
     {{-- Header Section --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
@@ -18,9 +20,14 @@
         </div>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            
-            <a href="{{ route('admin.cash.closing-history') }}" class="btn btn-sm btn-outline-primary" style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; height: 34px; display: inline-flex; align-items: center; gap: 6px; padding: 0 14px;">
-                <i class="fa-solid fa-clock-rotate-left"></i> Daily Cash Closing History
+            <a href="{{ route('admin.cash.ledger') }}" class="btn-smart btn-blue">
+                <i class="fa-solid fa-book-bookmark"></i> Ledger
+            </a>
+            <button type="button" class="btn-smart btn-green" data-bs-toggle="modal" data-bs-target="#cashInModal">
+                <i class="fa-solid fa-plus-circle"></i> Cash In
+            </button>
+            <a href="{{ route('admin.cash.closing-history') }}" class="btn-smart btn-blue">
+                <i class="fa-solid fa-clock-rotate-left"></i> Closing History
             </a>
             <span class="live-sync-badge">
                 <span class="pulse-dot"></span> Live Balance
@@ -758,6 +765,72 @@
         }
     }
 </style>
+
+{{-- Cash In Modal --}}
+<div class="modal fade" id="cashInModal" tabindex="-1" aria-labelledby="cashInModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 14px; border: 1px solid var(--border-color, #e2e8f0); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-bottom: 1px solid #bbf7d0; padding: 18px 24px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 42px; height: 42px; border-radius: 10px; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);">
+                        <i class="fa-solid fa-plus-circle"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-success" id="cashInModalLabel">Admin Cash In</h5>
+                        <small class="text-muted">Deposit / inject capital into Central Admin Cash</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.cash.cash-in') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    {{-- Balance Pill --}}
+                    <div class="d-flex align-items-center justify-content-between p-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <span class="text-muted small fw-semibold">Current Admin Cash:</span>
+                        <strong class="text-primary-custom" style="font-size: 1.1rem;">৳ {{ number_format($totalAdminCash, 2) }}</strong>
+                    </div>
+
+                    {{-- Amount Input --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Cash In Amount (৳) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0.01" name="amount" class="input-form" placeholder="0.00" required autofocus style="font-size: 1.1rem; font-weight: 700;">
+                    </div>
+
+                    {{-- Payment Method --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Payment / Deposit Method <span class="text-danger">*</span></label>
+                        <select name="payment_method" class="input-form" required>
+                            <option value="cash" selected>Cash</option>
+                            <option value="bank">Bank Transfer / Deposit</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="bkash">bKash / Mobile Banking</option>
+                        </select>
+                    </div>
+
+                    {{-- Note / Source --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Note / Source / Reference <small class="text-muted fw-normal">(Optional)</small></label>
+                        <input type="text" name="note" class="input-form" placeholder="e.g. Owner capital, Bank cash withdrawal, etc.">
+                    </div>
+
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px;">
+                        <small class="text-success d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>This amount will be added to Central Admin Cash and logged in the <strong>Admin Cash Ledger</strong> as <code>cash-in</code>.</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
+                    <button type="submit" class="btn btn-success" style="border-radius: 8px; font-weight: 700; padding: 8px 20px; background: #16a34a; border: none;">
+                        <i class="fa-solid fa-arrow-down-to-bracket me-1"></i> Confirm Cash In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {{-- Client-side Live Branch Search Script --}}
 <script>

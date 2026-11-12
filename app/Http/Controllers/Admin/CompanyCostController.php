@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminCash;
 use App\Models\CompanyCost;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CompanyCostController extends Controller
 {
@@ -63,11 +64,39 @@ class CompanyCostController extends Controller
     }
 
     /**
+     * Get or create the AdminCash record.
+     * Locks for update to prevent concurrent race conditions.
+     */
+    protected function getAdminCashRecord(): AdminCash
+    {
+        $adminId = Auth::id();
+
+        // 1. Try to find the record belonging to the authenticated admin
+        $adminCash = AdminCash::where('admin_id', $adminId)->lockForUpdate()->first();
+
+        // 2. Fallback: any existing admin cash record
+        if (!$adminCash) {
+            $adminCash = AdminCash::lockForUpdate()->first();
+        }
+
+        // 3. If no record exists at all, create one
+        if (!$adminCash) {
+            $adminCash = AdminCash::create([
+                'admin_id' => $adminId,
+                'cash'     => 0,
+            ]);
+        }
+
+        return $adminCash;
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('pages.admin.cost.create');
+        $totalAdminCash = (float) AdminCash::sum('cash');
+        return view('pages.admin.cost.create', compact('totalAdminCash'));
     }
 
     /**
@@ -83,17 +112,44 @@ class CompanyCostController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        CompanyCost::create([
-            'amount' => $request->amount,
-            'cost_date' => $request->cost_date,
-            'category' => $request->category,
-            'description' => $request->description,
-            'notes' => $request->notes,
-            'created_by' => Auth::id(),
-        ]);
+        $costAmount = round((float) $request->amount, 2);
+
+        DB::transaction(function () use ($request, $costAmount) {
+            // 1. Deduct cost amount from Admin Cash
+            $adminCash = $this->getAdminCashRecord();
+            $adminCashBefore = (float) $adminCash->cash;
+            $adminCash->decrement('cash', $costAmount);
+            $adminCashAfter = round($adminCashBefore - $costAmount, 2);
+
+            // 2. Create Company Cost
+            $cc = CompanyCost::create([
+                'amount' => $costAmount,
+                'cost_date' => $request->cost_date,
+                'category' => $request->category,
+                'description' => $request->description,
+                'notes' => $request->notes,
+                'created_by' => Auth::id(),
+            ]);
+
+            // 3. Log in Admin Cash Ledger
+            if (\Illuminate\Support\Facades\Schema::hasTable('admin_cash_ledgers')) {
+                \App\Models\AdminCashLedger::create([
+                    'admin_id'       => Auth::id(),
+                    'type'           => 'company_cost',
+                    'amount'         => $costAmount,
+                    'cash_before'    => $adminCashBefore,
+                    'cash_after'     => $adminCashAfter,
+                    'payment_method' => 'cash',
+                    'status'         => 'complete',
+                    'reference_type' => 'CompanyCost',
+                    'reference_id'   => $cc->id,
+                    'note'           => "Company Cost: {$request->description}",
+                ]);
+            }
+        });
 
         return redirect()->route('admin.company_costs.index')
-            ->with('success', 'Company cost recorded successfully.');
+            ->with('success', 'Company cost recorded successfully and deducted from Admin Cash.');
     }
 
     /**
@@ -111,7 +167,8 @@ class CompanyCostController extends Controller
     public function edit($id)
     {
         $cost = CompanyCost::findOrFail($id);
-        return view('pages.admin.cost.edit', compact('cost'));
+        $totalAdminCash = (float) AdminCash::sum('cash');
+        return view('pages.admin.cost.edit', compact('cost', 'totalAdminCash'));
     }
 
     /**
@@ -129,10 +186,35 @@ class CompanyCostController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $cost->update($request->all());
+        $newAmount = round((float) $request->amount, 2);
+        $oldAmount = round((float) $cost->amount, 2);
+        $diff = round($newAmount - $oldAmount, 2);
+
+        DB::transaction(function () use ($cost, $request, $newAmount, $diff) {
+            // 1. Adjust Admin Cash by difference (newAmount - oldAmount)
+            if ($diff != 0) {
+                $adminCash = $this->getAdminCashRecord();
+                if ($diff > 0) {
+                    // Cost increased: deduct additional amount from admin cash
+                    $adminCash->decrement('cash', $diff);
+                } else {
+                    // Cost decreased: refund difference back to admin cash
+                    $adminCash->increment('cash', abs($diff));
+                }
+            }
+
+            // 2. Update Company Cost record
+            $cost->update([
+                'amount' => $newAmount,
+                'cost_date' => $request->cost_date,
+                'category' => $request->category,
+                'description' => $request->description,
+                'notes' => $request->notes,
+            ]);
+        });
 
         return redirect()->route('admin.company_costs.index')
-            ->with('success', 'Company cost updated successfully.');
+            ->with('success', 'Company cost updated successfully and Admin Cash adjusted.');
     }
 
     /**
@@ -141,9 +223,20 @@ class CompanyCostController extends Controller
     public function destroy($id)
     {
         $cost = CompanyCost::findOrFail($id);
-        $cost->delete();
+
+        DB::transaction(function () use ($cost) {
+            // 1. Refund cost amount back to Admin Cash
+            $refundAmount = round((float) $cost->amount, 2);
+            if ($refundAmount > 0) {
+                $adminCash = $this->getAdminCashRecord();
+                $adminCash->increment('cash', $refundAmount);
+            }
+
+            // 2. Delete cost record
+            $cost->delete();
+        });
 
         return redirect()->route('admin.company_costs.index')
-            ->with('success', 'Company cost deleted successfully.');
+            ->with('success', 'Company cost deleted successfully and refunded to Admin Cash.');
     }
 }

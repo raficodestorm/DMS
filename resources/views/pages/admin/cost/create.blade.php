@@ -7,6 +7,25 @@
         <p class="text-muted">Fill in the details to record a new company-wide global expense.</p>
     </div>
 
+    {{-- Admin Cash Balance Strip --}}
+    <div style="background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%); border: 1px solid #c7d2fe; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary, #3131ff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(49,49,255,0.25);">
+                <i class="fa-solid fa-vault"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.76rem; text-transform: uppercase; color: #4338ca; font-weight: 700; letter-spacing: 0.5px;">Current Admin Cash Balance</div>
+                <div style="font-size: 1.2rem; font-weight: 800; color: #1e1b4b;">
+                    ৳ {{ number_format($totalAdminCash ?? 0, 2) }}
+                </div>
+            </div>
+        </div>
+        <div style="font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-circle-info text-primary"></i>
+            <span>This expense amount will be deducted directly from Admin Cash.</span>
+        </div>
+    </div>
+
     <form action="{{ route('admin.company_costs.store') }}" method="POST" class="row g-4">
         @csrf
 

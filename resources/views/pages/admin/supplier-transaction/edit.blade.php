@@ -123,8 +123,27 @@
       <h2>Edit Supplier Payment (BRST00{{ $transaction->id }})</h2>
     </div>
     <p class="form-head-sub">
-      Modify supplier payment details and automatically re-calculate ledger balance.
+      Modify supplier payment details, adjust Admin Cash, and automatically re-calculate ledger balance.
     </p>
+
+    {{-- Admin Cash Treasury Balance Strip --}}
+    <div style="background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%); border: 1px solid #c7d2fe; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary, #3131ff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 4px 10px rgba(49,49,255,0.25);">
+          <i class="fa-solid fa-vault"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.76rem; text-transform: uppercase; color: #4338ca; font-weight: 700; letter-spacing: 0.5px;">Current Admin Cash Balance</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #1e1b4b;" id="admin-current-cash-display">
+            ৳ {{ number_format($totalAdminCash ?? 0, 2) }}
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-circle-info text-primary"></i>
+        <span>Any payment difference will adjust Admin Cash automatically.</span>
+      </div>
+    </div>
 
     {{-- Alert Messages --}}
     @include('components.alert')
@@ -189,7 +208,7 @@
 
       {{-- ── Live Due Calculation Breakdown ── --}}
       <div class="due-preview-box mb-3" id="due-preview-box">
-        <div class="due-preview-grid">
+        <div class="due-preview-grid" style="grid-template-columns: repeat(4, 1fr);">
           <div class="dp-item">
             <label>Due Before Payment</label>
             <p class="dp-cur-due" id="dp-cur-due">৳ {{ number_format($transaction->due_before_transaction, 2) }}</p>
@@ -201,6 +220,10 @@
           <div class="dp-item">
             <label id="dp-rem-label">New Remaining Due</label>
             <p class="dp-rem-due ok" id="dp-rem-due">৳ {{ number_format($transaction->due_after_transaction, 2) }}</p>
+          </div>
+          <div class="dp-item">
+            <label>Admin Cash After</label>
+            <p id="dp-admin-cash" style="margin: 0; font-size: 1rem; font-weight: 800; color: #4338ca;">৳ {{ number_format($totalAdminCash ?? 0, 2) }}</p>
           </div>
         </div>
       </div>
@@ -236,7 +259,7 @@
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary, #3131ff); padding: 12px 16px; border-radius: 8px; margin-bottom: 22px;">
         <small style="color: #475569; display: flex; align-items: center; gap: 8px; font-size: 0.83rem;">
           <i class="fa-solid fa-circle-check text-primary" style="font-size: 1rem;"></i>
-          <span>Updating this record will recalculate the <strong>Supplier Ledger</strong> and adjust the payable balance.</span>
+          <span>Updating this record will recalculate the <strong>Supplier Ledger</strong> payable balance and <strong>adjust Admin Cash balance</strong> accordingly.</span>
         </small>
       </div>
 
@@ -266,10 +289,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var baseDue       = {{ (float) $transaction->due_before_transaction }};
+    var oldAmount     = {{ (float) $transaction->amount }};
+    var adminTotal    = {{ (float) ($totalAdminCash ?? 0) }};
     var amountInput   = document.getElementById('amount-input');
     var dpPayAmt      = document.getElementById('dp-pay-amt');
     var dpRemDue      = document.getElementById('dp-rem-due');
     var dpRemLabel    = document.getElementById('dp-rem-label');
+    var dpAdminCash   = document.getElementById('dp-admin-cash');
 
     function updatePreview() {
         var amount = parseFloat(amountInput.value) || 0;
@@ -285,6 +311,17 @@ document.addEventListener('DOMContentLoaded', function () {
             dpRemLabel.textContent = 'New Remaining Due';
             dpRemDue.className = 'dp-rem-due ok';
             dpRemDue.textContent = '৳ ' + remaining.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        if (dpAdminCash) {
+            var diff = amount - oldAmount;
+            var remAdmin = adminTotal - diff;
+            dpAdminCash.textContent = '৳ ' + remAdmin.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (remAdmin < 0) {
+                dpAdminCash.style.color = '#dc2626';
+            } else {
+                dpAdminCash.style.color = '#4338ca';
+            }
         }
     }
 

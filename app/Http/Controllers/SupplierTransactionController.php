@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminCash;
 use App\Models\Branch;
 use App\Models\Supplier;
 use App\Models\SupplierTransaction;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -175,11 +177,42 @@ class SupplierTransactionController extends Controller
     return view('pages.admin.supplier-transaction.show', compact('transaction', 'hasLaterTransaction'));
   }
 
+  /**
+   * Get or create the AdminCash record.
+   * Locks for update to prevent concurrent race conditions.
+   * NOTE: Cash is allowed to go negative (like overdraft) so that
+   * supplier payments can always be recorded; incoming cash later
+   * will automatically offset the negative balance.
+   */
+  protected function getAdminCashRecord(): AdminCash
+  {
+    $adminId = Auth::id();
+
+    // 1. Try to find the record belonging to the authenticated admin
+    $adminCash = AdminCash::where('admin_id', $adminId)->lockForUpdate()->first();
+
+    // 2. Fallback: any existing admin cash record
+    if (!$adminCash) {
+      $adminCash = AdminCash::lockForUpdate()->first();
+    }
+
+    // 3. If no record exists at all, create one (with 0 starting balance)
+    if (!$adminCash) {
+      $adminCash = AdminCash::create([
+        'admin_id' => $adminId,
+        'cash'     => 0,
+      ]);
+    }
+
+    return $adminCash;
+  }
+
   public function createForAdmin()
   {
     $suppliers = Supplier::orderBy('company_name', 'asc')->get();
     $branches  = Branch::orderBy('name', 'asc')->get();
-    return view('pages.admin.supplier-transaction.create', compact('suppliers', 'branches'));
+    $totalAdminCash = (float) AdminCash::sum('cash');
+    return view('pages.admin.supplier-transaction.create', compact('suppliers', 'branches', 'totalAdminCash'));
   }
 
   public function storeForAdmin(Request $request)
@@ -200,13 +233,19 @@ class SupplierTransactionController extends Controller
         $dueBeforeTransaction = round((float) ($supplier->due ?? 0), 2);
         $dueAfterTransaction  = round($dueBeforeTransaction - $paymentAmount, 2);
 
-        // Update supplier due
+        // 1. Update supplier due
         $supplier->update([
           'due' => $dueAfterTransaction,
         ]);
 
-        // Create Supplier Transaction record
-        SupplierTransaction::create([
+        // 2. Deduct payment amount from Admin Cash
+        $adminCash = $this->getAdminCashRecord();
+        $adminCashBefore = (float) $adminCash->cash;
+        $adminCash->decrement('cash', $paymentAmount);
+        $adminCashAfter = round($adminCashBefore - $paymentAmount, 2);
+
+        // 3. Create Supplier Transaction record
+        $st = SupplierTransaction::create([
           'supplier_id'            => $supplier->id,
           'stock_in_request_id'    => null,
           'stock_cut_id'           => null,
@@ -218,11 +257,27 @@ class SupplierTransactionController extends Controller
           'payment_method'         => $validated['payment_method'],
           'note'                   => $validated['note'] ?? 'Supplier Payment',
         ]);
+
+        // 4. Log in Admin Cash Ledger
+        if (\Illuminate\Support\Facades\Schema::hasTable('admin_cash_ledgers')) {
+          \App\Models\AdminCashLedger::create([
+            'admin_id'       => Auth::id(),
+            'type'           => 'supplier_payment',
+            'amount'         => $paymentAmount,
+            'cash_before'    => $adminCashBefore,
+            'cash_after'     => $adminCashAfter,
+            'payment_method' => $validated['payment_method'],
+            'status'         => 'complete',
+            'reference_type' => 'SupplierTransaction',
+            'reference_id'   => $st->id,
+            'note'           => "Supplier payment to " . ($supplier->company_name ?? 'Supplier'),
+          ]);
+        }
       });
 
       return redirect()
         ->route('admin.supplier-transactions.index')
-        ->with('success', 'Supplier payment of ৳' . number_format($validated['amount'], 2) . ' recorded successfully.');
+        ->with('success', 'Supplier payment of ৳' . number_format($validated['amount'], 2) . ' recorded successfully. Admin cash balance has been updated.');
     } catch (\Exception $e) {
       return back()->withInput()->with('error', 'Error recording supplier payment: ' . $e->getMessage());
     }
@@ -248,7 +303,8 @@ class SupplierTransactionController extends Controller
     }
 
     $branches = Branch::orderBy('name', 'asc')->get();
-    return view('pages.admin.supplier-transaction.edit', compact('transaction', 'branches'));
+    $totalAdminCash = (float) AdminCash::sum('cash');
+    return view('pages.admin.supplier-transaction.edit', compact('transaction', 'branches', 'totalAdminCash'));
   }
 
   public function updateForAdmin(Request $request, $id)
@@ -283,12 +339,26 @@ class SupplierTransactionController extends Controller
 
         $dueBeforeTransaction = (float) $transaction->due_before_transaction;
         $newPaymentAmount     = round((float) $validated['amount'], 2);
+        $oldPaymentAmount     = round((float) $transaction->amount, 2);
         $newDueAfter          = round($dueBeforeTransaction - $newPaymentAmount, 2);
 
-        // Update supplier balance
+        // 1. Update supplier balance
         $supplier->update(['due' => $newDueAfter]);
 
-        // Update transaction record
+        // 2. Adjust Admin Cash by difference (newAmount - oldAmount)
+        $diff = round($newPaymentAmount - $oldPaymentAmount, 2);
+        if ($diff != 0) {
+          $adminCash = $this->getAdminCashRecord();
+          if ($diff > 0) {
+            // Paid more: deduct additional difference from admin cash
+            $adminCash->decrement('cash', $diff);
+          } else {
+            // Paid less: refund difference back to admin cash
+            $adminCash->increment('cash', abs($diff));
+          }
+        }
+
+        // 3. Update transaction record
         $transaction->update([
           'amount'                => $newPaymentAmount,
           'due_after_transaction' => $newDueAfter,
@@ -299,7 +369,7 @@ class SupplierTransactionController extends Controller
       });
 
       return redirect()->route('admin.supplier-transactions.index')
-        ->with('success', 'Supplier payment BRST00' . $transaction->id . ' updated successfully.');
+        ->with('success', 'Supplier payment BRST00' . $transaction->id . ' updated successfully and Admin Cash adjusted.');
     } catch (\Exception $e) {
       return back()->withInput()->with('error', 'Error updating supplier payment: ' . $e->getMessage());
     }
@@ -326,16 +396,23 @@ class SupplierTransactionController extends Controller
       DB::transaction(function () use ($transaction) {
         $supplier = Supplier::lockForUpdate()->findOrFail($transaction->supplier_id);
 
-        // Revert payment amount back to supplier due
+        // 1. Revert payment amount back to supplier due
         $restoredDue = round((float) ($supplier->due ?? 0) + (float) $transaction->amount, 2);
         $supplier->update(['due' => $restoredDue]);
 
-        // Delete transaction
+        // 2. Refund/Restore payment amount back to Admin Cash
+        $refundAmount = round((float) $transaction->amount, 2);
+        if ($refundAmount > 0) {
+          $adminCash = $this->getAdminCashRecord();
+          $adminCash->increment('cash', $refundAmount);
+        }
+
+        // 3. Delete transaction
         $transaction->delete();
       });
 
       return redirect()->route('admin.supplier-transactions.index')
-        ->with('success', 'Supplier payment BRST00' . $id . ' deleted and supplier due balance restored successfully.');
+        ->with('success', 'Supplier payment BRST00' . $id . ' deleted, supplier due balance restored, and ৳' . number_format($transaction->amount, 2) . ' refunded to Admin Cash successfully.');
     } catch (\Exception $e) {
       return back()->with('error', 'Error deleting supplier payment: ' . $e->getMessage());
     }

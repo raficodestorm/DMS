@@ -116,13 +116,33 @@ class CashTransferController extends Controller
                 $adminCash = AdminCash::where('admin_id', $adminId)->lockForUpdate()->first()
                     ?? AdminCash::lockForUpdate()->first();
 
+                $adminCashBefore = $adminCash ? (float) $adminCash->cash : 0;
+
                 if (!$adminCash) {
                     $adminCash = AdminCash::create([
                         'admin_id' => $adminId,
                         'cash'     => $amount,
                     ]);
+                    $adminCashAfter = $amount;
                 } else {
                     $adminCash->increment('cash', $amount);
+                    $adminCashAfter = round($adminCashBefore + $amount, 2);
+                }
+
+                // Log in Admin Cash Ledger
+                if (\Illuminate\Support\Facades\Schema::hasTable('admin_cash_ledgers')) {
+                    \App\Models\AdminCashLedger::create([
+                        'admin_id'       => $adminId,
+                        'type'           => 'cash_transfer',
+                        'amount'         => $amount,
+                        'cash_before'    => $adminCashBefore,
+                        'cash_after'     => $adminCashAfter,
+                        'payment_method' => 'cash',
+                        'status'         => 'complete',
+                        'reference_type' => 'CashTransfer',
+                        'reference_id'   => $transfer->id,
+                        'note'           => "Cash transfer received from {$branch->name}",
+                    ]);
                 }
 
                 // 3. Mark Transfer as Approved
