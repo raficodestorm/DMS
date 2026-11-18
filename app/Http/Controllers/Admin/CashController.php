@@ -24,7 +24,7 @@ class CashController extends Controller
             Schema::create('admin_cash_ledgers', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('admin_id')->nullable()->constrained('users')->nullOnDelete();
-                $table->string('type'); // 'cash-in', 'supplier_payment', 'company_cost', 'cash_transfer'
+                $table->string('type'); // 'cash-in', 'cash-out', 'supplier_payment', 'company_cost', 'cash_transfer', 'bonus'
                 $table->decimal('amount', 10, 2);
                 $table->decimal('cash_before', 10, 2)->default(0);
                 $table->decimal('cash_after', 10, 2)->default(0);
@@ -194,6 +194,153 @@ class CashController extends Controller
     }
 
     /**
+     * Update an existing Cash-In record and adjust Admin Cash accordingly.
+     */
+    public function updateCashIn(Request $request, $id)
+    {
+        $this->ensureLedgerTableExists();
+
+        $ledger = AdminCashLedger::findOrFail($id);
+
+        if ($ledger->type !== 'cash-in') {
+            return back()->with('error', 'Only direct cash-in transactions can be edited here.');
+        }
+
+        $validated = $request->validate([
+            'amount'         => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string|max:50',
+            'note'           => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::transaction(function () use ($ledger, $validated) {
+                $newAmount = round((float) $validated['amount'], 2);
+                $oldAmount = round((float) $ledger->amount, 2);
+                $diff = round($newAmount - $oldAmount, 2);
+
+                if ($diff != 0) {
+                    $adminCash = $this->getAdminCashRecord();
+                    if ($diff > 0) {
+                        // Increased cash-in: increment admin cash by difference
+                        $adminCash->increment('cash', $diff);
+                    } else {
+                        // Decreased cash-in: decrement admin cash by difference
+                        $adminCash->decrement('cash', abs($diff));
+                    }
+                }
+
+                $cashBefore = (float) $ledger->cash_before;
+                $cashAfter  = round($cashBefore + $newAmount, 2);
+
+                $ledger->update([
+                    'amount'         => $newAmount,
+                    'cash_after'     => $cashAfter,
+                    'payment_method' => $validated['payment_method'],
+                    'note'           => $validated['note'] ?? $ledger->note,
+                ]);
+            });
+
+            return back()->with('success', 'Cash in record updated successfully and Admin Cash adjusted.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error updating cash in: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process Cash-Out for Admin Cash and record in AdminCashLedger.
+     */
+    public function cashOut(Request $request)
+    {
+        $this->ensureLedgerTableExists();
+
+        $validated = $request->validate([
+            'amount'         => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string|max:50',
+            'note'           => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated) {
+                $amount = round((float) $validated['amount'], 2);
+                $adminId = Auth::id();
+
+                $adminCash = $this->getAdminCashRecord();
+                $cashBefore = (float) $adminCash->cash;
+                $adminCash->decrement('cash', $amount);
+                $cashAfter = round($cashBefore - $amount, 2);
+
+                AdminCashLedger::create([
+                    'admin_id'       => $adminId,
+                    'type'           => 'cash-out',
+                    'amount'         => $amount,
+                    'cash_before'    => $cashBefore,
+                    'cash_after'     => $cashAfter,
+                    'payment_method' => $validated['payment_method'],
+                    'status'         => 'complete',
+                    'note'           => $validated['note'] ?? 'Cash Out',
+                ]);
+            });
+
+            return back()->with('success', 'Cash out of ৳ ' . number_format($validated['amount'], 2) . ' recorded successfully.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error recording cash out: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update an existing Cash-Out record and adjust Admin Cash accordingly.
+     */
+    public function updateCashOut(Request $request, $id)
+    {
+        $this->ensureLedgerTableExists();
+
+        $ledger = AdminCashLedger::findOrFail($id);
+
+        if ($ledger->type !== 'cash-out') {
+            return back()->with('error', 'Only direct cash-out transactions can be edited here.');
+        }
+
+        $validated = $request->validate([
+            'amount'         => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string|max:50',
+            'note'           => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::transaction(function () use ($ledger, $validated) {
+                $newAmount = round((float) $validated['amount'], 2);
+                $oldAmount = round((float) $ledger->amount, 2);
+                $diff = round($newAmount - $oldAmount, 2);
+
+                if ($diff != 0) {
+                    $adminCash = $this->getAdminCashRecord();
+                    if ($diff > 0) {
+                        // Increased cash-out: deduct additional difference from admin cash
+                        $adminCash->decrement('cash', $diff);
+                    } else {
+                        // Decreased cash-out: refund difference back to admin cash
+                        $adminCash->increment('cash', abs($diff));
+                    }
+                }
+
+                $cashBefore = (float) $ledger->cash_before;
+                $cashAfter  = round($cashBefore - $newAmount, 2);
+
+                $ledger->update([
+                    'amount'         => $newAmount,
+                    'cash_after'     => $cashAfter,
+                    'payment_method' => $validated['payment_method'],
+                    'note'           => $validated['note'] ?? $ledger->note,
+                ]);
+            });
+
+            return back()->with('success', 'Cash out record updated successfully and Admin Cash adjusted.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error updating cash out: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Display the Admin Cash Ledger index page.
      * Modeled after the Customer Ledger page.
      */
@@ -204,11 +351,7 @@ class CashController extends Controller
         $totalAdminCash = (float) AdminCash::sum('cash');
         $totalEntries   = AdminCashLedger::count();
 
-        // Calculate summary metrics
-        $totalInflow  = (float) AdminCashLedger::whereIn('type', ['cash-in', 'cash_transfer'])->sum('amount');
-        $totalOutflow = (float) AdminCashLedger::whereIn('type', ['supplier_payment', 'company_cost'])->sum('amount');
-
-        return view('pages.admin.cash.ledger-index', compact('totalAdminCash', 'totalEntries', 'totalInflow', 'totalOutflow'));
+        return view('pages.admin.cash.ledger-index', compact('totalAdminCash', 'totalEntries'));
     }
 
     /**

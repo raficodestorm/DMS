@@ -266,6 +266,36 @@ class OrderAdminController extends Controller
     return view('pages.admin.orders.show', compact('order', 'branches'));
   }
 
+  /**
+   * Update order status directly from the index table (admin only).
+   * Cannot change status if order is already complete or delivered.
+   */
+  public function updateStatus(Request $request, Order $order)
+  {
+    $allowed = ['pending_sr', 'pending_manager', 'approved', 'rejected'];
+
+    if (in_array($order->status, ['complete', 'delivered'], true)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'এই order টি ' . ucfirst($order->status) . ' — status পরিবর্তন করা যাবে না।',
+      ], 403);
+    }
+
+    $request->validate([
+      'status' => ['required', 'in:pending_sr,pending_manager,approved,rejected'],
+    ]);
+
+    $order->update(['status' => $request->status]);
+
+    $orderLabel = $order->order_id ?? ('BRS' . $order->id);
+
+    return response()->json([
+      'success'    => true,
+      'message'    => "Order #{$orderLabel} status → {$request->status}",
+      'new_status' => $order->status,
+    ]);
+  }
+
   public function approve($id)
   {
     $order = Order::with('customer')->findOrFail($id);

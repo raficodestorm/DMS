@@ -1,6 +1,6 @@
 @forelse($ledgers as $ledger)
 @php
-    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer']);
+    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer', 'bonus']);
 @endphp
 <tr>
     <td>
@@ -8,13 +8,13 @@
     </td>
 
     <td>
-        <strong>ACL00{{ $ledger->id }}</strong>
-    </td>
-
-    <td>
         @if($ledger->type == 'cash-in')
             <span style="display: inline-flex; align-items: center; gap: 5px; background: #ecfdf5; color: #15803d; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #bbf7d0;">
                 <i class="fa-solid fa-arrow-down-long"></i> Cash In
+            </span>
+        @elseif($ledger->type == 'cash-out')
+            <span style="display: inline-flex; align-items: center; gap: 5px; background: #fef2f2; color: #dc2626; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #fecaca;">
+                <i class="fa-solid fa-arrow-up-long"></i> Cash Out
             </span>
         @elseif($ledger->type == 'cash_transfer')
             <span style="display: inline-flex; align-items: center; gap: 5px; background: #eff6ff; color: #1d4ed8; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #bfdbfe;">
@@ -27,6 +27,10 @@
         @elseif($ledger->type == 'company_cost')
             <span style="display: inline-flex; align-items: center; gap: 5px; background: #fef2f2; color: #b91c1c; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #fecaca;">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Company Cost
+            </span>
+        @elseif($ledger->type == 'bonus')
+            <span style="display: inline-flex; align-items: center; gap: 5px; background: #faf5ff; color: #7e22ce; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #e9d5ff;">
+                <i class="fa-solid fa-gift"></i> Bonus
             </span>
         @else
             <span style="background: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px;">
@@ -64,17 +68,6 @@
     </td>
 
     <td>
-        <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b;">
-            {{ $ledger->admin->name ?? 'Admin' }}
-        </div>
-        @if($ledger->note)
-            <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="{{ $ledger->note }}">
-                {{ $ledger->note }}
-            </small>
-        @endif
-    </td>
-
-    <td>
         <div style="font-size: 0.82rem; font-weight: 600; color: #1e293b;">
             {{ $ledger->created_at->format('d M Y') }}
         </div>
@@ -84,14 +77,37 @@
     </td>
 
     <td>
-        <a href="{{ route('admin.cash.ledger.show', $ledger->id) }}" class="icon-btn view-icon" title="View Details">
-            <i class="fa-solid fa-eye"></i>
-        </a>
+        <div class="d-flex align-items-center gap-1">
+            <a href="{{ route('admin.cash.ledger.show', $ledger->id) }}" class="icon-btn view-icon" title="View Details">
+                <i class="fa-solid fa-eye"></i>
+            </a>
+            @if($ledger->type == 'cash-in')
+                <button type="button" class="icon-btn edit-icon" style="border: none;" title="Edit Cash In"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editCashInModal"
+                    data-id="{{ $ledger->id }}"
+                    data-amount="{{ $ledger->amount }}"
+                    data-payment-method="{{ $ledger->payment_method }}"
+                    data-note="{{ $ledger->note }}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            @elseif($ledger->type == 'cash-out')
+                <button type="button" class="icon-btn edit-icon" style="border: none;" title="Edit Cash Out"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editCashOutModal"
+                    data-id="{{ $ledger->id }}"
+                    data-amount="{{ $ledger->amount }}"
+                    data-payment-method="{{ $ledger->payment_method }}"
+                    data-note="{{ $ledger->note }}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            @endif
+        </div>
     </td>
 </tr>
 @empty
 <tr>
-    <td colspan="10" class="text-center py-5 text-muted">
+    <td colspan="8" class="text-center py-5 text-muted">
         <i class="fa-solid fa-folder-open mb-2" style="font-size: 2rem; display: block; opacity: 0.4;"></i>
         No cash ledger entries found.
     </td>

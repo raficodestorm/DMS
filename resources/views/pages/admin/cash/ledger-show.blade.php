@@ -3,7 +3,7 @@
 @section('content')
 
 @php
-    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer']);
+    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer', 'bonus']);
 @endphp
 
 <p class="show-head">
@@ -29,6 +29,10 @@
                         <span style="color:#15803d; font-weight:700; background:#dcfce7; padding:3px 12px; border-radius:12px; font-size:0.85rem;">
                             <i class="fa-solid fa-arrow-down-long me-1"></i> Cash In
                         </span>
+                    @elseif($ledger->type == 'cash-out')
+                        <span style="color:#dc2626; font-weight:700; background:#fee2e2; padding:3px 12px; border-radius:12px; font-size:0.85rem;">
+                            <i class="fa-solid fa-arrow-up-long me-1"></i> Cash Out
+                        </span>
                     @elseif($ledger->type == 'cash_transfer')
                         <span style="color:#1d4ed8; font-weight:700; background:#dbeafe; padding:3px 12px; border-radius:12px; font-size:0.85rem;">
                             <i class="fa-solid fa-code-branch me-1"></i> Branch Cash Transfer
@@ -40,6 +44,10 @@
                     @elseif($ledger->type == 'company_cost')
                         <span style="color:#b91c1c; font-weight:700; background:#fee2e2; padding:3px 12px; border-radius:12px; font-size:0.85rem;">
                             <i class="fa-solid fa-file-invoice-dollar me-1"></i> Company Expense
+                        </span>
+                    @elseif($ledger->type == 'bonus')
+                        <span style="color:#7e22ce; font-weight:700; background:#faf5ff; padding:3px 12px; border-radius:12px; font-size:0.85rem; border:1px solid #e9d5ff;">
+                            <i class="fa-solid fa-gift me-1"></i> Bonus / Incentive
                         </span>
                     @else
                         <span style="color:#475569; font-weight:700; background:#f1f5f9; padding:3px 12px; border-radius:12px; font-size:0.85rem;">
@@ -124,7 +132,7 @@
 
         </div>
 
-        <div class="text-center mt-4">
+        <div class="mt-4 d-flex justify-content-between">
             <a href="{{ route('admin.cash.ledger') }}" class="btn-smart btn-blue">
                 <i class="fa-solid fa-arrow-left me-1"></i> Back to Admin Cash Ledger
             </a>

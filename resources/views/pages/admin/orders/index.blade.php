@@ -1,6 +1,66 @@
 @extends('layouts.adminlayout')
 
 @section('content')
+<style>
+  /* ===== Inline Order Status Changer ===== */
+  .os-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .os-arrow-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    color: #888;
+    font-size: 0.65rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .os-arrow-btn:hover {
+    background: rgba(2,2,226,0.08);
+    color: var(--primary);
+  }
+  .os-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+    z-index: 9999;
+    overflow: hidden;
+  }
+  .os-dropdown.open { display: block; }
+  .os-option {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.15s;
+  }
+  .os-option:hover { background: rgba(2,2,226,0.06); }
+  .os-option.active {
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(2,2,226,0.04);
+  }
+  .os-option.loading {
+    color: #aaa;
+    pointer-events: none;
+  }
+  /* spinner on arrow while saving */
+  .os-arrow-btn.saving i {
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
 <div class="manage-card">
 
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -260,6 +320,101 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // ================================================================
+    // ORDER STATUS INLINE CHANGER
+    // ================================================================
+    const STATUS_URL   = '{{ rtrim(route("admin.order.update_status", ["order" => "__ID__"]), "") }}';
+    const CSRF_TOKEN   = '{{ csrf_token() }}';
+
+    const STATUS_BADGES = {
+      pending_sr:      { cls: 'status-pending-badge',   lbl: 'Pending..SR..' },
+      pending_manager: { cls: 'status-pmanager-badge',  lbl: 'Pending..Manager..' },
+      approved:        { cls: 'status-approved-badge',  lbl: 'Approved' },
+      rejected:        { cls: 'status-rejected-badge',  lbl: 'Rejected' },
+    };
+
+    // Open / close dropdown
+    document.addEventListener('click', function (e) {
+      // Close all first
+      document.querySelectorAll('.os-dropdown.open').forEach(function (d) {
+        if (!d.closest('.os-wrap').contains(e.target)) {
+          d.classList.remove('open');
+        }
+      });
+
+      // Toggle clicked arrow
+      const arrowBtn = e.target.closest('.os-arrow-btn');
+      if (arrowBtn) {
+        const wrap     = arrowBtn.closest('.os-wrap');
+        const dropdown = wrap.querySelector('.os-dropdown');
+        dropdown.classList.toggle('open');
+      }
+    });
+
+    // Select a status option
+    document.addEventListener('click', function (e) {
+      const option = e.target.closest('.os-option');
+      if (!option) return;
+
+      const wrap      = option.closest('.os-wrap');
+      const dropdown  = wrap.querySelector('.os-dropdown');
+      const arrowBtn  = wrap.querySelector('.os-arrow-btn');
+      const badge     = wrap.querySelector('.os-badge');
+      const orderId   = wrap.dataset.orderId;
+      const newStatus = option.dataset.value;
+
+      if (option.classList.contains('active')) {
+        dropdown.classList.remove('open');
+        return;
+      }
+
+      // Show loading
+      arrowBtn.classList.add('saving');
+      arrowBtn.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+      dropdown.querySelectorAll('.os-option').forEach(o => o.classList.add('loading'));
+
+      const url = STATUS_URL.replace('__ID__', orderId);
+
+      fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type':     'application/json',
+          'X-CSRF-TOKEN':     CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept':           'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const info = STATUS_BADGES[newStatus];
+          if (info) {
+            // Update badge class + text
+            badge.className = info.cls + ' os-badge';
+            badge.textContent = info.lbl;
+          }
+          // Update active option
+          dropdown.querySelectorAll('.os-option').forEach(o => {
+            o.classList.remove('active', 'loading');
+          });
+          option.classList.add('active');
+        } else {
+          alert(data.message || 'Status update failed.');
+          dropdown.querySelectorAll('.os-option').forEach(o => o.classList.remove('loading'));
+        }
+      })
+      .catch(() => {
+        alert('Network error. Please try again.');
+        dropdown.querySelectorAll('.os-option').forEach(o => o.classList.remove('loading'));
+      })
+      .finally(() => {
+        arrowBtn.classList.remove('saving');
+        arrowBtn.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+        dropdown.classList.remove('open');
+      });
+    });
 });
 </script>
 @endpush

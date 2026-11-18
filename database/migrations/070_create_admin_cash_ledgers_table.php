@@ -15,7 +15,7 @@ return new class extends Migration
             Schema::create('admin_cash_ledgers', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('admin_id')->nullable()->constrained('users')->nullOnDelete();
-                $table->string('type'); // 'cash-in', 'supplier_payment', 'company_cost', 'cash_transfer'
+                $table->string('type'); // 'cash-in', 'cash-out', 'supplier_payment', 'company_cost', 'cash_transfer', 'bonus'
                 $table->decimal('amount', 10, 2);
                 $table->decimal('cash_before', 10, 2)->default(0);
                 $table->decimal('cash_after', 10, 2)->default(0);

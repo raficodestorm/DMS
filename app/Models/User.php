@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'employee_id',
         'profile_photo_path',
         'role',
+        'permissions',
         'status',
         'timezone',
 
@@ -38,12 +39,31 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'permissions' => 'array',
     ];
 
     // helper
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isEditor(): bool
+    {
+        return $this->role === 'editor';
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if ($this->isEditor() && is_array($this->permissions)) {
+            return in_array($permission, $this->permissions, true);
+        }
+
+        return false;
     }
 
     public function isManager(): bool

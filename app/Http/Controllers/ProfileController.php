@@ -25,7 +25,15 @@ class ProfileController extends Controller
     public function edit(Request $request)
     {
         $user = Auth::user();
-        return view('profile.edit', compact('user'));
+        $countries = [];
+        if ($user->isCustomer()) {
+            $countriesPath = resource_path('data/countries.json');
+            if (file_exists($countriesPath)) {
+                $countriesData = json_decode(file_get_contents($countriesPath), true) ?: [];
+                $countries = array_keys($countriesData);
+            }
+        }
+        return view('profile.edit', compact('user', 'countries'));
     }
 
     /**
@@ -38,6 +46,8 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'username'      => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
             'email'         => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'country'       => ['nullable', 'string', 'max:100'],
+            'city'          => ['nullable', 'string', 'max:100'],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
             'password'      => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -51,6 +61,14 @@ class ProfileController extends Controller
         // Assign fields
         $user->username = $validated['username'];
         $user->email    = $validated['email'];
+
+        // If user is a customer, update country and city on customers table
+        if ($user->isCustomer() && $user->customer) {
+            $user->customer->update([
+                'country' => $request->input('country'),
+                'city'    => $request->input('city'),
+            ]);
+        }
 
         // Handle password change
         if (!empty($validated['password'])) {

@@ -447,18 +447,26 @@ class RetailOrderController extends Controller
                 $stock->decrement('quantity', $item['qty']);
 
                 $basePrice       = (float) $item['price'];
-                $deductionAmount = $basePrice * $totalDeductionPercent / 100;
-                $sellingRate     = $basePrice - $deductionAmount;
+                $deductionAmount = round($basePrice * $totalDeductionPercent / 100, 2);
+                $sellingRate     = round(max(0, $basePrice - $deductionAmount), 2);
+                $offerDiscount   = (float) ($item['discount'] ?? 0);
+                $qty             = (int) $item['qty'];
+                $itemNetTotal    = round(max(0, ($sellingRate - $offerDiscount) * $qty), 2);
+
+                $purchasePrice     = (float) ($product->purchase_price ?? 0);
+                $totalPurchaseCost = round($purchasePrice * $qty, 2);
+                $profit            = round($itemNetTotal - $totalPurchaseCost, 2);
 
                 OrderItem::create([
                     'order_id'              => $order->id,
                     'product_id'            => $item['product_id'],
-                    'quantity'              => $item['qty'],
+                    'quantity'              => $qty,
                     'price'                 => $basePrice,
                     'unit_deduction_amount' => $deductionAmount,
                     'selling_rate'          => $sellingRate,
-                    'discount_amount'       => $item['discount'] ?? 0,
-                    'net_total'             => ($sellingRate - ($item['discount'] ?? 0)) * $item['qty'],
+                    'discount_amount'       => $offerDiscount,
+                    'net_total'             => $itemNetTotal,
+                    'profit'                => $profit,
                 ]);
             }
 

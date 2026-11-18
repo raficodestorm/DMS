@@ -35,135 +35,33 @@
     </div>
 
     <ul class="nav-menu">
+      @php
+        $authUser = auth()->user();
+        $canAccess = function(string $perm) use ($authUser): bool {
+            return $authUser && $authUser->hasPermission($perm);
+        };
+      @endphp
 
       <!-- Dashboard -->
+      @if($canAccess(\App\Constants\Permissions::DASHBOARD))
       <li class="nav-item">
         <a href="{{ route('dashboards') }}" class="nav-link {{ isActive('dashboards') }}">
           <i class="fas fa-gauge-high"></i> Dashboard
         </a>
       </li>
-
-      <!-- Cash Treasury -->
-      <li class="nav-item">
-        <a href="{{ route('admin.cash.index') }}" class="nav-link {{ isActive('admin.cash.*') }}">
-          <i class="fas fa-sack-dollar"></i> Cash
-        </a>
-      </li>
-
-      <!-- Cash Transfer -->
-      <li class="nav-item">
-        <a href="{{ route('admin.cash-transfers.index') }}" class="nav-link {{ isActive('admin.cash-transfers.*') }}">
-          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
-        </a>
-      </li>
+      @endif
 
       <!-- Reports -->
+      @if($canAccess(\App\Constants\Permissions::REPORTS))
       <li class="nav-item">
         <a href="{{ route('admin.report.index') }}" class="nav-link {{ isActive('admin.report.*') }}">
           <i class="fas fa-chart-pie"></i> Reports & Analytics
         </a>
       </li>
-
-      <!-- Users -->
-      <li class="nav-item {{ request()->routeIs('admin.users.*', 'admin.index.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive(['admin.users.*','admin.index.*']) }}">
-          <i class="fas fa-users"></i>
-          <span>Users</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
-
-        <ul class="sub-menu" style="{{ isOpen(['admin.users.*','admin.index.*']) }}">
-
-          <li>
-            <a href="{{ route('admin.users.create') }}" class="sub-link {{ isActive('admin.users.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Add User Account
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('admin.index.users') }}" class="sub-link {{ isActive('admin.index.users') }}">
-              <i class="fas fa-user-gear me-1"></i> All User Accounts
-            </a>
-          </li>
-
-      
-
-        </ul>
-      </li>
-
-      <!-- Branches -->
-      <li class="nav-item {{ request()->routeIs('admin.branches.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('admin.branches.*') }}">
-          <i class="fas fa-code-branch"></i>
-          <span>Branches</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
-
-        <ul class="sub-menu" style="{{ isOpen('admin.branches.*') }}">
-          <li>
-            <a href="{{ route('admin.branches.create') }}" class="sub-link {{ isActive('admin.branches.create') }}">
-              <i class="fas fa-plus-circle me-1"></i> Add Branch
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('admin.branches.index') }}" class="sub-link {{ isActive('admin.branches.index') }}">
-              <i class="fas fa-list me-1"></i> Manage Branches
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- Employees -->
-      <li class="nav-item {{ request()->routeIs('admin.employees.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('admin.employees.*') }}">
-          <i class="fas fa-user-tie"></i>
-          <span>Employees</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
-
-        <ul class="sub-menu" style="{{ isOpen('admin.employees.*') }}">
-          <li>
-            <a href="{{ route('admin.employees.create') }}" class="sub-link {{ isActive('admin.employees.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Add Employee
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('admin.employees.index') }}" class="sub-link {{ isActive('admin.employees.index') }}">
-              <i class="fas fa-users-cog me-1"></i> All Employees
-            </a>
-          </li>
-
-        </ul>
-      </li>
-
-      
-
-      <!-- Employees -->
-      <li class="nav-item {{ request()->routeIs('admin.customers.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('admin.customers.*') }}">
-          <i class="fas fa-handshake"></i>
-          <span>Customer</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
-
-        <ul class="sub-menu" style="{{ isOpen('admin.customers.*') }}">
-          <li>
-            <a href="{{ route('admin.customers.index') }}" class="sub-link {{ isActive('admin.customers.index') }}">
-              <i class="fas fa-users-cog me-1"></i> Customer list
-            </a>
-          </li>
-          <li>
-            <a href="{{ route('admin.customers.ranking') }}" class="sub-link {{ isActive('admin.customers.ranking') }}">
-              <i class="fas fa-trophy me-1"></i> Customer Ranking
-            </a>
-          </li>
-        </ul>
-      </li>
-
+      @endif
 
       <!-- Stock -->
+      @if($canAccess(\App\Constants\Permissions::STOCK))
       <li
         class="nav-item {{ request()->routeIs('admin.stock.*', 'admin.stocks.*', 'admin.stock-transfer.*') ? 'open' : '' }}">
         <div
@@ -196,9 +94,10 @@
 
         </ul>
       </li>
-
+      @endif
 
       <!-- orders -->
+      @if($canAccess(\App\Constants\Permissions::ORDERS))
       <li class="nav-item {{ request()->routeIs('admin.order.*', 'admin.orders.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['admin.order.*', 'admin.orders.*']) }}">
           <i class="fa-solid fa-cart-shopping"></i>
@@ -236,47 +135,175 @@
 
         </ul>
       </li>
+      @endif
 
-  
       <!-- customer Ledger -->
+      @if($canAccess(\App\Constants\Permissions::CUSTOMER_LEDGER))
       <li class="nav-item">
         <a href="{{ route('admin.payments.index') }}" class="nav-link {{ isActive('admin.payments.*') }}">
-          <i class="fas fa-file-invoice-dollar"></i> Customer Ledger
+          <i class="fas fa-book-bookmark"></i> Customer Ledger
         </a>
       </li>
+      @endif
 
       <!-- Supplier Ledger -->
+      @if($canAccess(\App\Constants\Permissions::SUPPLIER_LEDGER))
       <li class="nav-item">
         <a href="{{ route('admin.supplier-transactions.index') }}" class="nav-link {{ isActive('admin.supplier-transactions.*') }}">
-          <i class="fas fa-wallet"></i> Supplier Ledger
+          <i class="fas fa-book-bookmark"></i> Supplier Ledger
         </a>
       </li>
+      @endif
 
       <!-- Admin Cash Ledger -->
+      @if($canAccess(\App\Constants\Permissions::CASH))
       <li class="nav-item">
         <a href="{{ route('admin.cash.ledger') }}" class="nav-link {{ isActive('admin.cash.ledger*') }}">
           <i class="fas fa-book-bookmark"></i> Cash Ledger
         </a>
       </li>
+      @endif
 
       <!-- Product Return -->
-      <li class="nav-item {{ request()->routeIs('admin.return.*') ? 'open' : '' }}">
-        <div class="nav-link has-dropdown {{ isActive('admin.return.*') }}">
-          <i class="fas fa-undo"></i>
-          <span>Order Return</span>
+      @if($canAccess(\App\Constants\Permissions::ORDER_RETURN))
+      <li class="nav-item">
+        <a href="{{ route('admin.return.index') }}" class="nav-link {{ isActive('admin.return.index') }}">
+          <i class="fas fa-undo"></i> Order Return
+        </a>
+      </li>
+      @endif
+
+      <!-- Stock cut-->
+      @if($canAccess(\App\Constants\Permissions::STOCK_RETURN))
+      <li class="nav-item">
+        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.*') }}">
+          <i class="fas fa-undo"></i> Stock Return
+        </a>
+      </li>
+      @endif
+
+      <!-- Cash Treasury -->
+      @if($canAccess(\App\Constants\Permissions::CASH))
+      <li class="nav-item">
+        <a href="{{ route('admin.cash.index') }}" class="nav-link {{ isActive('admin.cash.*') }}">
+          <i class="fas fa-sack-dollar"></i> Cash
+        </a>
+      </li>
+      @endif
+
+      <!-- Cash Transfer -->
+      @if($canAccess(\App\Constants\Permissions::CASH_TRANSFERS))
+      <li class="nav-item">
+        <a href="{{ route('admin.cash-transfers.index') }}" class="nav-link {{ isActive('admin.cash-transfers.*') }}">
+          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
+        </a>
+      </li>
+      @endif
+
+      <!-- Users -->
+      @if($canAccess(\App\Constants\Permissions::USERS))
+      <li class="nav-item {{ request()->routeIs('admin.users.*', 'admin.index.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive(['admin.users.*','admin.index.*']) }}">
+          <i class="fas fa-users"></i>
+          <span>Users</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
 
-        <ul class="sub-menu" style="{{ isOpen('admin.return.*') }}">
+        <ul class="sub-menu" style="{{ isOpen(['admin.users.*','admin.index.*']) }}">
+
           <li>
-            <a href="{{ route('admin.return.index') }}" class="sub-link {{ isActive('admin.return.index') }}">
-              <i class="fas fa-list me-1"></i> All Returns
+            <a href="{{ route('admin.users.create') }}" class="sub-link {{ isActive('admin.users.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Add User Account
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.index.users') }}" class="sub-link {{ isActive('admin.index.users') }}">
+              <i class="fas fa-user-gear me-1"></i> All User Accounts
+            </a>
+          </li>
+
+        </ul>
+      </li>
+      @endif
+
+      <!-- Branches -->
+      @if($canAccess(\App\Constants\Permissions::BRANCHES))
+      <li class="nav-item {{ request()->routeIs('admin.branches.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.branches.*') }}">
+          <i class="fas fa-code-branch"></i>
+          <span>Branches</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.branches.*') }}">
+          <li>
+            <a href="{{ route('admin.branches.create') }}" class="sub-link {{ isActive('admin.branches.create') }}">
+              <i class="fas fa-plus-circle me-1"></i> Add Branch
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.branches.index') }}" class="sub-link {{ isActive('admin.branches.index') }}">
+              <i class="fas fa-list me-1"></i> Manage Branches
             </a>
           </li>
         </ul>
       </li>
+      @endif
+
+      <!-- Employees -->
+      @if($canAccess(\App\Constants\Permissions::EMPLOYEES))
+      <li class="nav-item {{ request()->routeIs('admin.employees.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.employees.*') }}">
+          <i class="fas fa-user-tie"></i>
+          <span>Employees</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.employees.*') }}">
+          <li>
+            <a href="{{ route('admin.employees.create') }}" class="sub-link {{ isActive('admin.employees.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Add Employee
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('admin.employees.index') }}" class="sub-link {{ isActive('admin.employees.index') }}">
+              <i class="fas fa-users-cog me-1"></i> All Employees
+            </a>
+          </li>
+
+        </ul>
+      </li>
+      @endif
+
+      <!-- Customers -->
+      @if($canAccess(\App\Constants\Permissions::CUSTOMERS))
+      <li class="nav-item {{ request()->routeIs('admin.customers.*') ? 'open' : '' }}">
+        <div class="nav-link has-dropdown {{ isActive('admin.customers.*') }}">
+          <i class="fas fa-handshake"></i>
+          <span>Customer</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen('admin.customers.*') }}">
+          <li>
+            <a href="{{ route('admin.customers.index') }}" class="sub-link {{ isActive('admin.customers.index') }}">
+              <i class="fas fa-users-cog me-1"></i> Customer list
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.customers.ranking') }}" class="sub-link {{ isActive('admin.customers.ranking') }}">
+              <i class="fas fa-trophy me-1"></i> Customer Ranking
+            </a>
+          </li>
+        </ul>
+      </li>
+      @endif
 
       <!-- Bonus Management -->
+      @if($canAccess(\App\Constants\Permissions::BONUSES))
       <li class="nav-item {{ request()->routeIs('admin.bonuses.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.bonuses.*') }}">
           <i class="fas fa-gift"></i>
@@ -297,8 +324,10 @@
           </li>
         </ul>
       </li>
+      @endif
 
       <!-- Company Global Costs -->
+      @if($canAccess(\App\Constants\Permissions::COSTS))
       <li class="nav-item {{ request()->routeIs('admin.company_costs.*', 'admin.costs.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['admin.company_costs.*', 'admin.costs.*']) }}">
           <i class="fas fa-money-bill-wave"></i>
@@ -326,8 +355,10 @@
           </li>
         </ul>
       </li>
+      @endif
 
       <!-- category -->
+      @if($canAccess(\App\Constants\Permissions::CATEGORIES))
       <li class="nav-item {{ request()->routeIs('admin.categories.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.categories.*') }}">
           <i class="fa-solid fa-folder-open"></i>
@@ -350,9 +381,10 @@
 
         </ul>
       </li>
-
+      @endif
 
       <!-- suppliers -->
+      @if($canAccess(\App\Constants\Permissions::SUPPLIERS))
       <li class="nav-item {{ request()->routeIs('admin.suppliers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.suppliers.*') }}">
           <i class="fa-solid fa-truck-field"></i>
@@ -375,8 +407,10 @@
 
         </ul>
       </li>
+      @endif
 
       <!-- Products -->
+      @if($canAccess(\App\Constants\Permissions::PRODUCTS))
       <li class="nav-item {{ request()->routeIs('admin.products.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.products.*') }}">
           <i class="fa-solid fa-box"></i>
@@ -397,12 +431,18 @@
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('admin.products.barcode') }}" class="sub-link {{ isActive('admin.products.barcode') }}">
+              <i class="fa-solid fa-barcode me-1"></i> Barcode Print
+            </a>
+          </li>
+
         </ul>
       </li>
-
-
+      @endif
 
       <!-- offer -->
+      @if($canAccess(\App\Constants\Permissions::OFFERS))
       <li class="nav-item {{ request()->routeIs('admin.offers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
           <i class="fa-solid fa-tags"></i>
@@ -425,8 +465,10 @@
 
         </ul>
       </li>
+      @endif
 
       <!-- Slide Control -->
+      @if($canAccess(\App\Constants\Permissions::SLIDES))
       <li class="nav-item {{ request()->routeIs('admin.slides.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.slides.*') }}">
           <i class="fa-solid fa-images"></i>
@@ -449,8 +491,10 @@
 
         </ul>
       </li>
+      @endif
 
       <!-- shipping rate -->
+      @if($canAccess(\App\Constants\Permissions::SHIPPING_RATES))
       <li class="nav-item {{ request()->routeIs('admin.shipping-rates.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('admin.shipping-rates.*') }}">
           <i class="fa-solid fa-truck-field"></i>
@@ -473,13 +517,18 @@
 
         </ul>
       </li>
+      @endif
 
-
+      <!-- Deduction -->
+      @if($canAccess(\App\Constants\Permissions::BONUSES))
       <li class="nav-item">
         <a href="{{ route('admin.deductions.index') }}" class="nav-link {{ isActive('admin.deductions.index') }}">
           <i class="fa-solid fa-scissors"></i> Deduction
         </a>
       </li>
+      @endif
+
+    </ul>
       <!-- deductin -->
       {{-- <li class="nav-item">
         <div class="nav-link has-dropdown {{ isActive('admin.offers.*') }}">
@@ -505,12 +554,7 @@
       </li> --}}
 
 
-      <!-- Stock cut-->
-      <li class="nav-item">
-        <a href="{{ route('admin.stock.cut.cuts.index') }}" class="nav-link {{ isActive('admin.stock.cut.*') }}">
-          <i class="fas fa-handshake"></i> Stock Return
-        </a>
-      </li>
+      
 
       
 
@@ -766,12 +810,14 @@ subLinks.forEach(link => {
 });
 function toggleTheme() {
   const html = document.documentElement;
-  const theme = html.getAttribute("data-theme");
+  const isDark = html.getAttribute("data-theme") === "dark";
 
-  if (theme === "dark") {
+  if (isDark) {
     html.removeAttribute("data-theme");
+    localStorage.setItem('theme', 'light');
   } else {
     html.setAttribute("data-theme", "dark");
+    localStorage.setItem('theme', 'dark');
   }
 }
 

@@ -118,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/counter', [DashboardController::class, 'index'])->name('dashboard.counter_manager')->middleware('role:manager');
 
-    Route::get('/dashboard/admin', [DashboardController::class, 'index'])->name('dashboard.admin')->middleware('role:admin');
+    Route::get('/dashboard/admin', [DashboardController::class, 'index'])->name('dashboard.admin')->middleware('role:admin,editor');
 
     Route::get('/myprofile', [ProfileController::class, 'index'])->name('profile.index');
 

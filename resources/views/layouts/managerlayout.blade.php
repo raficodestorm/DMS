@@ -43,53 +43,6 @@
         </a>
       </li>
 
-      <!-- Cash -->
-      <li class="nav-item">
-        <a href="{{ route('manager.cash.index') }}" class="nav-link {{ isActive('manager.cash.*') }}">
-          <i class="fas fa-sack-dollar"></i> Cash
-        </a>
-      </li>
-
-      <!-- Cash Transfer -->
-      <li class="nav-item">
-        <a href="{{ route('manager.cash-transfers.index') }}" class="nav-link {{ isActive('manager.cash-transfers.*') }}">
-          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
-        </a>
-      </li>
-
-      <!-- Users -->
-      <li
-        class="nav-item {{ request()->routeIs('manager.users.*', 'manager.index.srs', 'manager.index.customers') ? 'open' : '' }}">
-        <div
-          class="nav-link has-dropdown {{ isActive(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
-          <i class="fas fa-users"></i>
-          <span>User Accounts</span>
-          <i class="fas fa-chevron-down arrow"></i>
-        </div>
-
-        <ul class="sub-menu" style="{{ isOpen(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
-          <li>
-            <a href="{{ route('manager.users.create') }}" class="sub-link {{ isActive('manager.users.create') }}">
-              <i class="fas fa-user-plus me-1"></i> Create Account
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ route('manager.index.customers') }}" class="sub-link {{ isActive('manager.index.customers') }}">
-              <i class="fas fa-user-gear me-1"></i> All Customer Accounts
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- Employees -->
-       <li class="nav-item">
-        <a href="{{ route('manager.employees.index') }}" class="nav-link {{ isActive('manager.employees.*') }}">
-          <i class="fas fa-user-tie"></i> Employees
-        </a>
-      </li>
-
-
       <!-- Customers -->
       <li class="nav-item {{ request()->routeIs('customers.*', 'manager.customers.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive(['customers.*', 'manager.customers.*']) }}">
@@ -118,6 +71,7 @@
           </li>
         </ul>
       </li>
+
 
       <!-- Stock -->
       <li class="nav-item {{ request()->routeIs('manager.stock.*', 'manager.stock-transfer.*') ? 'open' : '' }}">
@@ -167,7 +121,7 @@
       <!-- Order -->
       <li class="nav-item {{ request()->routeIs('manager.order.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.order.*') }}">
-          <i class="fas fa-file-invoice"></i>
+          <i class="fa-solid fa-cart-shopping"></i>
           <span>Order</span>
           <i class="fas fa-chevron-down arrow"></i>
         </div>
@@ -227,14 +181,14 @@
       <!-- customer ledger -->
       <li class="nav-item">
         <a href="{{ route('manager.payments.index') }}" class="nav-link {{ isActive('manager.payments.*') }}">
-          <i class="fas fa-file-invoice-dollar"></i> Customer Ledger
+          <i class="fas fa-book-bookmark"></i> Customer Ledger
         </a>
       </li>
 
       <!-- supplier ledger -->
       <li class="nav-item">
         <a href="{{ route('manager.supplier-transactions.index') }}" class="nav-link {{ isActive('manager.supplier-transactions.*') }}">
-          <i class="fas fa-wallet"></i> Supplier Ledger
+          <i class="fas fa-book-bookmark"></i> Supplier Ledger
         </a>
       </li>
 
@@ -261,6 +215,23 @@
         </ul>
       </li>
 
+      
+
+
+      <!-- Cash -->
+      <li class="nav-item">
+        <a href="{{ route('manager.cash.index') }}" class="nav-link {{ isActive('manager.cash.*') }}">
+          <i class="fas fa-sack-dollar"></i> Cash
+        </a>
+      </li>
+
+      <!-- Cash Transfer -->
+      <li class="nav-item">
+        <a href="{{ route('manager.cash-transfers.index') }}" class="nav-link {{ isActive('manager.cash-transfers.*') }}">
+          <i class="fas fa-money-bill-transfer"></i> Cash Transfer
+        </a>
+      </li>
+
       <!-- Expense Management -->
       <li class="nav-item {{ request()->routeIs('manager.costs.*') ? 'open' : '' }}">
         <div class="nav-link has-dropdown {{ isActive('manager.costs.*') }}">
@@ -281,6 +252,51 @@
             </a>
           </li>
         </ul>
+      </li>
+
+      <!-- Users -->
+      <li
+        class="nav-item {{ request()->routeIs('manager.users.*', 'manager.index.srs', 'manager.index.customers') ? 'open' : '' }}">
+        <div
+          class="nav-link has-dropdown {{ isActive(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
+          <i class="fas fa-users"></i>
+          <span>User Accounts</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </div>
+
+        <ul class="sub-menu" style="{{ isOpen(['manager.users.*','manager.index.srs','manager.index.customers']) }}">
+          <li>
+            <a href="{{ route('manager.users.create') }}" class="sub-link {{ isActive('manager.users.create') }}">
+              <i class="fas fa-user-plus me-1"></i> Create Account
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('manager.index.customers') }}" class="sub-link {{ isActive('manager.index.customers') }}">
+              <i class="fas fa-user-gear me-1"></i> All Cust. Accounts
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Employees -->
+       <li class="nav-item">
+        <a href="{{ route('manager.employees.index') }}" class="nav-link {{ isActive('manager.employees.*') }}">
+          <i class="fas fa-user-tie"></i> Employees
+        </a>
+      </li>
+
+
+      
+
+      
+
+
+      <!-- Product Barcode -->
+       <li class="nav-item">
+        <a href="{{ route('manager.products.barcode') }}" class="nav-link {{ isActive('manager.products.barcode') }}">
+          <i class="fas fa-barcode"></i> Barcode Print
+        </a>
       </li>
 
     </ul>

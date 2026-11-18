@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            @if(auth()->user()->role === 'admin')
+            @if(in_array(auth()->user()->role, ['admin', 'editor']))
                 <div class="total-badge-card">
                     <i class="fas fa-crown me-1 text-warning"></i> Total Wholesale: <span id="totalCustomerCount">0</span>
                 </div>
@@ -111,12 +111,12 @@
                     <th>Customer ID</th>
                     <th>Shop Name</th>
                     <th>Area Branch</th>
-                    @if(auth()->user()->role === 'admin')
+                    @if(in_array(auth()->user()->role, ['admin', 'editor']))
                         <th>Referred SR</th>
                     @endif
                     <th class="text-center">30-Day Orders</th>
                     <th class="text-end">30-Day Order Amount</th>
-                    @if(auth()->user()->role === 'admin')
+                    @if(in_array(auth()->user()->role, ['admin', 'editor']))
                         <th class="text-end">Current Due</th>
                     @endif
                     <th class="text-center" style="width: 80px;">Action</th>
@@ -124,7 +124,7 @@
             </thead>
             <tbody class="desktop-table" id="rankingTable">
                 <tr>
-                    <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 7 }}" class="text-center py-5 text-muted">
+                    <td colspan="{{ in_array(auth()->user()->role, ['admin', 'editor']) ? 9 : 7 }}" class="text-center py-5 text-muted">
                         <i class="fas fa-spinner fa-spin me-2 text-primary"></i> Loading customer ranking...
                     </td>
                 </tr>
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const search = encodeURIComponent(searchInput ? searchInput.value.trim() : '');
             const branch = encodeURIComponent(branchFilter ? branchFilter.value : '');
 
-            const rankingDataUrl = '{{ match(auth()->user()->role) { "admin" => route("admin.customers.ranking.data"), "sr" => route("sr.customers.ranking.data"), default => route("manager.customers.ranking.data") } }}';
+            const rankingDataUrl = '{{ match(auth()->user()->role) { "admin", "editor" => route("admin.customers.ranking.data"), "sr" => route("sr.customers.ranking.data"), default => route("manager.customers.ranking.data") } }}';
             url = `${rankingDataUrl}?limit=${limit}&search=${search}&branch_id=${branch}`;
         }
 
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalEl.classList.add('show');
         document.body.style.overflow = 'hidden';
 
-        const rankingPosBaseUrl = '{{ match(auth()->user()->role) { "admin" => url("/admin/customers"), "sr" => url("/sr/customers"), default => url("/manager/customers") } }}';
+        const rankingPosBaseUrl = '{{ match(auth()->user()->role) { "admin", "editor" => url("/admin/customers"), "sr" => url("/sr/customers"), default => url("/manager/customers") } }}';
         const url = `${rankingPosBaseUrl}/${customerId}/ranking-position?rank=${encodeURIComponent(rank || '')}`;
         fetch(url, {
             headers: {

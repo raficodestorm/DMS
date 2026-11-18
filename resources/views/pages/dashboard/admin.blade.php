@@ -45,6 +45,9 @@
   </span>
 </div>
 
+
+@if(auth()->user()->role === 'admin')
+
 <div class="dashboard-row row g-4">
 
   <!-- Total Company Stock -->
@@ -124,6 +127,7 @@
   </div>
 
 </div>
+@endif
 
 <div class="row mt-4">
   <div class="col-12">

@@ -25,6 +25,7 @@ return new class extends Migration
 
             // roles & status
             $table->string('role')->default('user')->index();
+            $table->json('permissions')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active')->index();
 
             $table->timestamp('email_verified_at')->nullable();

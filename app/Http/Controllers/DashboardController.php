@@ -28,11 +28,11 @@ class DashboardController extends Controller
     // Statuses that count as real completed sales
     $completedStatuses = ['complete', 'delivered'];
 
-    if ($role === 'admin') {
+    if ($role === 'admin' || $role === 'editor') {
 
       // 1. Total Company Stock Value across all branches
       $data['totalStockValue'] = Stock::join('products', 'stocks.product_id', '=', 'products.id')
-        ->sum(DB::raw('stocks.quantity * products.purchase_price'));
+        ->sum(DB::raw('stocks.quantity * COALESCE(products.purchase_price, 0)'));
 
       // 2. Current Month Total Sales (completed orders only)
       $data['currentMonthSales'] = Order::whereIn('status', $completedStatuses)
@@ -41,14 +41,15 @@ class DashboardController extends Controller
         ->sum('net_total');
 
       // 3. Current Month Profit (completed orders only)
-      $orderItemsProfit = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
-        ->join('products', 'order_items.product_id', '=', 'products.id')
+      // Count actual realized profit directly from order_items with fallback for legacy records
+      $orderItemsProfit = (float) OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+        ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
         ->whereIn('orders.status', $completedStatuses)
         ->whereMonth('orders.created_at', $currentMonth)
         ->whereYear('orders.created_at', $currentYear)
-        ->sum(DB::raw('order_items.quantity * ((order_items.selling_rate - order_items.discount_amount) - products.purchase_price)'));
+        ->sum(DB::raw('COALESCE(NULLIF(order_items.profit, 0), (order_items.net_total - (order_items.quantity * COALESCE(products.purchase_price, 0))))'));
 
-      $specialDiscounts = Order::whereIn('status', $completedStatuses)
+      $specialDiscounts = (float) Order::whereIn('status', $completedStatuses)
         ->whereMonth('created_at', $currentMonth)
         ->whereYear('created_at', $currentYear)
         ->sum('special_discount');
@@ -324,12 +325,12 @@ class DashboardController extends Controller
 
     // Role-based dashboard view
     $view = match ($role) {
-      'admin'    => 'pages.dashboard.admin',
-      'manager'  => 'pages.dashboard.manager',
-      'sr'       => 'pages.dashboard.sr',
-      'dso'      => 'pages.dashboard.dso',
-      'customer' => 'pages.dashboard.customer',
-      default    => 'dashboards',
+      'admin', 'editor' => 'pages.dashboard.admin',
+      'manager'         => 'pages.dashboard.manager',
+      'sr'              => 'pages.dashboard.sr',
+      'dso'             => 'pages.dashboard.dso',
+      'customer'        => 'pages.dashboard.customer',
+      default           => 'dashboards',
     };
 
     return view($view, $data);

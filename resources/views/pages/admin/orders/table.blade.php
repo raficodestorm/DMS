@@ -18,20 +18,37 @@
   </td>
 
   <td>
-    @if($order->status == "pending_sr")
-    <span class="status-pending-badge">Pending..SR..</span>
-    @elseif($order->status == 'pending_manager')
-    <span class="status-pmanager-badge">Pending..Manager..</span>
-    @elseif($order->status == 'rejected')
-    <span class="status-rejected-badge">Rejected</span>
-    @elseif($order->status == 'complete')
-    <span class="status-complete-badge">Complete</span>
-    @elseif($order->status == 'delivered')
-    <span class="status-delivered-badge">Delivered</span>
-    @elseif($order->status == 'approved')
-    <span class="status-approved-badge">Approved</span>
+    @php
+      $isLocked = in_array($order->status, ['complete', 'delivered']);
+      $statusBadge = match($order->status) {
+        'pending_sr'      => ['class' => 'status-pending-badge',   'label' => 'Pending..SR..'],
+        'pending_manager' => ['class' => 'status-pmanager-badge',  'label' => 'Pending..Manager..'],
+        'rejected'        => ['class' => 'status-rejected-badge',  'label' => 'Rejected'],
+        'complete'        => ['class' => 'status-complete-badge',  'label' => 'Complete'],
+        'delivered'       => ['class' => 'status-delivered-badge', 'label' => 'Delivered'],
+        'approved'        => ['class' => 'status-approved-badge',  'label' => 'Approved'],
+        default           => ['class' => 'status-undefined-badge', 'label' => 'Undefined'],
+      };
+    @endphp
+
+    @if($isLocked)
+      {{-- Locked: cannot change --}}
+      <span class="{{ $statusBadge['class'] }}">{{ $statusBadge['label'] }}</span>
     @else
-    <span class="status-undefined-badge">Undefined</span>
+      {{-- Changeable: show badge + arrow dropdown --}}
+      <div class="os-wrap" data-order-id="{{ $order->id }}">
+        <span class="{{ $statusBadge['class'] }} os-badge">{{ $statusBadge['label'] }}</span>
+        <button class="os-arrow-btn" title="Change Status" type="button">
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="os-dropdown">
+          @foreach(['pending_sr' => 'Pending SR', 'pending_manager' => 'Pending Manager', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $val => $lbl)
+            <div class="os-option {{ $order->status === $val ? 'active' : '' }}" data-value="{{ $val }}">
+              {{ $lbl }}
+            </div>
+          @endforeach
+        </div>
+      </div>
     @endif
   </td>
 
@@ -55,12 +72,12 @@
     </a>
     @php
     $invoicePrefix = match (auth()->user()->role) {
-        'admin'    => 'admin',
-        'manager'  => 'manager',
-        'sr'       => 'sr',
-        'dso'       => 'dso',
-        'customer' => 'customer',
-        default    => null,
+        'admin', 'editor' => 'admin',
+        'manager'         => 'manager',
+        'sr'              => 'sr',
+        'dso'             => 'dso',
+        'customer'        => 'customer',
+        default           => null,
     };
 @endphp
 

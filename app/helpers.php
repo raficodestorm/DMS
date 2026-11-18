@@ -37,6 +37,7 @@ if (!function_exists('getLayout')) {
 
     return match ($user->role) {
       'admin' => 'layouts.adminlayout',
+      'editor' => 'layouts.adminlayout',
       'sr' => 'layouts.srlayout',
       'dso' => 'layouts.dsolayout',
       'manager' => 'layouts.managerlayout',

@@ -1,6 +1,6 @@
 @forelse($ledgers as $ledger)
 @php
-    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer']);
+    $isInflow = in_array($ledger->type, ['cash-in', 'cash_transfer', 'bonus']);
 @endphp
 
 <div class="manage-card mb-3">
@@ -11,21 +11,20 @@
         </div>
 
         <div>
-            <span>Ledger ID</span>
-            <p><strong>ACL00{{ $ledger->id }}</strong></p>
-        </div>
-
-        <div>
             <span>Type</span>
             <p>
                 @if($ledger->type == 'cash-in')
                     <span style="color: #15803d; font-weight: 700;">● Cash In</span>
+                @elseif($ledger->type == 'cash-out')
+                    <span style="color: #dc2626; font-weight: 700;">● Cash Out</span>
                 @elseif($ledger->type == 'cash_transfer')
                     <span style="color: #1d4ed8; font-weight: 700;">● Branch Transfer</span>
                 @elseif($ledger->type == 'supplier_payment')
                     <span style="color: #c2410c; font-weight: 700;">● Supplier Payment</span>
                 @elseif($ledger->type == 'company_cost')
                     <span style="color: #b91c1c; font-weight: 700;">● Company Cost</span>
+                @elseif($ledger->type == 'bonus')
+                    <span style="color: #7e22ce; font-weight: 700;">● Bonus</span>
                 @else
                     <span>● {{ ucfirst(str_replace('_', ' ', $ledger->type)) }}</span>
                 @endif
@@ -59,19 +58,33 @@
             <span>Date</span>
             <p>{{ $ledger->created_at->format('d M Y, h:i A') }}</p>
         </div>
-
-        @if($ledger->note)
-        <div style="grid-column: span 2;">
-            <span>Note</span>
-            <p class="text-muted small mb-0">{{ $ledger->note }}</p>
-        </div>
-        @endif
     </div>
 
     <div class="card-actions">
         <a href="{{ route('admin.cash.ledger.show', $ledger->id) }}" class="icon-btn view-icon" title="View Details">
             <i class="fa-solid fa-eye"></i>
         </a>
+        @if($ledger->type == 'cash-in')
+            <button type="button" class="icon-btn edit-icon btn-edit-cash-in" title="Edit Cash In"
+                data-bs-toggle="modal"
+                data-bs-target="#editCashInModal"
+                data-id="{{ $ledger->id }}"
+                data-amount="{{ $ledger->amount }}"
+                data-payment-method="{{ $ledger->payment_method }}"
+                data-note="{{ $ledger->note }}">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+        @elseif($ledger->type == 'cash-out')
+            <button type="button" class="icon-btn edit-icon btn-edit-cash-out" title="Edit Cash Out"
+                data-bs-toggle="modal"
+                data-bs-target="#editCashOutModal"
+                data-id="{{ $ledger->id }}"
+                data-amount="{{ $ledger->amount }}"
+                data-payment-method="{{ $ledger->payment_method }}"
+                data-note="{{ $ledger->note }}">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+        @endif
     </div>
 </div>
 @empty

@@ -1,4 +1,4 @@
-@php $isAdmin = auth()->user()->role === 'admin'; @endphp
+@php $isAdmin = in_array(auth()->user()->role, ['admin', 'editor']); @endphp
 
 {{-- Ranking Position Header --}}
 <div class="position-hero-card mb-3 p-3 rounded-3" style="background: var(--section-bg); border: 1px solid var(--border-color);">

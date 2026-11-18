@@ -96,12 +96,19 @@ body.sidebar-hidden .sidebar {
     transition: 0.3s;
 }
 
-.nav-link:hover,
-.nav-item.open>.nav-link,
-.nav-link.active-nav {
+.nav-link:hover {
     background: var(--border-color);
     color: var(--primary-light);
     border-left: 3px solid var(--primary-light);
+    border-radius: 0 50px 50px 0;
+}
+
+.nav-item.open>.nav-link,
+.nav-link.active-nav {
+    background: var(--primary);
+    /* color: var(--primary-light); */
+    color: white;
+    border-left: 3px solid var(--accent);
     border-radius: 0 50px 50px 0;
 }
 

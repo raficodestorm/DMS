@@ -52,6 +52,23 @@
         <span class="i-value">{{ $user->created_at->format('d M Y, h:i A') }}</span>
       </div>
 
+      @if($user->role === 'editor')
+      <div class="info-group" style="grid-column: 1 / -1; width: 100%;">
+        <span class="i-label">Assigned Permissions</span>
+        <div class="i-value mt-2" style="display: flex; flex-wrap: wrap; gap: 6px;">
+          @if(is_array($user->permissions) && count($user->permissions) > 0)
+            @foreach($user->permissions as $p)
+              <span class="badge bg-light text-dark border" style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 6px;">
+                <i class="fa-solid fa-check text-success me-1"></i> {{ ucwords(str_replace('_', ' ', $p)) }}
+              </span>
+            @endforeach
+          @else
+            <span class="text-muted" style="font-size: 13px;">No permissions assigned yet.</span>
+          @endif
+        </div>
+      </div>
+      @endif
+
     </div>
     <div class="statement">
       <p class="statement-text">

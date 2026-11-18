@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\Permissions;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Customer;
@@ -18,7 +19,7 @@ class UserManagementController extends Controller
 
   public function __construct()
   {
-    $this->middleware(['auth', 'role:admin']);
+    $this->middleware(['auth', 'role:admin,editor']);
   }
 
   /**
@@ -74,7 +75,8 @@ class UserManagementController extends Controller
     $branches = Branch::select('id', 'name')->orderBy('name')->get();
     $employees = Employee::select('id', 'name')->latest()->get();
     $customers = Customer::select('id', 'shop_name')->orderBy('id', 'desc')->get();
-    return view('pages.admin.users.create', compact('branches', 'employees', 'customers'));
+    $permissionGroups = Permissions::grouped();
+    return view('pages.admin.users.create', compact('branches', 'employees', 'customers', 'permissionGroups'));
   }
 
   public function store(Request $request)
@@ -89,11 +91,20 @@ class UserManagementController extends Controller
       'employee_id' => ['nullable', 'integer'],
       'customer_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
+      'permissions' => ['nullable', 'array'],
+      'permissions.*' => ['string'],
     ]);
 
     $profilePath = null;
     if ($request->hasFile('profile_photo')) {
       $profilePath = $this->uploadFile($request->file('profile_photo'), 'profile_photos');
+    }
+
+    $permissions = null;
+    if ($request->role === 'editor') {
+      $allAllowed = Permissions::all();
+      $submitted = $request->input('permissions', []);
+      $permissions = array_values(array_intersect($submitted, $allAllowed));
     }
 
     $user = User::create([
@@ -102,6 +113,7 @@ class UserManagementController extends Controller
       'email' => $request->email,
       'password' => Hash::make($request->password),
       'role' => $request->role,
+      'permissions' => $permissions,
       'branch_id' => $request->branch_id,
       'employee_id' => $request->role === 'customer' ? null : $request->employee_id,
       'customer_id' => $request->role === 'customer' ? $request->customer_id : null,
@@ -117,7 +129,8 @@ class UserManagementController extends Controller
     $branches = Branch::orderBy('name', 'asc')->get();
     $employees = Employee::orderBy('id', 'desc')->get();
     $customers = Customer::orderBy('id', 'desc')->get();
-    return view('pages.admin.users.edit', compact('user', 'branches', 'employees', 'customers'));
+    $permissionGroups = Permissions::grouped();
+    return view('pages.admin.users.edit', compact('user', 'branches', 'employees', 'customers', 'permissionGroups'));
   }
 
   public function update(Request $request, User $user)
@@ -133,6 +146,8 @@ class UserManagementController extends Controller
       'customer_id' => ['nullable', 'integer'],
       'profile_photo' => ['nullable', 'image', 'max:2048'],
       'status' => ['required', 'in:active,inactive'],
+      'permissions' => ['nullable', 'array'],
+      'permissions.*' => ['string'],
     ]);
 
     if ($request->hasFile('profile_photo')) {
@@ -147,6 +162,15 @@ class UserManagementController extends Controller
       $user->password = Hash::make($request->password);
     }
     $user->role = $request->role;
+
+    if ($request->role === 'editor') {
+      $allAllowed = Permissions::all();
+      $submitted = $request->input('permissions', []);
+      $user->permissions = array_values(array_intersect($submitted, $allAllowed));
+    } else {
+      $user->permissions = null;
+    }
+
     $user->branch_id = $request->branch_id;
     $user->employee_id = $request->role === 'customer' ? null : $request->employee_id;
     $user->customer_id = $request->role === 'customer' ? $request->customer_id : null;

@@ -1,7 +1,7 @@
 @forelse($customers as $index => $customer)
 @php
   $rank    = $customer->global_rank ?? ($customers->firstItem() ? $customers->firstItem() + $index : $index + 1);
-  $isAdmin = auth()->user()->role === 'admin';
+  $isAdmin = in_array(auth()->user()->role, ['admin', 'editor']);
 @endphp
 <tr>
   <td>
@@ -78,7 +78,7 @@
 </tr>
 @empty
 <tr>
-  <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 7 }}" class="text-center py-5 text-muted">
+  <td colspan="{{ in_array(auth()->user()->role, ['admin', 'editor']) ? 9 : 7 }}" class="text-center py-5 text-muted">
     <i class="fas fa-info-circle me-1 text-primary"></i> No wholesale customers found matching the criteria.
   </td>
 </tr>

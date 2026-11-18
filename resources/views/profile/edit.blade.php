@@ -216,6 +216,31 @@
                     <div class="edited-badge"><i class="mdi mdi-pencil-circle"></i> This field has edited just now</div>
                     @error('email') <div style="color:var(--danger); font-size:12px;">{{ $message }}</div> @enderror
                 </div>
+
+                @if($user->isCustomer())
+                <div class="col-md-6 form-group">
+                    <label>Country</label>
+                    <select class="edit-input monitor-change" name="country" id="country" style="cursor: pointer;">
+                        <option value="" disabled {{ !old('country', $user->customer->country ?? null) ? 'selected' : '' }}>Select Country</option>
+                        @foreach ($countries as $c)
+                        <option value="{{ $c }}" {{ old('country', $user->customer->country ?? '') === $c ? 'selected' : '' }}>
+                            {{ $c }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <div class="edited-badge"><i class="mdi mdi-pencil-circle"></i> This field has edited just now</div>
+                    @error('country') <div style="color:var(--danger); font-size:12px;">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <label>City</label>
+                    <select class="edit-input monitor-change" name="city" id="city" style="cursor: pointer;">
+                        <option value="" disabled>Select City</option>
+                    </select>
+                    <div class="edited-badge"><i class="mdi mdi-pencil-circle"></i> This field has edited just now</div>
+                    @error('city') <div style="color:var(--danger); font-size:12px;">{{ $message }}</div> @enderror
+                </div>
+                @endif
             </div>
 
             <div class="profile-actions">
@@ -264,6 +289,54 @@
                 badge.style.display = 'none';
             }
         });
+        input.addEventListener('change', function() {
+            const badge = this.parentElement.querySelector('.edited-badge');
+            if (this.value !== originalValue) {
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
     });
+
+    // 3. Country & City Dependent Dropdown Logic (from countries.json)
+    const countrySelect = document.getElementById('country');
+    const citySelect    = document.getElementById('city');
+
+    if (countrySelect && citySelect) {
+        let countriesData = {};
+        try {
+            countriesData = @json(
+                file_exists(resource_path('data/countries.json'))
+                    ? json_decode(file_get_contents(resource_path('data/countries.json')), true)
+                    : []
+            );
+        } catch (e) {}
+
+        const selectedCountry = @json(old('country', $user->customer->country ?? ''));
+        const selectedCity    = @json(old('city', $user->customer->city ?? ''));
+
+        function populateCities(country, sel = '') {
+            citySelect.innerHTML = '<option value="" disabled>Select City</option>';
+            if (country && countriesData[country]) {
+                countriesData[country].forEach(city => {
+                    const opt = document.createElement('option');
+                    opt.value = city;
+                    opt.textContent = city;
+                    if (city === sel) opt.selected = true;
+                    citySelect.appendChild(opt);
+                });
+                citySelect.disabled = false;
+            } else {
+                citySelect.disabled = true;
+            }
+        }
+
+        countrySelect.addEventListener('change', function () {
+            populateCities(this.value);
+        });
+
+        populateCities(selectedCountry, selectedCity);
+    }
 </script>
 @endpush

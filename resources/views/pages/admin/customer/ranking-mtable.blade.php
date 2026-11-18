@@ -1,7 +1,7 @@
 @forelse($customers as $index => $customer)
 @php
   $rank    = $customer->global_rank ?? ($customers->firstItem() ? $customers->firstItem() + $index : $index + 1);
-  $isAdmin = auth()->user()->role === 'admin';
+  $isAdmin = in_array(auth()->user()->role, ['admin', 'editor']);
 @endphp
 <div class="manage-card mb-3 p-3 position-relative" style="background: var(--section-bg); border: 1px solid var(--border-color); border-radius: 14px;">
   

@@ -2,9 +2,16 @@
 
 @section('content')
 <div class="manage-card">
-    <div class="card-header mb-4">
-        <h2 class="mb-0"><i class="fas fa-edit text-primary me-2"></i> Edit Bonus Entry</h2>
-        <p class="text-muted">Modify the details of this bonus record.</p>
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-edit text-primary me-2"></i> Edit Bonus Entry</h2>
+            <p class="text-muted mb-0">Modify the details of this bonus record.</p>
+        </div>
+        @if(isset($totalAdminCash))
+        <div style="background: rgba(49, 49, 255, 0.08); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(49, 49, 255, 0.2);">
+            <i class="fa-solid fa-vault me-1"></i> Current Admin Cash: ৳ {{ number_format($totalAdminCash, 2) }}
+        </div>
+        @endif
     </div>
 
     <form action="{{ route('admin.bonuses.update', $bonus) }}" method="POST" class="row g-4">
@@ -48,6 +55,15 @@
             <textarea name="description" class="input-form @error('description') is-invalid @enderror" 
                       rows="4" placeholder="Provide more context about this bonus...">{{ old('description', $bonus->description) }}</textarea>
             @error('description') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="col-12">
+            <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 10px 14px;">
+                <small style="color: #7e22ce; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 500;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Updating this bonus amount will automatically adjust <strong>Central Admin Cash</strong> by the difference and update the <strong>Admin Cash Ledger</strong>.</span>
+                </small>
+            </div>
         </div>
 
         <div class="col-12 d-flex gap-2 justify-content-end mt-4">

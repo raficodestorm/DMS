@@ -19,22 +19,25 @@
             </p>
         </div>
 
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <a href="{{ route('admin.cash.ledger') }}" class="btn-smart btn-blue">
+        <div class="d-flex align-items-center gap-2 flex-wrap" >
+            <a href="{{ route('admin.cash.ledger') }}" class="btn-smart btn-blue" style="font-size: 13px; padding: 4px;">
                 <i class="fa-solid fa-book-bookmark"></i> Ledger
             </a>
-            <button type="button" class="btn-smart btn-green" data-bs-toggle="modal" data-bs-target="#cashInModal">
+            <button type="button" class="btn-smart btn-green" style="font-size: 13px; padding: 4px;" data-bs-toggle="modal" data-bs-target="#cashInModal">
                 <i class="fa-solid fa-plus-circle"></i> Cash In
             </button>
-            <a href="{{ route('admin.cash.closing-history') }}" class="btn-smart btn-blue">
+            <button type="button" class="btn-smart btn-red" style="font-size: 13px; padding: 4px; background: #dc2626; color: #fff; border: 1px solid #b91c1c;" data-bs-toggle="modal" data-bs-target="#cashOutModal">
+                <i class="fa-solid fa-minus-circle"></i> Cash Out
+            </button>
+            <a href="{{ route('admin.cash.closing-history') }}" class="btn-smart btn-blue" style="font-size: 13px; padding: 4px;">
                 <i class="fa-solid fa-clock-rotate-left"></i> Closing History
             </a>
             <span class="live-sync-badge">
                 <span class="pulse-dot"></span> Live Balance
             </span>
-            <button onclick="window.location.reload();" class="btn-refresh" title="Refresh Cash">
+            <!-- <button onclick="window.location.reload();" class="btn-refresh" title="Refresh Cash" style="font-size: 10px; padding: 4px;">
                 <i class="fa-solid fa-arrows-rotate"></i>
-            </button>
+            </button> -->
         </div>
     </div>
 
@@ -777,7 +780,7 @@
                     </div>
                     <div>
                         <h5 class="modal-title fw-bold mb-0 text-success" id="cashInModalLabel">Admin Cash In</h5>
-                        <small class="text-muted">Deposit / inject capital into Central Admin Cash</small>
+                        <small class="text-muted">সেন্ট্রাল অ্যাডমিন ক্যাশে মূলধন বা টাকা জমা করুন</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -787,37 +790,37 @@
                 <div class="modal-body p-4">
                     {{-- Balance Pill --}}
                     <div class="d-flex align-items-center justify-content-between p-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
-                        <span class="text-muted small fw-semibold">Current Admin Cash:</span>
+                        <span class="text-muted small fw-semibold">বর্তমান অ্যাডমিন ক্যাশ:</span>
                         <strong class="text-primary-custom" style="font-size: 1.1rem;">৳ {{ number_format($totalAdminCash, 2) }}</strong>
                     </div>
 
                     {{-- Amount Input --}}
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">Cash In Amount (৳) <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold text-dark small">ক্যাশ ইন এমাউন্ট / জমার পরিমাণ (৳) <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" min="0.01" name="amount" class="input-form" placeholder="0.00" required autofocus style="font-size: 1.1rem; font-weight: 700;">
                     </div>
 
                     {{-- Payment Method --}}
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">Payment / Deposit Method <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold text-dark small">পেমেন্ট / জমা মেথড <span class="text-danger">*</span></label>
                         <select name="payment_method" class="input-form" required>
-                            <option value="cash" selected>Cash</option>
-                            <option value="bank">Bank Transfer / Deposit</option>
-                            <option value="cheque">Cheque</option>
-                            <option value="bkash">bKash / Mobile Banking</option>
+                            <option value="cash" selected>Cash (নগদ)</option>
+                            <option value="bank">Bank Transfer / Deposit (ব্যাংক)</option>
+                            <option value="cheque">Cheque (চেক)</option>
+                            <option value="bkash">bKash / Mobile Banking (বিকাশ / নগদ)</option>
                         </select>
                     </div>
 
                     {{-- Note / Source --}}
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">Note / Source / Reference <small class="text-muted fw-normal">(Optional)</small></label>
-                        <input type="text" name="note" class="input-form" placeholder="e.g. Owner capital, Bank cash withdrawal, etc.">
+                        <label class="form-label fw-bold text-dark small">বিবরণ / নোট / রেফারেন্স <small class="text-muted fw-normal">(ঐচ্ছিক)</small></label>
+                        <input type="text" name="note" class="input-form" placeholder="যেমন: মালিকের মূলধন বিনিয়োগ, ব্যাংক উত্তোলন ইত্যাদি">
                     </div>
 
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px;">
-                        <small class="text-success d-flex align-items-center gap-2" style="font-size: 0.8rem;">
+                        <small class="text-success d-flex align-items-center gap-2" style="font-size: 0.82rem; font-weight: 500;">
                             <i class="fa-solid fa-circle-check"></i>
-                            <span>This amount will be added to Central Admin Cash and logged in the <strong>Admin Cash Ledger</strong> as <code>cash-in</code>.</span>
+                            <span>এই টাকাটি সরাসরি সেন্ট্রাল অ্যাডমিন ক্যাশে যোগ হবে এবং অ্যাডমিন ক্যাশ লেজারে <strong>cash-in</strong> হিসেবে সংরক্ষিত থাকবে।</span>
                         </small>
                     </div>
                 </div>
@@ -825,6 +828,72 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
                     <button type="submit" class="btn btn-success" style="border-radius: 8px; font-weight: 700; padding: 8px 20px; background: #16a34a; border: none;">
                         <i class="fa-solid fa-arrow-down-to-bracket me-1"></i> Confirm Cash In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Cash Out Modal --}}
+<div class="modal fade" id="cashOutModal" tabindex="-1" aria-labelledby="cashOutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 14px; border: 1px solid var(--border-color, #e2e8f0); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-bottom: 1px solid #fecaca; padding: 18px 24px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 42px; height: 42px; border-radius: 10px; background: #dc2626; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);">
+                        <i class="fa-solid fa-minus-circle"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-danger" id="cashOutModalLabel">Admin Cash Out</h5>
+                        <small class="text-muted">সেন্ট্রাল অ্যাডমিন ক্যাশ থেকে টাকা উত্তোলন বা খরচ করুন</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.cash.cash-out') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    {{-- Balance Pill --}}
+                    <div class="d-flex align-items-center justify-content-between p-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <span class="text-muted small fw-semibold">বর্তমান অ্যাডমিন ক্যাশ:</span>
+                        <strong class="text-primary-custom" style="font-size: 1.1rem;">৳ {{ number_format($totalAdminCash, 2) }}</strong>
+                    </div>
+
+                    {{-- Amount Input --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">ক্যাশ আউট এমাউন্ট / উত্তোলনের পরিমাণ (৳) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0.01" name="amount" class="input-form" placeholder="0.00" required autofocus style="font-size: 1.1rem; font-weight: 700;">
+                    </div>
+
+                    {{-- Payment Method --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">পেমেন্ট / উত্তোলন মেথড <span class="text-danger">*</span></label>
+                        <select name="payment_method" class="input-form" required>
+                            <option value="cash" selected>Cash (নগদ)</option>
+                            <option value="bank">Bank Transfer / Withdrawal (ব্যাংক)</option>
+                            <option value="cheque">Cheque (চেক)</option>
+                            <option value="bkash">bKash / Mobile Banking (বিকাশ / নগদ)</option>
+                        </select>
+                    </div>
+
+                    {{-- Note / Source --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">উত্তোলনের কারণ / বিবরণ / রেফারেন্স <small class="text-muted fw-normal">(ঐচ্ছিক)</small></label>
+                        <input type="text" name="note" class="input-form" placeholder="যেমন: মালিকের ব্যক্তিগত উত্তোলন, ব্যাংক জমা, জরুরি খরচ ইত্যাদি">
+                    </div>
+
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px;">
+                        <small class="text-danger d-flex align-items-center gap-2" style="font-size: 0.82rem; font-weight: 500;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>এই টাকাটি সেন্ট্রাল অ্যাডমিন ক্যাশ থেকে কেটে নেওয়া হবে এবং অ্যাডমিন ক্যাশ লেজারে <strong>cash-out</strong> হিসেবে সংরক্ষিত থাকবে।</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
+                    <button type="submit" class="btn btn-danger" style="border-radius: 8px; font-weight: 700; padding: 8px 20px; background: #dc2626; border: none;">
+                        <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Confirm Cash Out
                     </button>
                 </div>
             </form>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Manager\EmployeeController;
 use App\Http\Controllers\Manager\OrderManagerController;
 use App\Http\Controllers\Manager\RetailOrderController;
@@ -153,5 +154,6 @@ Route::prefix('manager')->name('manager.')->middleware(['auth', 'role:manager'])
   Route::get('/supplier-transactions', [SupplierTransactionController::class, 'indexForManager'])->name('supplier-transactions.index');
   Route::get('/supplier-transactions/data', [SupplierTransactionController::class, 'fetchManagerSupplierTransactionsData'])->name('supplier-transactions.index.data');
   Route::get('/supplier-transactions/{id}', [SupplierTransactionController::class, 'showForManager'])->name('supplier-transactions.show');
+  Route::get('/products/barcode-print', [ProductController::class, 'barcodePrintForManager'])->name('products.barcode');
 
 });

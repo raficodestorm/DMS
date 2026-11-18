@@ -71,14 +71,14 @@ class StockController extends Controller
     // প্রতিটি ব্রাঞ্চের টোটাল স্টক ভ্যালু ক্যালকুলেট করা
     $branches = \App\Models\Branch::with(['stocks.product'])->get()->map(function ($branch) {
       $branch->total_value = $branch->stocks->sum(function ($stock) {
-        return $stock->quantity * $stock->product->price;
+        return $stock->quantity * $stock->product->purchase_price;
       });
       return $branch;
     });
 
     // পুরো কোম্পানির টোটাল স্টক ভ্যালু
     $company_total_value = \App\Models\Stock::with('product')->get()->sum(function ($stock) {
-      return $stock->quantity * $stock->product->price;
+      return $stock->quantity * $stock->product->purchase_price;
     });
 
     return view('pages.admin.stock.all-stocks', compact('branches', 'company_total_value'));
