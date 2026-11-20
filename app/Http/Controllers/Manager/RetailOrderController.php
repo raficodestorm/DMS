@@ -85,7 +85,7 @@ class RetailOrderController extends Controller
     $deductions = Deduction::pluck('retail_deduction', 'supplier_id');
     $today      = Carbon::today();
 
-    $stocks = Stock::with(['product.category', 'product.supplier', 'product.activeRetailOffer'])
+    $stocks = Stock::with(['product.category', 'product.supplier', 'product.activeRetailOffer', 'product.images'])
       ->where('branch_id', $branchId)
       ->where('quantity', '>', 0)
       ->get()
@@ -127,19 +127,25 @@ class RetailOrderController extends Controller
       }
 
       return [
-        'id'               => $product->id,
-        'name'             => $product->name,
-        'category_id'      => $catId,
-        'category_name'    => $catName,
-        'price'            => $basePrice,
-        'retail_deduction' => $retailDeduction,
-        'selling_rate'     => round($sellingRate, 2),
-        'has_offer'        => !is_null($offer),
-        'offer_text'       => $offerText,
-        'offer_discount'   => $offerDiscount,
-        'offer_type'       => $offer ? $offer->type : 'fixed',
-        'image'            => $product->image,
-        'available_qty'    => $stock->quantity,
+        'id'                => $product->id,
+        'name'              => $product->name,
+        'sku'               => $product->sku,
+        'barcode'           => $product->barcode,
+        'category_id'       => $catId,
+        'category_name'     => $catName,
+        'supplier_name'     => $product->supplier?->name ?? null,
+        'price'             => $basePrice,
+        'retail_deduction'  => $retailDeduction,
+        'selling_rate'      => round($sellingRate, 2),
+        'has_offer'         => !is_null($offer),
+        'offer_text'        => $offerText,
+        'offer_discount'    => $offerDiscount,
+        'offer_type'        => $offer ? $offer->type : 'fixed',
+        'image'             => $product->image,
+        'images'            => $product->images ? $product->images->pluck('image')->toArray() : [],
+        'short_description' => $product->short_description,
+        'long_description'  => $product->long_description,
+        'available_qty'     => $stock->quantity,
       ];
     })->values();
 
